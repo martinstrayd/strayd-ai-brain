@@ -1,0 +1,207 @@
+
+name: STRAYD Character Manager Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: strayd-character-audit
+  cancel-in-progress: false
+
+jobs:
+  character-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check required files
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${DAHL_API_KEY:-}" ]; then
+            echo "::error::DAHL_API_KEY is missing from repository secrets."
+            exit 1
+          fi
+
+          for file in \
+            "agents/character-manager.agent.md" \
+            "brand-profile.md" \
+            "martinstrayd.md" \
+            "suzukimusic.md"
+          do
+            if [ ! -s "$file" ]; then
+              echo "::error::Required file is missing or empty: $file"
+              exit 1
+            fi
+          done
+
+          command -v jq
+          command -v curl
+
+          echo "All required files are available."
+
+      - name: Prepare audit request
+        run: |
+          set -euo pipefail
+
+          cat > audit-instructions.txt <<'EOF'
+          Review the STRAYD Character Manager agent instructions.
+
+          This is an audit, not a request to rewrite the agent instructions.
+
+          Use only the supplied source files. Do not invent character facts,
+          appearances, personality traits, roles, relationships, or history.
+
+          Check for:
+          1. Accuracy and consistency of character identities.
+          2. Consistency with the brand profile and artist information.
+          3. Clear rules for preserving supplied character reference images.
+          4. Risk of inventing visual or biographical details.
+          5. Contradictions, ambiguous instructions, or missing safeguards.
+          6. Practical improvements that would make the agent more reliable.
+
+          Distinguish direct evidence from possible issues and recommendations.
+          Cite the relevant file and quote short phrases where useful.
+          Do not claim to have inspected images that were not supplied.
+          Do not change any source files.
+
+          Return a complete Markdown report using these sections:
+
+          # STRAYD Character Manager Audit
+          ## Executive Summary
+          ## Responsibilities and Scope
+          ## Character and Brand Consistency
+          ## Visual Reference and Identity Safeguards
+          ## Contradictions and Ambiguities
+          ## Missing Instructions
+          ## Recommended Improvements
+          ## Limitations
+          EOF
+
+          {
+            echo "# CHARACTER MANAGER INSTRUCTIONS"
+            cat agents/character-manager.agent.md
+            echo
+            echo "# BRAND PROFILE"
+            cat brand-profile.md
+            echo
+            echo "# MARTIN STRAYD INFORMATION"
+            cat martinstrayd.md
+            echo
+            echo "# SUZUKI MUSIC INFORMATION"
+            cat suzukimusic.md
+          } > character-audit-source.txt
+
+          echo "Audit instructions and source material prepared."
+          echo "Source size: $(wc -c < character-audit-source.txt) bytes."
+
+      - name: Run audit through DAHL
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          jq -n \
+            --rawfile instructions audit-instructions.txt \
+            --rawfile sources character-audit-source.txt \
+            '{
+              model: "MiniMaxAI/MiniMax-M2.7",
+              messages: [
+                {
+                  role: "system",
+                  content: "You are a careful STRAYD Character Manager auditor. Evaluate the supplied instructions against the supplied reference files. Never invent facts or claim to have inspected unavailable materials."
+                },
+                {
+                  role: "user",
+                  content: ($instructions + "\n\nSOURCE MATERIAL:\n\n" + $sources)
+                }
+              ]
+            }' > request.json
+
+          ATTEMPT=1
+          SUCCESS=0
+
+          while [ "$ATTEMPT" -le 3 ]; do
+            echo "DAHL request attempt ${ATTEMPT}/3..."
+
+            if curl \
+              --silent \
+              --show-error \
+              --fail-with-body \
+              --connect-timeout 30 \
+              --max-time 300 \
+              --retry 2 \
+              --retry-connrefused \
+              --retry-delay 5 \
+              https://inference.dahl.global/v1/chat/completions \
+              -H "Authorization: Bearer ${DAHL_API_KEY}" \
+              -H "Content-Type: application/json" \
+              -d @request.json \
+              -o response.json
+            then
+              SUCCESS=1
+              break
+            fi
+
+            if [ "$ATTEMPT" -lt 3 ]; then
+              echo "Request failed. Waiting before retrying."
+              sleep $((ATTEMPT * 15))
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [ "$SUCCESS" -ne 1 ]; then
+            echo "::error::DAHL request failed after retries."
+            exit 1
+          fi
+
+          if ! jq -er '
+            .choices[0].message.content
+            | strings
+            | select(length > 100)
+          ' response.json > character-audit-report.md; then
+            echo "::error::DAHL returned no usable audit report."
+            exit 1
+          fi
+
+          echo "Character Manager audit report generated."
+
+      - name: Save audit report
+        run: |
+          set -euo pipefail
+
+          mkdir -p reports
+
+          REPORT_PATH="reports/character-audit-$(date -u +%Y-%m-%d).md"
+
+          cp character-audit-report.md "$REPORT_PATH"
+
+          echo "Report saved to $REPORT_PATH."
+
+      - name: Commit audit report
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add reports/
+
+          if git diff --cached --quiet; then
+            echo "No report changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Add STRAYD Character Manager audit"
+          git push
+
+          echo "Character Manager audit saved successfully."

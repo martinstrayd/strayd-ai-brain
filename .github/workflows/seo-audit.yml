@@ -14,10 +14,10 @@ concurrency:
 jobs:
   seo-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Check required files
@@ -27,219 +27,294 @@ jobs:
           set -euo pipefail
 
           if [ -z "${DAHL_API_KEY:-}" ]; then
-            echo "::error::DAHL_API_KEY is missing from repository secrets."
+            echo "::error::DAHL_API_KEY secret is missing."
             exit 1
           fi
 
           for file in \
-            "agents/seo-manager.agent.md" \
-            "brand-profile.md" \
-            "songarchive.md" \
-            "martinstrayd.md" \
-            "suzukimusic.md"
+            agents/seo-manager.agent.md \
+            brand-profile.md \
+            songarchive.md \
+            martinstrayd.md \
+            suzukimusic.md
           do
-            if [ ! -s "$file" ]; then
-              echo "::error::Required file is missing or empty: $file"
+            if [ ! -f "$file" ]; then
+              echo "::error::Required file is missing: $file"
               exit 1
             fi
           done
 
-          command -v jq
-          command -v curl
+          mkdir -p reports
+          echo "All required SEO audit source files are present."
 
-          echo "All required files are available."
-
-      - name: Prepare SEO audit
+      - name: Prepare audit instructions
         run: |
           set -euo pipefail
 
-          cat > audit-instructions.txt <<'EOF'
-          Audit the STRAYD SEO Manager instructions against the supplied
-          knowledge and brand files.
-
-          This is a review, not a request to rewrite the agent instructions.
-
-          Check:
-          1. Consistency of STRAYD, Martin Strayd and Suzuki naming.
-          2. Search-friendly titles, descriptions and page headings.
-          3. Artist, song and release metadata accuracy.
-          4. Official music links and social profile handling.
-          5. Music discovery, website SEO and structured metadata guidance.
-          6. Duplicate titles, alternate mixes and unreleased material.
-          7. Claims about streaming availability, licensing and identifiers.
-          8. Rules against inventing facts, URLs, credits or release dates.
-          9. Practical missing instructions and contradictions.
-
-          Branding guidance:
-          - Main artist identity: STRAYD.
-          - Artist descriptor: STRAYD featuring Martin Strayd & Suzuki.
-          - Collaborative artwork billing: SUZUKI & STRAYD.
-          - Suzuki is a media guru and band manager and provides backing
-            vocals on selected songs only. Do not assume she is lead vocalist
-            or a guitarist.
-          - The working catalogue contains originals, remixes, demos and
-            alternate versions. Do not treat every entry as a released song.
-          - More than 100 tracks are reported as live and all master files
-            are reported as licensed. These are artist-provided statements,
-            not independently verified facts.
-          - UPC and ISRC identifiers have not yet been systematically
-            verified. Do not invent identifiers.
-
-          Use only the supplied source files. Do not claim to have visited
-          websites, checked search rankings, or verified streaming platforms.
-          Distinguish documented facts, possible issues and recommendations.
-          Quote short phrases or name relevant sections as evidence.
-          Do not modify source files.
-
-          Produce a complete Markdown report with these exact sections:
-
-          # STRAYD SEO Manager Audit
-          ## Executive Summary
-          ## Responsibilities and Scope
-          ## Artist Branding and Naming
-          ## Website and Music Discovery SEO
-          ## Metadata, Links and Release Accuracy
-          ## Contradictions and Missing Safeguards
-          ## Recommended Improvements
-          ## Limitations
-
-          Keep the report focused and practical. Finish with a final line
-          containing exactly: AUDIT COMPLETE
-          Do not output that final line until all report sections are finished.
-          EOF
-
           {
-            echo "# SEO MANAGER INSTRUCTIONS"
             cat agents/seo-manager.agent.md
-            echo
-            echo "# BRAND PROFILE"
+
+            printf '\n\n## AUDIT REQUIREMENTS\n'
+            printf '%s\n' \
+              'Audit the STRAYD music brand and its supplied knowledge files.' \
+              'Use only evidence in the supplied source material.' \
+              'Do not claim to have checked live search rankings, analytics, backlinks, or webpages unless the source material proves this.' \
+              'Clearly separate confirmed facts, risks, and recommendations.' \
+              'Be specific and practical. Prioritise improvements by impact.' \
+              'Use the exact Markdown headings listed below.' \
+              'Do not omit a heading. If information is unavailable, state that clearly under the relevant heading.' \
+              '' \
+              '# STRAYD SEO AUDIT' \
+              '## Executive Summary' \
+              '## Current Strengths' \
+              '## SEO Problems and Risks' \
+              '## Recommended Improvements' \
+              '## Content and Keyword Opportunities' \
+              '## Priority Action Plan' \
+              '## Missing Information and Limitations' \
+              '' \
+              'Finish the entire report with this exact final line:' \
+              'AUDIT COMPLETE'
+
+            printf '\n\n## SEO MANAGER INSTRUCTIONS\n'
+            cat agents/seo-manager.agent.md
+
+            printf '\n\n## BRAND PROFILE\n'
             cat brand-profile.md
-            echo
-            echo "# SONG ARCHIVE"
+
+            printf '\n\n## SONG ARCHIVE\n'
             cat songarchive.md
-            echo
-            echo "# MARTIN STRAYD INFORMATION"
+
+            printf '\n\n## MARTIN STRAYD PROFILE\n'
             cat martinstrayd.md
-            echo
-            echo "# SUZUKI MUSIC INFORMATION"
+
+            printf '\n\n## SUZUKI PROFILE\n'
             cat suzukimusic.md
-          } > seo-audit-source.txt
+          } > seo-audit-source.md
 
           echo "SEO audit source material prepared."
-          echo "Source size: $(wc -c < seo-audit-source.txt) bytes."
+          echo "Source size: $(wc -c < seo-audit-source.md) bytes."
 
-      - name: Run SEO audit through DAHL
+      - name: Run SEO audit with retry and repair
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           set -euo pipefail
 
-          jq -n \
-            --rawfile instructions audit-instructions.txt \
-            --rawfile sources seo-audit-source.txt \
-            '{
-              model: "MiniMaxAI/MiniMax-M2.7",
-              messages: [
-                {
-                  role: "system",
-                  content: "You are a careful STRAYD SEO Manager auditor. Evaluate the supplied instructions against the supplied files. Do not invent facts or claim external verification. Follow the required report structure and final completion marker."
-                },
-                {
-                  role: "user",
-                  content: ($instructions + "\n\nSOURCE MATERIAL:\n\n" + $sources)
-                }
-              ]
-            }' > request.json
+          API_URL="https://inference.dahl.global/v1/chat/completions"
+          MODEL="MiniMaxAI/MiniMax-M2.7"
 
-          ATTEMPT=1
-          SUCCESS=0
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
 
-          while [ "$ATTEMPT" -le 3 ]; do
-            echo "DAHL request attempt ${ATTEMPT}/3..."
+          source = Path("seo-audit-source.md").read_text(encoding="utf-8")
 
-            if curl \
-              --silent \
-              --show-error \
-              --fail-with-body \
-              --connect-timeout 30 \
-              --max-time 300 \
-              --retry 2 \
-              --retry-connrefused \
-              --retry-delay 5 \
-              https://inference.dahl.global/v1/chat/completions \
-              -H "Authorization: Bearer ${DAHL_API_KEY}" \
-              -H "Content-Type: application/json" \
-              -d @request.json \
-              -o response.json
-            then
-              SUCCESS=1
-              break
-            fi
+          payload = {
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [
+                  {
+                      "role": "user",
+                      "content": source
+                  }
+              ],
+              "temperature": 0.2,
+              "max_tokens": 12000
+          }
 
-            if [ "$ATTEMPT" -lt 3 ]; then
-              echo "Request failed. Waiting before retrying."
-              sleep $((ATTEMPT * 15))
-            fi
+          Path("seo-audit-request.json").write_text(
+              json.dumps(payload, ensure_ascii=False),
+              encoding="utf-8"
+          )
+          PY
 
-            ATTEMPT=$((ATTEMPT + 1))
-          done
+          call_dahl() {
+            local input_file="$1"
+            local output_file="$2"
+            local attempt=1
+            local max_attempts=3
 
-          if [ "$SUCCESS" -ne 1 ]; then
-            echo "::error::DAHL request failed after retries."
+            while [ "$attempt" -le "$max_attempts" ]; do
+              echo "DAHL request attempt ${attempt}/${max_attempts}..."
+
+              if curl \
+                --silent \
+                --show-error \
+                --fail-with-body \
+                --connect-timeout 30 \
+                --max-time 300 \
+                --request POST "$API_URL" \
+                --header "Authorization: Bearer ${DAHL_API_KEY}" \
+                --header "Content-Type: application/json" \
+                --data-binary "@${input_file}" \
+                --output "${output_file}.json"
+              then
+                if python3 - "$output_file.json" "$output_file" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          response_path = Path(sys.argv[1])
+          output_path = Path(sys.argv[2])
+
+          try:
+              data = json.loads(response_path.read_text(encoding="utf-8"))
+              content = data["choices"][0]["message"]["content"]
+              if not isinstance(content, str) or not content.strip():
+                  raise ValueError("Empty response content")
+              output_path.write_text(content.strip() + "\n", encoding="utf-8")
+          except Exception as exc:
+              print(f"Invalid DAHL response: {exc}")
+              sys.exit(1)
+          PY
+                then
+                  return 0
+                fi
+              fi
+
+              if [ "$attempt" -lt "$max_attempts" ]; then
+                sleep $((attempt * 10))
+              fi
+
+              attempt=$((attempt + 1))
+            done
+
+            return 1
+          }
+
+          if ! call_dahl seo-audit-request.json seo-audit-report.md; then
+            echo "::error::DAHL failed to return a usable report after three attempts."
             exit 1
           fi
 
-          if ! jq -er '
-            .choices[0].message.content
-            | strings
-            | select(length > 500)
-          ' response.json > seo-audit-report.md; then
-            echo "::error::DAHL returned no usable audit report."
-            exit 1
-          fi
+          validate_report() {
+            python3 - "$1" <<'PY'
+          import sys
+          from pathlib import Path
 
-          if ! grep -q '^# STRAYD SEO Manager Audit$' seo-audit-report.md; then
-            echo "::error::The report is missing its expected title."
-            exit 1
-          fi
+          path = Path(sys.argv[1])
+          text = path.read_text(encoding="utf-8").strip()
+          required = [
+              "# STRAYD SEO AUDIT",
+              "## Executive Summary",
+              "## Current Strengths",
+              "## SEO Problems and Risks",
+              "## Recommended Improvements",
+              "## Content and Keyword Opportunities",
+              "## Priority Action Plan",
+              "## Missing Information and Limitations",
+          ]
 
-          for heading in \
-            "## Executive Summary" \
-            "## Artist Branding and Naming" \
-            "## Website and Music Discovery SEO" \
-            "## Metadata, Links and Release Accuracy" \
-            "## Recommended Improvements" \
-            "## Limitations"
-          do
-            if ! grep -Fq "$heading" seo-audit-report.md; then
-              echo "::error::The report is incomplete. Missing section: $heading"
+          missing = [heading for heading in required if heading not in text]
+          if missing:
+              for heading in missing:
+                  print(f"Missing section: {heading}")
+              sys.exit(1)
+
+          if text.splitlines()[-1].strip() != "AUDIT COMPLETE":
+              print("Report does not end with AUDIT COMPLETE.")
+              sys.exit(1)
+
+          if len(text) < 1500:
+              print("Report is unexpectedly short.")
+              sys.exit(1)
+
+          print("Report completeness checks passed.")
+          PY
+          }
+
+          if ! validate_report seo-audit-report.md; then
+            echo "First report failed validation. Asking DAHL to repair it."
+
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = Path("seo-audit-report.md").read_text(encoding="utf-8")
+          repair_prompt = """Repair the SEO audit below.
+
+          Return the COMPLETE report, not a summary and not an explanation of changes.
+          Preserve useful analysis, fill every required section, and do not invent evidence.
+          Use these exact headings:
+          # STRAYD SEO AUDIT
+          ## Executive Summary
+          ## Current Strengths
+          ## SEO Problems and Risks
+          ## Recommended Improvements
+          ## Content and Keyword Opportunities
+          ## Priority Action Plan
+          ## Missing Information and Limitations
+
+          The final nonblank line must be exactly:
+          AUDIT COMPLETE
+
+          If a fact cannot be verified from the supplied material, say so.
+          
+          REPORT TO REPAIR:
+          """ + report
+
+          payload = {
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "user", "content": repair_prompt}],
+              "temperature": 0.1,
+              "max_tokens": 12000
+          }
+
+          Path("seo-audit-repair-request.json").write_text(
+              json.dumps(payload, ensure_ascii=False),
+              encoding="utf-8"
+          )
+          PY
+
+            if ! call_dahl seo-audit-repair-request.json seo-audit-repaired.md; then
+              echo "::error::DAHL could not repair the incomplete report."
               exit 1
             fi
-          done
 
-          LAST_LINE="$(sed '/^[[:space:]]*$/d' seo-audit-report.md | tail -n 1)"
+            if ! validate_report seo-audit-repaired.md; then
+              echo "::error::The repaired report still failed completeness checks."
+              exit 1
+            fi
 
-          if [ "$LAST_LINE" != "AUDIT COMPLETE" ]; then
-            echo "::error::The report appears incomplete: final marker is missing."
-            echo "The report will not be committed."
-            exit 1
+            mv seo-audit-repaired.md seo-audit-report.md
           fi
 
-          echo "All required report sections and completion marker are present."
+          echo "SEO audit report is complete."
 
-      - name: Save SEO audit report
+      - name: Save audit report
         run: |
           set -euo pipefail
 
-          mkdir -p reports
-
-          REPORT_PATH="reports/seo-audit-$(date -u +%Y-%m-%d).md"
+          REPORT_DATE="$(date -u +%F)"
+          REPORT_PATH="reports/seo-audit-${REPORT_DATE}.md"
 
           cp seo-audit-report.md "$REPORT_PATH"
 
-          echo "Report saved to $REPORT_PATH."
+          {
+            echo ""
+            echo "---"
+            echo ""
+            echo "Audit generated: ${REPORT_DATE} (UTC)"
+          } >> "$REPORT_PATH"
 
-      - name: Commit SEO audit report
+          # Keep the completion marker as the final nonblank line.
+          python3 - "$REPORT_PATH" <<'PY'
+          import sys
+          from pathlib import Path
+
+          path = Path(sys.argv[1])
+          lines = path.read_text(encoding="utf-8").splitlines()
+          lines = [line for line in lines if line.strip() != "AUDIT COMPLETE"]
+          while lines and not lines[-1].strip():
+              lines.pop()
+          lines.append("")
+          lines.append("AUDIT COMPLETE")
+          path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
+
+          echo "Report saved to ${REPORT_PATH}."
+
+      - name: Commit audit report
         run: |
           set -euo pipefail
 
@@ -250,10 +325,7 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "No report changes to commit."
-            exit 0
+          else
+            git commit -m "Add STRAYD SEO audit report"
+            git push
           fi
-
-          git commit -m "Add STRAYD SEO Manager audit"
-          git push
-
-          echo "SEO audit report committed successfully."

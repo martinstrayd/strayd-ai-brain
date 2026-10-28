@@ -4,7 +4,6 @@ name: Strayd Content Director
 on:
   workflow_dispatch:
   schedule:
-    # Mondays at 00:00 UTC = 07:00 Thailand time
     - cron: "0 0 * * 1"
 
 permissions:
@@ -30,15 +29,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [ ! -s brand-profile.md ]; then
+          test -s brand-profile.md || {
             echo "ERROR: brand-profile.md is missing or empty."
             exit 1
-          fi
+          }
 
-          if [ -z "${DAHL_API_KEY:-}" ]; then
+          test -n "${DAHL_API_KEY:-}" || {
             echo "ERROR: DAHL_API_KEY secret is missing."
             exit 1
-          fi
+          }
 
       - name: Generate calendar with Dahl and MiniMax
         shell: bash
@@ -53,21 +52,21 @@ jobs:
               messages: [
                 {
                   role: "system",
-                  content: "You are the STRAYD Content Director. Use only facts supported by the supplied brand profile. Never invent songs, releases, dates, history, achievements, products, URLs or claims. Return valid JSON only, without Markdown fences."
+                  content: "You are the STRAYD Content Director. Use only facts supported by the supplied brand profile. Never invent songs, releases, dates, history, achievements, products or URLs. Create practical, publishable social content. Return valid JSON only."
                 },
                 {
                   role: "user",
                   content: (
                     "BRAND PROFILE:\n\n" + $profile +
-                    "\n\nCreate a complete Monday-to-Sunday social content calendar." +
-                    "\nReturn one JSON object containing a days array of exactly seven objects." +
-                    "\nEach object must contain these string fields: day, x_post, facebook_post, youtube_community_post, image_prompt, short_video_idea." +
-                    "\nDay names must be Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, in that order." +
-                    "\nWrite actual draft text for X, Facebook and YouTube Community. Also provide an image prompt and a practical short-video idea for each day." +
-                    "\nRotate thoughtfully between Weekly Song Journey, Fantasy7, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Cool Hot Sauce and Creative Persistence where supported by the profile." +
-                    "\nUse strayd.com when appropriate. Do not invent URLs or unsupported facts." +
-                    "\nUse engaging hooks and relevant calls to action. Avoid generic filler." +
-                    "\nReturn JSON with this structure: {\"days\":[{\"day\":\"Monday\",\"x_post\":\"...\",\"facebook_post\":\"...\",\"youtube_community_post\":\"...\",\"image_prompt\":\"...\",\"short_video_idea\":\"...\"}]}"
+                    "\n\nCreate a complete seven-day calendar, Monday through Sunday." +
+                    "\nReturn one JSON object with a days array containing exactly seven objects." +
+                    "\nEach object must have these six string fields: day, x_post, facebook_post, youtube_community_post, image_prompt, short_video_idea." +
+                    "\nUse the day names Monday, Tuesday, Wednesday, Thursday, Friday, Saturday and Sunday in that order." +
+                    "\nCreate actual post drafts for X, Facebook and YouTube Community, plus one image prompt and one short-video idea per day." +
+                    "\nRotate between Weekly Song Journey, Fantasy7, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Cool Hot Sauce and Creative Persistence where supported by the brand profile." +
+                    "\nUse strayd.com when appropriate. Do not invent URLs or facts." +
+                    "\nWrite with strong hooks, natural language and useful calls to action. Avoid generic filler." +
+                    "\nReturn JSON only, with no Markdown fences."
                   )
                 }
               ],
@@ -78,7 +77,7 @@ jobs:
           echo "Calling Dahl inference API..."
 
           curl --fail-with-body --silent --show-error \
-            --retry 2 --retry-delay 2 \
+            --retry 3 --retry-delay 3 --retry-all-errors \
             --connect-timeout 20 --max-time 180 \
             https://inference.dahl.global/v1/chat/completions \
             -H "Authorization: Bearer ${DAHL_API_KEY}" \
@@ -101,56 +100,63 @@ jobs:
 
           raw = Path("generated-raw.txt").read_text(encoding="utf-8").strip()
 
-          # Remove optional Markdown code fences.
-          raw = re.sub(r"^\s*```(?:json)?\s*", "", raw, flags=re.IGNORECASE)
+          raw = re.sub(
+              r"^\s*```(?:json)?\s*", "", raw, flags=re.IGNORECASE
+          )
           raw = re.sub(r"\s*```\s*$", "", raw)
 
           try:
               data = json.loads(raw)
           except json.JSONDecodeError:
-              # Also tolerate explanatory text surrounding one JSON object.
               start = raw.find("{")
               end = raw.rfind("}")
               if start < 0 or end <= start:
-                  raise SystemExit("ERROR: No valid JSON object in AI response.")
+                  raise SystemExit("ERROR: No JSON object in AI response.")
               try:
                   data = json.loads(raw[start:end + 1])
               except json.JSONDecodeError as exc:
                   raise SystemExit(f"ERROR: Invalid AI JSON: {exc}")
 
-          expected_days = [
+          expected = [
               "Monday", "Tuesday", "Wednesday", "Thursday",
               "Friday", "Saturday", "Sunday"
           ]
+
           fields = [
-              "x_post", "facebook_post", "youtube_community_post",
-              "image_prompt", "short_video_idea"
+              "x_post",
+              "facebook_post",
+              "youtube_community_post",
+              "image_prompt",
+              "short_video_idea"
           ]
 
-          if not isinstance(data, dict) or not isinstance(data.get("days"), list):
-              raise SystemExit("ERROR: Response must contain a days array.")
+          if not isinstance(data, dict):
+              raise SystemExit("ERROR: Response must be a JSON object.")
 
-          if len(data["days"]) != 7:
+          days = data.get("days")
+          if not isinstance(days, list) or len(days) != 7:
               raise SystemExit("ERROR: Expected exactly seven days.")
 
-          for index, day in enumerate(data["days"]):
-              if not isinstance(day, dict) or day.get("day") != expected_days[index]:
-                  raise SystemExit(f"ERROR: Incorrect day at position {index + 1}.")
+          for i, day in enumerate(days):
+              if not isinstance(day, dict) or day.get("day") != expected[i]:
+                  raise SystemExit(f"ERROR: Incorrect day at position {i + 1}.")
+
               for field in fields:
                   value = day.get(field)
                   if not isinstance(value, str) or not value.strip():
                       raise SystemExit(
-                          f"ERROR: Missing or empty {field} for {expected_days[index]}."
+                          f"ERROR: Missing {field} for {expected[i]}."
                       )
 
           Path("generated.json").write_text(
               json.dumps(data, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8"
           )
-          print("Validated seven days and all five content types.")
+
+          print("SUCCESS: Seven days and all five content types validated.")
           PY
 
-      - name: Create unique weekly and daily files
+      - name: Create matching weekly and daily Markdown files
         shell: bash
         env:
           RUN_ID: ${{ github.run_id }}
@@ -164,98 +170,134 @@ jobs:
           from datetime import date, timedelta
           from pathlib import Path
 
-          data = json.loads(Path("generated.json").read_text(encoding="utf-8"))
+          data = json.loads(
+              Path("generated.json").read_text(encoding="utf-8")
+          )
 
           today = date.today()
-          week_start = today - timedelta(days=today.weekday())
+          monday = today - timedelta(days=today.weekday())
+
           run_id = os.environ["RUN_ID"]
           attempt = os.environ["RUN_ATTEMPT"]
 
-          weekly_dir = Path("social-posts/weekly")
-          daily_dir = Path("social-posts/daily")
-          approved_dir = Path("social-posts/approved")
-          published_dir = Path("social-posts/published")
+          root = Path("social-posts")
+          weekly_dir = root / "weekly"
+          daily_dir = root / "daily"
+          approved_dir = root / "approved"
+          published_dir = root / "published"
 
-          for folder in (weekly_dir, daily_dir, approved_dir, published_dir):
+          for folder in (
+              weekly_dir, daily_dir, approved_dir, published_dir
+          ):
               folder.mkdir(parents=True, exist_ok=True)
 
           fields = [
               ("X POST", "x_post"),
               ("FACEBOOK POST", "facebook_post"),
               ("YOUTUBE COMMUNITY POST", "youtube_community_post"),
-              ("IMAGE GENERATION PROMPT", "image_prompt"),
+              ("IMAGE PROMPT", "image_prompt"),
               ("SHORT VIDEO IDEA", "short_video_idea"),
           ]
 
-          def section(title, content):
-              return f"## {title}\n\n{content.strip()}\n"
-
-          calendar = [
-              "# STRAYD Weekly Content Calendar",
-              "",
-              f"- Week starting: {week_start.isoformat()} (UTC)",
-              f"- Generation run: {run_id}, attempt {attempt}",
-              "- Status: DRAFT — review before publishing",
-              "",
-          ]
-
-          for index, day in enumerate(data["days"]):
-              post_date = week_start + timedelta(days=index)
-              slug = day["day"].lower()
-              daily_file = daily_dir / (
-                  f"{post_date.isoformat()}-{slug}-run-{run_id}-attempt-{attempt}.txt"
-              )
-
-              parts = [
-                  "STRAYD CONTENT DIRECTOR",
-                  f"Date: {post_date.isoformat()} (UTC)",
-                  f"Day: {day['day']}",
-                  f"Generation run: {run_id}, attempt {attempt}",
-                  "Status: DRAFT — NOT APPROVED FOR PUBLISHING",
+          def render_post(day, post_date):
+              lines = [
+                  f"# {day['day']} — {post_date.strftime('%d %B %Y')}",
+                  "",
+                  "**STRAYD CONTENT DIRECTOR**",
+                  "",
+                  f"**Date:** {post_date.isoformat()}",
+                  f"**Status:** DRAFT — NOT APPROVED FOR PUBLISHING",
+                  f"**Run:** {run_id} · Attempt {attempt}",
+                  "",
+                  "---",
                   "",
               ]
 
               for title, key in fields:
-                  parts.extend([title, "=" * len(title), day[key].strip(), ""])
+                  lines.extend([
+                      f"## {title}",
+                      "",
+                      day[key].strip(),
+                      "",
+                      "---",
+                      "",
+                  ])
 
-              # Exclusive creation: never overwrite an existing file.
+              return "\n".join(lines).rstrip() + "\n"
+
+          weekly_lines = [
+              "# STRAYD — Weekly Content Calendar",
+              "",
+              f"**Week beginning:** {monday.strftime('%d %B %Y')}",
+              f"**Generation run:** {run_id} · Attempt {attempt}",
+              "**Status:** DRAFT — REVIEW BEFORE PUBLISHING",
+              "",
+              "This calendar contains seven daily drafts. Each daily file "
+              "uses the same headings and section order.",
+              "",
+              "---",
+              "",
+          ]
+
+          for index, day in enumerate(data["days"]):
+              post_date = monday + timedelta(days=index)
+              slug = day["day"].lower()
+
+              daily_file = daily_dir / (
+                  f"{post_date.isoformat()}-{slug}"
+                  f"-run-{run_id}-attempt-{attempt}.md"
+              )
+
+              # Exclusive creation prevents overwriting previous drafts.
               with daily_file.open("x", encoding="utf-8") as handle:
-                  handle.write("\n".join(parts) + "\n")
+                  handle.write(render_post(day, post_date))
 
-              calendar.extend([f"## {day['day']}", ""])
+              weekly_lines.extend([
+                  f"# {day['day']} — {post_date.strftime('%d %B %Y')}",
+                  "",
+              ])
+
               for title, key in fields:
-                  calendar.extend([section(title, day[key]), ""])
+                  weekly_lines.extend([
+                      f"## {title}",
+                      "",
+                      day[key].strip(),
+                      "",
+                      "---",
+                      "",
+                  ])
 
               print(f"Created {daily_file}")
 
           weekly_file = weekly_dir / (
-              f"{week_start.isoformat()}-calendar-run-{run_id}-attempt-{attempt}.md"
+              f"{monday.isoformat()}-calendar"
+              f"-run-{run_id}-attempt-{attempt}.md"
           )
+
           with weekly_file.open("x", encoding="utf-8") as handle:
-              handle.write("\n".join(calendar) + "\n")
+              handle.write("\n".join(weekly_lines).rstrip() + "\n")
 
           print(f"Created {weekly_file}")
 
-          readme = Path("social-posts/README.md")
-          readme.write_text(
+          (root / "README.md").write_text(
               "# STRAYD Social Content Library\n\n"
-              "Generated by the Strayd Content Director GitHub Action.\n\n"
               "## Folders\n\n"
-              "- `weekly/`: weekly Markdown calendars.\n"
-              "- `daily/`: individual TXT files containing five content types.\n"
-              "- `approved/`: reserved for explicitly approved content.\n"
-              "- `published/`: reserved for confirmed publishing records.\n\n"
-              "## Important\n\n"
-              "Generated content is draft material. It is not automatically "
-              "approved or published. Unique run IDs prevent later runs from "
-              "overwriting earlier generated files.\n",
+              "- `weekly/` — complete weekly Markdown calendars.\n"
+              "- `daily/` — individual daily Markdown files.\n"
+              "- `approved/` — reserved for explicitly approved posts.\n"
+              "- `published/` — reserved for confirmed publishing records.\n\n"
+              "Weekly and daily files use matching headings and section order. "
+              "Every generation run has unique filenames to preserve earlier "
+              "drafts.\n\n"
+              "**Important:** Generation does not approve or publish posts.\n",
               encoding="utf-8"
           )
 
           (approved_dir / "README.md").write_text(
-              "# Approved Posts\n\nReserved for content explicitly approved for publishing.\n",
+              "# Approved Posts\n\nReserved for explicitly approved content.\n",
               encoding="utf-8"
           )
+
           (published_dir / "README.md").write_text(
               "# Published Records\n\nReserved for confirmed publishing records.\n",
               encoding="utf-8"
@@ -276,12 +318,11 @@ jobs:
           git add social-posts/
 
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "No new files to commit."
             exit 0
           fi
 
-          git commit -m "Generate STRAYD social content run $GITHUB_RUN_ID"
-
+          git commit -m "Generate STRAYD social content run ${GITHUB_RUN_ID}"
           git push origin "HEAD:${TARGET_BRANCH}"
 
-          echo "Generated files committed to ${TARGET_BRANCH}."
+          echo "SUCCESS: Generated content committed to ${TARGET_BRANCH}."

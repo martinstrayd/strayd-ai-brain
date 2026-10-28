@@ -14,10 +14,10 @@ concurrency:
 jobs:
   character-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Check required files
@@ -25,183 +25,228 @@ jobs:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           set -euo pipefail
-
-          if [ -z "${DAHL_API_KEY:-}" ]; then
-            echo "::error::DAHL_API_KEY is missing from repository secrets."
+          test -n "${DAHL_API_KEY:-}" || {
+            echo "::error::DAHL_API_KEY secret is missing."
             exit 1
-          fi
+          }
 
           for file in \
-            "agents/character-manager.agent.md" \
-            "brand-profile.md" \
-            "martinstrayd.md" \
-            "suzukimusic.md"
+            agents/character-manager.agent.md \
+            brand-profile.md \
+            martinstrayd.md \
+            suzukimusic.md
           do
-            if [ ! -s "$file" ]; then
-              echo "::error::Required file is missing or empty: $file"
+            test -f "$file" || {
+              echo "::error::Missing required file: $file"
               exit 1
-            fi
+            }
           done
 
-          command -v jq
-          command -v curl
+          mkdir -p reports
 
-          echo "All required files are available."
-
-      - name: Prepare audit request
+      - name: Prepare character audit
         run: |
           set -euo pipefail
-
-          cat > audit-instructions.txt <<'EOF'
-          Review the STRAYD Character Manager agent instructions.
-
-          This is an audit, not a request to rewrite the agent instructions.
-
-          Use only the supplied source files. Do not invent character facts,
-          appearances, personality traits, roles, relationships, or history.
-
-          Check for:
-          1. Accuracy and consistency of character identities.
-          2. Consistency with the brand profile and artist information.
-          3. Clear rules for preserving supplied character reference images.
-          4. Risk of inventing visual or biographical details.
-          5. Contradictions, ambiguous instructions, or missing safeguards.
-          6. Practical improvements that would make the agent more reliable.
-
-          Distinguish direct evidence from possible issues and recommendations.
-          Cite the relevant file and quote short phrases where useful.
-          Do not claim to have inspected images that were not supplied.
-          Do not change any source files.
-
-          Return a complete Markdown report using these sections:
-
-          # STRAYD Character Manager Audit
-          ## Executive Summary
-          ## Responsibilities and Scope
-          ## Character and Brand Consistency
-          ## Visual Reference and Identity Safeguards
-          ## Contradictions and Ambiguities
-          ## Missing Instructions
-          ## Recommended Improvements
-          ## Limitations
-          EOF
-
           {
-            echo "# CHARACTER MANAGER INSTRUCTIONS"
+            printf '%s\n' \
+              '# STRAYD CHARACTER MANAGER AUDIT' \
+              '' \
+              'Audit character identity, descriptions, visual consistency, and image-generation guidance using only the supplied files. Clearly distinguish documented facts from omissions or possible inconsistencies. Do not claim to have visually inspected reference images unless the images were actually supplied as audit input. If something cannot be verified, state that limitation.' \
+              '' \
+              'Use these exact headings:' \
+              '## Executive Summary' \
+              '## Character Identity and Role Accuracy' \
+              '## Brand and Visual Consistency' \
+              '## Knowledge Gaps and Conflicts' \
+              '## Recommended Improvements' \
+              '## Limitations' \
+              '' \
+              'Be specific and practical. Do not invent character details. Finish the report with this exact final nonblank line:' \
+              'AUDIT COMPLETE' \
+              '' \
+              '## Character Manager Instructions'
             cat agents/character-manager.agent.md
-            echo
-            echo "# BRAND PROFILE"
+            printf '\n\n## Brand Profile\n'
             cat brand-profile.md
-            echo
-            echo "# MARTIN STRAYD INFORMATION"
+            printf '\n\n## Martin Strayd Profile\n'
             cat martinstrayd.md
-            echo
-            echo "# SUZUKI MUSIC INFORMATION"
+            printf '\n\n## Suzuki Profile\n'
             cat suzukimusic.md
-          } > character-audit-source.txt
+          } > character-audit-source.md
 
-          echo "Audit instructions and source material prepared."
-          echo "Source size: $(wc -c < character-audit-source.txt) bytes."
+          echo "Character audit source prepared: $(wc -c < character-audit-source.md) bytes."
 
-      - name: Run audit through DAHL
+      - name: Run and validate character audit
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           set -euo pipefail
+          export API_URL="https://inference.dahl.global/v1/chat/completions"
+          export MODEL="MiniMaxAI/MiniMax-M2.7"
 
-          jq -n \
-            --rawfile instructions audit-instructions.txt \
-            --rawfile sources character-audit-source.txt \
-            '{
-              model: "MiniMaxAI/MiniMax-M2.7",
-              messages: [
-                {
-                  role: "system",
-                  content: "You are a careful STRAYD Character Manager auditor. Evaluate the supplied instructions against the supplied reference files. Never invent facts or claim to have inspected unavailable materials."
-                },
-                {
-                  role: "user",
-                  content: ($instructions + "\n\nSOURCE MATERIAL:\n\n" + $sources)
-                }
-              ]
-            }' > request.json
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
 
-          ATTEMPT=1
-          SUCCESS=0
+          payload = {
+              "model": os.environ["MODEL"],
+              "messages": [{
+                  "role": "user",
+                  "content": Path("character-audit-source.md").read_text(encoding="utf-8")
+              }],
+              "temperature": 0.2,
+              "max_tokens": 12000
+          }
+          Path("character-request.json").write_text(
+              json.dumps(payload, ensure_ascii=False), encoding="utf-8"
+          )
+          PY
 
-          while [ "$ATTEMPT" -le 3 ]; do
-            echo "DAHL request attempt ${ATTEMPT}/3..."
+          call_dahl() {
+            local request="$1"
+            local output="$2"
+            local attempt=1
 
-            if curl \
-              --silent \
-              --show-error \
-              --fail-with-body \
-              --connect-timeout 30 \
-              --max-time 300 \
-              --retry 2 \
-              --retry-connrefused \
-              --retry-delay 5 \
-              https://inference.dahl.global/v1/chat/completions \
-              -H "Authorization: Bearer ${DAHL_API_KEY}" \
-              -H "Content-Type: application/json" \
-              -d @request.json \
-              -o response.json
-            then
-              SUCCESS=1
-              break
-            fi
+            while [ "$attempt" -le 3 ]; do
+              echo "DAHL request attempt ${attempt}/3..."
 
-            if [ "$ATTEMPT" -lt 3 ]; then
-              echo "Request failed. Waiting before retrying."
-              sleep $((ATTEMPT * 15))
-            fi
+              if curl --silent --show-error --fail-with-body \
+                --connect-timeout 30 --max-time 300 \
+                --request POST "$API_URL" \
+                --header "Authorization: Bearer ${DAHL_API_KEY}" \
+                --header "Content-Type: application/json" \
+                --data-binary "@${request}" \
+                --output "${output}.response.json"
+              then
+                if python3 - "${output}.response.json" "$output" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
 
-            ATTEMPT=$((ATTEMPT + 1))
-          done
+          try:
+              data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+              content = data["choices"][0]["message"]["content"]
+              if not isinstance(content, str) or not content.strip():
+                  raise ValueError("Empty response content")
+              Path(sys.argv[2]).write_text(content.strip() + "\n", encoding="utf-8")
+          except Exception as exc:
+              print(f"Invalid response: {exc}")
+              sys.exit(1)
+          PY
+                then
+                  return 0
+                fi
+              fi
 
-          if [ "$SUCCESS" -ne 1 ]; then
-            echo "::error::DAHL request failed after retries."
+              if [ "$attempt" -lt 3 ]; then sleep $((attempt * 10)); fi
+              attempt=$((attempt + 1))
+            done
+
+            return 1
+          }
+
+          validate_report() {
+            python3 - "$1" <<'PY'
+          import sys
+          from pathlib import Path
+
+          text = Path(sys.argv[1]).read_text(encoding="utf-8").strip()
+          required = [
+              "# STRAYD CHARACTER MANAGER AUDIT",
+              "## Executive Summary",
+              "## Character Identity and Role Accuracy",
+              "## Brand and Visual Consistency",
+              "## Knowledge Gaps and Conflicts",
+              "## Recommended Improvements",
+              "## Limitations",
+          ]
+          missing = [heading for heading in required if heading not in text]
+          for heading in missing:
+              print(f"Missing section: {heading}")
+          if not text or text.splitlines()[-1].strip() != "AUDIT COMPLETE":
+              print("Missing final AUDIT COMPLETE marker.")
+              missing.append("AUDIT COMPLETE")
+          if len(text) < 1000:
+              print("Report is unexpectedly short.")
+              missing.append("minimum report length")
+          if missing:
+              sys.exit(1)
+          print("Character report passed all completeness checks.")
+          PY
+          }
+
+          if ! call_dahl character-request.json character-report.md; then
+            echo "::error::DAHL did not return a usable character audit after three attempts."
             exit 1
           fi
 
-          if ! jq -er '
-            .choices[0].message.content
-            | strings
-            | select(length > 100)
-          ' response.json > character-audit-report.md; then
-            echo "::error::DAHL returned no usable audit report."
-            exit 1
+          if ! validate_report character-report.md; then
+            echo "Requesting a complete repaired character report."
+
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = Path("character-report.md").read_text(encoding="utf-8")
+          prompt = """Repair the following STRAYD character audit.
+          Return the COMPLETE report, not a summary.
+          Use these exact headings:
+          # STRAYD CHARACTER MANAGER AUDIT
+          ## Executive Summary
+          ## Character Identity and Role Accuracy
+          ## Brand and Visual Consistency
+          ## Knowledge Gaps and Conflicts
+          ## Recommended Improvements
+          ## Limitations
+
+          Use only the evidence in the report and do not invent facts.
+          Preserve useful analysis. Clearly state what cannot be verified.
+          The final nonblank line must be exactly:
+          AUDIT COMPLETE
+
+          REPORT TO REPAIR:
+          """ + report
+
+          payload = {
+              "model": "MiniMaxAI/MiniMax-M2.7",
+              "messages": [{"role": "user", "content": prompt}],
+              "temperature": 0.1,
+              "max_tokens": 12000
+          }
+          Path("character-repair-request.json").write_text(
+              json.dumps(payload, ensure_ascii=False), encoding="utf-8"
+          )
+          PY
+
+            if ! call_dahl character-repair-request.json character-repaired.md; then
+              echo "::error::DAHL could not repair the character report."
+              exit 1
+            fi
+
+            if ! validate_report character-repaired.md; then
+              echo "::error::Character report still incomplete after repair. Nothing was committed."
+              exit 1
+            fi
+
+            mv character-repaired.md character-report.md
           fi
 
-          echo "Character Manager audit report generated."
-
-      - name: Save audit report
+      - name: Save and commit complete report
         run: |
           set -euo pipefail
-
-          mkdir -p reports
-
-          REPORT_PATH="reports/character-audit-$(date -u +%Y-%m-%d).md"
-
-          cp character-audit-report.md "$REPORT_PATH"
-
-          echo "Report saved to $REPORT_PATH."
-
-      - name: Commit audit report
-        run: |
-          set -euo pipefail
+          REPORT_PATH="reports/character-audit-$(date -u +%F).md"
+          cp character-report.md "$REPORT_PATH"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add reports/
+          git add "$REPORT_PATH"
 
           if git diff --cached --quiet; then
             echo "No report changes to commit."
-            exit 0
+          else
+            git commit -m "Add STRAYD Character Manager audit"
+            git push
           fi
 
-          git commit -m "Add STRAYD Character Manager audit"
-          git push
-
-          echo "Character Manager audit saved successfully."
+          echo "Complete character audit saved to $REPORT_PATH"

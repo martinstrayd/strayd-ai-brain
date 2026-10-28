@@ -1,4 +1,3 @@
-
 name: STRAYD Brand Operations
 
 on:
@@ -15,7 +14,7 @@ jobs:
   brand-operations-audit:
     name: Audit STRAYD operations and report progress
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     steps:
       - name: Check out repository
@@ -51,15 +50,14 @@ jobs:
           done
 
           if [[ "$missing" -ne 0 ]]; then
-            echo "Required files are missing. Fix the paths before running this workflow."
+            echo "Required files are missing. Fix the paths before running."
             exit 1
           fi
 
-      - name: Run Brand Operations audit with DAHL
+      - name: Run Brand Operations audit with automatic model fallback
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
           DAHL_API_URL: https://inference.dahl.global/v1/chat/completions
-          DAHL_MODEL: MiniMaxAI/MiniMax-M2.7
         shell: bash
         run: |
           set -euo pipefail
@@ -88,7 +86,12 @@ jobs:
 
           API_URL = os.environ["DAHL_API_URL"]
           API_KEY = os.environ["DAHL_API_KEY"]
-          MODEL = os.environ["DAHL_MODEL"]
+
+          MODELS = [
+              "MiniMaxAI/MiniMax-M2.7",
+              "deepseek-ai/DeepSeek-V4-Flash-0731",
+              "zai-org/GLM-5.3-Flash",
+          ]
 
           source_files = [
               "agents/brand-operations.agent.md",
@@ -159,13 +162,13 @@ jobs:
           sales, account access, or task completion.
 
           Distinguish clearly between:
-          - verified evidence from the supplied repository files;
+          - verified evidence from supplied repository files;
           - reasonable recommendations;
           - items requiring a live-site check or external account access;
           - items awaiting user approval.
 
-          Do not assume that all archive entries are unique released songs.
-          Do not assume all planned tasks are complete just because an
+          Do not assume all archive entries are unique released songs.
+          Do not assume planned tasks are complete merely because an
           instruction file describes them.
           Preserve the brand distinction:
           STRAYD is the main artist identity;
@@ -210,14 +213,14 @@ jobs:
 
           For every task you can assess, assign exactly one status:
           Completed, In progress, Blocked, Awaiting approval, or Not started.
-          Include evidence or state explicitly that evidence was not found.
+          Include evidence or explicitly state that evidence was not found.
           Do not label something Completed merely because it is planned.
 
           In section 4, identify what cannot be verified from repository
           files alone, including external accounts, live website state,
           distributor status, and licensing submissions where applicable.
 
-          In section 5, list actions that require explicit approval before
+          In section 5, list actions requiring explicit approval before
           spending money, subscribing, publishing, submitting applications,
           signing agreements, or changing music distribution.
 
@@ -231,62 +234,96 @@ jobs:
           """
 
           def call_dahl(messages, label):
-              payload = {
-                  "model": MODEL,
-                  "messages": messages,
-                  "temperature": 0.2,
-                  "max_tokens": 8000,
-              }
+              last_error = "No request attempted"
 
-              body = json.dumps(payload).encode("utf-8")
-              request = urllib.request.Request(
-                  API_URL,
-                  data=body,
-                  headers={
-                      "Authorization": f"Bearer {API_KEY}",
-                      "Content-Type": "application/json",
-                  },
-                  method="POST",
-              )
+              for model in MODELS:
+                  print(f"{label}: trying model {model}")
 
-              last_error = None
+                  for attempt in range(1, 4):
+                      payload = {
+                          "model": model,
+                          "messages": messages,
+                          "temperature": 0.2,
+                          "max_tokens": 8000,
+                      }
 
-              for attempt in range(1, 4):
-                  try:
-                      print(f"{label}: request attempt {attempt}/3")
-                      with urllib.request.urlopen(
-                          request, timeout=180
-                      ) as response:
-                          data = json.loads(
-                              response.read().decode("utf-8")
-                          )
-
-                      content = (
-                          data.get("choices", [{}])[0]
-                          .get("message", {})
-                          .get("content", "")
+                      request = urllib.request.Request(
+                          API_URL,
+                          data=json.dumps(payload).encode("utf-8"),
+                          headers={
+                              "Authorization": f"Bearer {API_KEY}",
+                              "Content-Type": "application/json",
+                          },
+                          method="POST",
                       )
 
-                      if not isinstance(content, str) or not content.strip():
-                          raise ValueError("DAHL returned empty content")
+                      try:
+                          print(
+                              f"{label}: {model}, "
+                              f"attempt {attempt}/3"
+                          )
 
-                      return content.strip()
+                          with urllib.request.urlopen(
+                              request, timeout=180
+                          ) as response:
+                              data = json.loads(
+                                  response.read().decode("utf-8")
+                              )
 
-                  except (
-                      urllib.error.HTTPError,
-                      urllib.error.URLError,
-                      TimeoutError,
-                      ValueError,
-                      json.JSONDecodeError,
-                  ) as exc:
-                      last_error = exc
-                      print(f"{label}: {type(exc).__name__}: {exc}")
+                          content = (
+                              data.get("choices", [{}])[0]
+                              .get("message", {})
+                              .get("content", "")
+                          )
 
-                      if attempt < 3:
-                          time.sleep(attempt * 5)
+                          if not isinstance(content, str) or not content.strip():
+                              raise ValueError(
+                                  f"{model} returned empty content"
+                              )
+
+                          print(f"{label}: response received from {model}")
+                          return content.strip()
+
+                          # Do not print API keys or authorization headers.
+
+                      except urllib.error.HTTPError as exc:
+                          last_error = f"HTTP {exc.code} from {model}"
+                          print(f"{label}: {last_error}")
+
+                          if exc.code in (401, 403):
+                              raise RuntimeError(
+                                  f"{last_error}. Check DAHL_API_KEY "
+                                  "and account permissions. Stopping to "
+                                  "avoid futile fallback requests."
+                              ) from exc
+
+                          # Retry transient errors. For other HTTP errors,
+                          # move to the next model without repeated retries.
+                          if exc.code not in (
+                              408, 409, 425, 429, 500, 502, 503, 504
+                          ):
+                              break
+
+                          if attempt < 3:
+                              time.sleep(attempt * 5)
+
+                      except (
+                          urllib.error.URLError,
+                          TimeoutError,
+                          ValueError,
+                          json.JSONDecodeError,
+                      ) as exc:
+                          last_error = f"{type(exc).__name__} from {model}"
+                          print(f"{label}: {last_error}: {exc}")
+
+                          if attempt < 3:
+                              time.sleep(attempt * 5)
+
+                  print(f"{label}: moving to the next model.")
 
               raise RuntimeError(
-                  f"{label} failed after 3 attempts: {last_error}"
+                  f"{label} failed with all configured models. "
+                  f"Last error: {last_error}"
               )
 
           required_headings = [
@@ -303,16 +340,32 @@ jobs:
 
           def validate(report):
               errors = []
+              lines = report.strip().splitlines()
 
               for heading in required_headings:
                   if heading not in report:
                       errors.append(f"Missing heading: {heading}")
 
-              if report.strip().splitlines()[-1:] != ["AUDIT COMPLETE"]:
-                  errors.append("Final nonblank line is not AUDIT COMPLETE")
+              found_positions = [
+                  report.find(heading) for heading in required_headings
+              ]
+
+              if any(
+                  pos == -1 for pos in found_positions
+              ) or found_positions != sorted(found_positions):
+                  errors.append(
+                      "Required headings are not in the specified order"
+                  )
+
+              if not lines or lines[-1].strip() != "AUDIT COMPLETE":
+                  errors.append(
+                      "Final nonblank line is not AUDIT COMPLETE"
+                  )
 
               if len(report.strip()) < 1500:
-                  errors.append("Report is too short to be a useful audit")
+                  errors.append(
+                      "Report is too short to be a useful audit"
+                  )
 
               return errors
 
@@ -323,7 +376,6 @@ jobs:
 
           try:
               report = call_dahl(messages, "Initial audit")
-
               errors = validate(report)
 
               if errors:
@@ -333,11 +385,12 @@ jobs:
 
                   repair_prompt = (
                       "Repair the following STRAYD Brand Operations report. "
-                      "Keep its evidence-based findings, do not invent facts, "
-                      "include every required heading exactly as specified "
-                      "in the original request, and make the final nonblank "
-                      "line exactly AUDIT COMPLETE. Return only the complete "
-                      "revised Markdown report, not an explanation.\n\n"
+                      "Preserve evidence-based findings and do not invent "
+                      "facts. Include every required heading exactly as "
+                      "specified in the original request, in the correct "
+                      "order. Make the final nonblank line exactly "
+                      "AUDIT COMPLETE. Return only the complete revised "
+                      "Markdown report.\n\n"
                       "Validation errors:\n- "
                       + "\n- ".join(errors)
                       + "\n\nOriginal report:\n"
@@ -359,7 +412,8 @@ jobs:
                       for error in errors:
                           print(f"- {error}")
                       raise RuntimeError(
-                          "Report incomplete; it will not be saved or committed."
+                          "Report incomplete; it will not be saved "
+                          "or committed."
                       )
 
               REPORT_DIR.mkdir(parents=True, exist_ok=True)
@@ -371,10 +425,13 @@ jobs:
               print(f"Validated report saved to {REPORT_PATH}")
 
           except Exception as exc:
-              print(f"BRAND OPERATIONS AUDIT FAILED: {exc}", file=sys.stderr)
               print(
-                  "No progress report was committed. Check the DAHL service "
-                  "and workflow logs, then run the workflow again.",
+                  f"BRAND OPERATIONS AUDIT FAILED: {exc}",
+                  file=sys.stderr,
+              )
+              print(
+                  "No new progress report was committed. Check the "
+                  "workflow logs before retrying.",
                   file=sys.stderr,
               )
               sys.exit(1)
@@ -385,12 +442,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          report="$(find reports -maxdepth 1 -type f \
-            -name 'brand-operations-*.md' -printf '%T@ %p\n' \
-            | sort -nr | head -n 1 | cut -d' ' -f2-)"
+          report="reports/brand-operations-$(date -u +%Y-%m-%d).md"
 
-          if [[ -z "$report" || ! -f "$report" ]]; then
-            echo "No progress report was created."
+          if [[ ! -f "$report" ]]; then
+            echo "Today's validated progress report was not created."
             exit 1
           fi
 

@@ -29,17 +29,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [ ! -s brand-profile.md ]; then
+          test -s brand-profile.md || {
             echo "::error::brand-profile.md is missing or empty."
             exit 1
-          fi
+          }
 
-          if [ -z "${DAHL_API_KEY:-}" ]; then
-            echo "::error::GitHub secret DAHL_API_KEY is missing."
+          test -n "${DAHL_API_KEY:-}" || {
+            echo "::error::DAHL_API_KEY secret is missing."
             exit 1
-          fi
+          }
 
-          echo "Brand profile and API secret are configured."
+          echo "Configuration checks passed."
 
       - name: Generate weekly content with Dahl and MiniMax
         shell: bash
@@ -51,25 +51,25 @@ jobs:
           jq -n --rawfile profile brand-profile.md '
             {
               model: "MiniMaxAI/MiniMax-M2.7",
+              response_format: {"type": "json_object"},
               messages: [
                 {
                   role: "system",
-                  content: "You are the STRAYD Content Director. Use only facts supported by the supplied brand profile. Never invent songs, releases, dates, history, achievements, products, URLs or claims. Write practical, engaging social content. Return one valid JSON object only, with no Markdown fences."
+                  content: "You are the STRAYD Content Director. Use only facts supported by the supplied brand profile. Never invent songs, releases, dates, history, achievements, products or URLs. Create practical, engaging social content. Return valid JSON only."
                 },
                 {
                   role: "user",
                   content: (
                     "BRAND PROFILE:\n\n" + $profile +
                     "\n\nCreate a complete Monday-to-Sunday social content calendar." +
-                    "\nReturn one JSON object with a days array containing exactly seven objects." +
-                    "\nEach day object must contain six string fields: day, x_post, facebook_post, youtube_community_post, image_prompt, short_video_idea." +
+                    "\nReturn a JSON object with a days array containing exactly seven objects." +
+                    "\nEach object must have these six string fields: day, x_post, facebook_post, youtube_community_post, image_prompt, short_video_idea." +
                     "\nUse these exact day names in order: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday." +
-                    "\nWrite a publishable X post, a publishable Facebook post, a YouTube Community post, an image-generation prompt, and a practical short-video idea for each day." +
-                    "\nRotate between Weekly Song Journey, Fantasy7, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Cool Hot Sauce and Creative Persistence only where supported by the profile." +
-                    "\nUse strayd.com when appropriate. Do not invent URLs, facts, songs or releases." +
-                    "\nUse strong hooks, readable paragraphs and clear calls to action. Avoid generic filler and repeated posts." +
-                    "\nReturn valid JSON only. Escape quotation marks inside strings correctly. Do not put unescaped line breaks inside JSON strings." +
-                    "\nRequired shape: {\"days\":[{\"day\":\"Monday\",\"x_post\":\"...\",\"facebook_post\":\"...\",\"youtube_community_post\":\"...\",\"image_prompt\":\"...\",\"short_video_idea\":\"...\"}]}"
+                    "\nFor each day create a publishable X post, Facebook post, YouTube Community post, image-generation prompt and short-video idea." +
+                    "\nRotate between Weekly Song Journey, Fantasy7, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Cool Hot Sauce and Creative Persistence where supported by the profile." +
+                    "\nUse strayd.com when appropriate. Do not invent facts or URLs." +
+                    "\nUse strong opening hooks, readable paragraphs, varied ideas and clear calls to action." +
+                    "\nReturn JSON only, with no Markdown fences. Correctly escape quotation marks and newlines inside strings."
                   )
                 }
               ],
@@ -79,26 +79,62 @@ jobs:
 
           echo "Calling Dahl inference API..."
 
-          curl --fail-with-body --silent --show-error \
-            --retry 3 --retry-delay 3 --retry-all-errors \
-            --connect-timeout 20 --max-time 180 \
-            https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer ${DAHL_API_KEY}" \
-            -H "Content-Type: application/json" \
-            --data-binary @request.json \
-            -o response.json
+          success=0
+          for attempt in 1 2 3 4; do
+            echo "Generation attempt ${attempt}/4..."
 
-          jq -er '.choices[0].message.content | strings' \
-            response.json > generated-raw.txt
+            if curl --fail-with-body --silent --show-error \
+              --connect-timeout 20 --max-time 180 \
+              https://inference.dahl.global/v1/chat/completions \
+              -H "Authorization: Bearer ${DAHL_API_KEY}" \
+              -H "Content-Type: application/json" \
+              --data-binary @request.json \
+              -o response.json; then
+              success=1
+              break
+            fi
+
+            if [ "$attempt" -lt 4 ]; then
+              sleep $((attempt * 5))
+            fi
+          done
+
+          if [ "$success" -ne 1 ]; then
+            echo "::error::Dahl generation failed after four attempts."
+            exit 1
+          fi
+
+          if ! jq -e 'type == "object"' response.json >/dev/null 2>&1; then
+            echo "::error::Dahl returned an invalid API response."
+            echo "Safe response preview:"
+            head -c 1200 response.json || true
+            echo
+            exit 1
+          fi
+
+          if jq -e '.error' response.json >/dev/null 2>&1; then
+            echo "::error::Dahl returned an API error."
+            jq -c '.error' response.json | head -c 1200
+            echo
+            exit 1
+          fi
+
+          if ! jq -er '.choices[0].message.content | strings' \
+            response.json > generated-raw.txt; then
+            echo "::error::No text content found in the Dahl response."
+            echo "Top-level response keys:"
+            jq -r 'keys | join(", ")' response.json
+            exit 1
+          fi
 
           if [ ! -s generated-raw.txt ]; then
-            echo "::error::Dahl returned an empty content response."
+            echo "::error::Dahl returned empty content."
             exit 1
           fi
 
           echo "AI response received."
 
-      - name: Parse, repair if necessary, and validate content
+      - name: Parse, repair and validate content
         shell: bash
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
@@ -110,14 +146,15 @@ jobs:
           import os
           import re
           import subprocess
+          import time
           from pathlib import Path
 
-          EXPECTED_DAYS = [
+          DAYS = [
               "Monday", "Tuesday", "Wednesday", "Thursday",
               "Friday", "Saturday", "Sunday"
           ]
 
-          REQUIRED_FIELDS = [
+          FIELDS = [
               "x_post",
               "facebook_post",
               "youtube_community_post",
@@ -127,7 +164,6 @@ jobs:
 
           def parse_json(text):
               text = text.strip()
-
               text = re.sub(
                   r"^\s*```(?:json)?\s*",
                   "",
@@ -141,42 +177,34 @@ jobs:
               except json.JSONDecodeError:
                   start = text.find("{")
                   end = text.rfind("}")
-
-                  if start < 0 or end <= start:
-                      raise
-
-                  return json.loads(text[start:end + 1])
+                  if start >= 0 and end > start:
+                      return json.loads(text[start:end + 1])
+                  raise
 
           def validate(data):
               if not isinstance(data, dict):
-                  raise ValueError("Response must be a JSON object.")
+                  raise ValueError("Expected a JSON object.")
 
               days = data.get("days")
-
               if not isinstance(days, list) or len(days) != 7:
-                  raise ValueError(
-                      "Response must contain exactly seven days."
-                  )
+                  raise ValueError("Expected exactly seven days.")
 
               for index, day in enumerate(days):
-                  expected = EXPECTED_DAYS[index]
+                  expected = DAYS[index]
 
                   if not isinstance(day, dict):
-                      raise ValueError(
-                          f"{expected} must be an object."
-                      )
+                      raise ValueError(f"{expected} is not an object.")
 
                   if day.get("day") != expected:
                       raise ValueError(
                           f"Expected {expected} at position {index + 1}."
                       )
 
-                  for field in REQUIRED_FIELDS:
+                  for field in FIELDS:
                       value = day.get(field)
-
                       if not isinstance(value, str) or not value.strip():
                           raise ValueError(
-                              f"{expected} is missing a valid {field}."
+                              f"{expected}: missing or empty {field}."
                           )
 
               return data
@@ -189,42 +217,40 @@ jobs:
 
           try:
               data = validate(parse_json(raw))
-              print("Original response is valid and complete.")
+              print("Generation response is valid.")
 
-          except (json.JSONDecodeError, ValueError) as original_error:
-              print(f"Initial response needs repair: {original_error}")
-              print("Requesting one JSON repair from Dahl/MiniMax.")
+          except (json.JSONDecodeError, ValueError) as exc:
+              print(f"Initial response requires repair: {exc}")
+              print("Requesting one repair from Dahl/MiniMax.")
 
               repair_request = {
                   "model": "MiniMaxAI/MiniMax-M2.7",
+                  "response_format": {"type": "json_object"},
+                  "temperature": 0,
                   "messages": [
                       {
                           "role": "system",
                           "content": (
-                              "You repair malformed JSON. Return exactly "
-                              "one valid JSON object, without Markdown "
-                              "fences or explanations. Preserve all "
-                              "recoverable original content. Do not invent "
-                              "facts or fabricate missing posts. Properly "
-                              "escape quotes, backslashes and newlines."
+                              "Return one valid JSON object only. Repair "
+                              "JSON syntax while preserving the original "
+                              "content. Do not invent facts or fabricate "
+                              "missing posts. The object must contain a "
+                              "days array with seven objects and fields "
+                              "day, x_post, facebook_post, "
+                              "youtube_community_post, image_prompt and "
+                              "short_video_idea."
                           )
                       },
                       {
                           "role": "user",
                           "content": (
-                              "Repair this malformed response. It must "
-                              "contain a days array of exactly seven objects "
-                              "in Monday-to-Sunday order. Each object must "
-                              "have string fields day, x_post, facebook_post, "
-                              "youtube_community_post, image_prompt and "
-                              "short_video_idea. Preserve the content. "
-                              "If any required content is unrecoverable, "
-                              "do not invent it.\n\n"
-                              + raw
+                              "Repair this response into valid JSON. "
+                              "Preserve all recoverable content. Correctly "
+                              "escape quotes and newlines. Return JSON only."
+                              "\n\n" + raw
                           )
                       }
-                  ],
-                  "temperature": 0
+                  ]
               }
 
               Path("repair-request.json").write_text(
@@ -232,65 +258,104 @@ jobs:
                   encoding="utf-8"
               )
 
-              env = os.environ.copy()
-              api_key = env.get("DAHL_API_KEY", "")
-
-              if not api_key:
+              key = os.environ.get("DAHL_API_KEY", "")
+              if not key:
                   raise SystemExit(
-                      "ERROR: DAHL_API_KEY is unavailable for repair."
+                      "ERROR: DAHL_API_KEY is missing during repair."
                   )
 
-              command = [
-                  "curl",
-                  "--fail-with-body",
-                  "--silent",
-                  "--show-error",
-                  "--retry", "2",
-                  "--retry-delay", "3",
-                  "--retry-all-errors",
-                  "--connect-timeout", "20",
-                  "--max-time", "180",
-                  "https://inference.dahl.global/v1/chat/completions",
-                  "-H", f"Authorization: Bearer {api_key}",
-                  "-H", "Content-Type: application/json",
-                  "--data-binary", "@repair-request.json"
-              ]
+              response_text = ""
+              last_error = ""
 
-              result = subprocess.run(
-                  command,
-                  capture_output=True,
-                  text=True,
-                  env=env
-              )
+              for attempt in range(1, 4):
+                  result = subprocess.run(
+                      [
+                          "curl",
+                          "--fail-with-body",
+                          "--silent",
+                          "--show-error",
+                          "--connect-timeout", "20",
+                          "--max-time", "180",
+                          "https://inference.dahl.global/v1/chat/completions",
+                          "-H", f"Authorization: Bearer {key}",
+                          "-H", "Content-Type: application/json",
+                          "--data-binary", "@repair-request.json"
+                      ],
+                      capture_output=True,
+                      text=True
+                  )
 
-              if result.returncode != 0:
-                  detail = (result.stderr or result.stdout)[-2000:]
+                  response_text = result.stdout or ""
+
+                  if result.returncode != 0:
+                      last_error = (
+                          f"HTTP request failed (curl exit "
+                          f"{result.returncode}): "
+                          + (result.stderr or "")[-1000:]
+                          + "\nResponse preview: "
+                          + repr(response_text[:1000])
+                      )
+                  else:
+                      try:
+                          api_response = json.loads(response_text)
+
+                          if not isinstance(api_response, dict):
+                              raise ValueError(
+                                  "API response is not a JSON object."
+                              )
+
+                          if api_response.get("error"):
+                              raise ValueError(
+                                  "API error: " + json.dumps(
+                                      api_response["error"],
+                                      ensure_ascii=False
+                                  )[:1000]
+                              )
+
+                          choices = api_response.get("choices")
+                          if not isinstance(choices, list) or not choices:
+                              raise ValueError(
+                                  "No choices in API response. Keys: "
+                                  + str(list(api_response.keys()))
+                              )
+
+                          message = choices[0].get("message") or {}
+                          repaired_text = message.get("content")
+
+                          if not isinstance(repaired_text, str) or not repaired_text.strip():
+                              raise ValueError(
+                                  "Empty model content. Message keys: "
+                                  + str(list(message.keys()))
+                              )
+
+                          data = validate(parse_json(repaired_text))
+                          print("Repair succeeded; content is valid.")
+                          break
+
+                      except Exception as repair_exc:
+                          last_error = (
+                              f"Repair response invalid: {repair_exc}. "
+                              f"Response preview: {response_text[:1000]!r}"
+                          )
+
+                  if attempt < 3:
+                      print(
+                          f"Repair attempt {attempt} failed; retrying."
+                      )
+                      time.sleep(attempt * 4)
+
+              if data is None:
                   raise SystemExit(
-                      "ERROR: Repair API request failed. " + detail
+                      "ERROR: Could not recover valid content after "
+                      "three repair attempts. " + last_error
                   )
-
-              try:
-                  api_response = json.loads(result.stdout)
-                  repaired_text = (
-                      api_response["choices"][0]["message"]["content"]
-                  )
-
-                  data = validate(parse_json(repaired_text))
-
-              except Exception as repair_error:
-                  raise SystemExit(
-                      "ERROR: Repair failed or returned incomplete "
-                      f"content: {repair_error}"
-                  )
-
-              print("Repair succeeded and all content validated.")
 
           Path("generated.json").write_text(
               json.dumps(data, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8"
           )
 
-          print("SUCCESS: Seven days and all five content types validated.")
+          print("SUCCESS: Seven days and all five content fields validated.")
           PY
 
       - name: Create weekly and daily Markdown files
@@ -324,10 +389,7 @@ jobs:
           published_dir = root / "published"
 
           for folder in (
-              weekly_dir,
-              daily_dir,
-              approved_dir,
-              published_dir
+              weekly_dir, daily_dir, approved_dir, published_dir
           ):
               folder.mkdir(parents=True, exist_ok=True)
 
@@ -335,7 +397,7 @@ jobs:
               ("X POST", "x_post"),
               ("FACEBOOK POST", "facebook_post"),
               ("YOUTUBE COMMUNITY POST", "youtube_community_post"),
-              ("IMAGE PROMPT", "image_prompt"),
+              ("IMAGE GENERATION PROMPT", "image_prompt"),
               ("SHORT VIDEO IDEA", "short_video_idea")
           ]
 
@@ -347,7 +409,7 @@ jobs:
                   "",
                   f"**Date:** {post_date.isoformat()}",
                   "**Status:** DRAFT — NOT APPROVED FOR PUBLISHING",
-                  f"**Generation run:** {run_id} · Attempt {attempt}",
+                  f"**Run:** {run_id} · Attempt {attempt}",
                   "",
                   "---",
                   ""
@@ -387,7 +449,6 @@ jobs:
                   f"-run-{run_id}-attempt-{attempt}.md"
               )
 
-              # Exclusive creation: never overwrite previous drafts.
               with daily_file.open("x", encoding="utf-8") as handle:
                   handle.write(render_day(day, post_date))
 
@@ -423,40 +484,34 @@ jobs:
 
           print(f"Created {weekly_file}")
 
-          readme = root / "README.md"
-          readme.write_text(
+          (root / "README.md").write_text(
               "# STRAYD Social Content Library\n\n"
               "## Folders\n\n"
-              "- `weekly/` — complete weekly Markdown calendars.\n"
+              "- `weekly/` — weekly Markdown calendars.\n"
               "- `daily/` — individual daily Markdown files.\n"
-              "- `approved/` — reserved for explicitly approved posts.\n"
+              "- `approved/` — reserved for approved content.\n"
               "- `published/` — reserved for confirmed publishing records.\n\n"
-              "Weekly and daily files use consistent headings and section "
-              "order. Unique run IDs preserve earlier drafts.\n\n"
-              "**Important:** generated drafts are not automatically "
-              "approved or published.\n",
+              "Daily and weekly files use matching section headings and "
+              "section order. Unique run IDs preserve earlier drafts.\n\n"
+              "**Generated content is not automatically approved or published.**\n",
               encoding="utf-8"
           )
 
-          approved_readme = approved_dir / "README.md"
-          if not approved_readme.exists():
-              approved_readme.write_text(
-                  "# Approved Posts\n\n"
-                  "Reserved for explicitly approved content.\n",
+          if not (approved_dir / "README.md").exists():
+              (approved_dir / "README.md").write_text(
+                  "# Approved Posts\n\nReserved for explicitly approved content.\n",
                   encoding="utf-8"
               )
 
-          published_readme = published_dir / "README.md"
-          if not published_readme.exists():
-              published_readme.write_text(
-                  "# Published Records\n\n"
-                  "Reserved for confirmed publishing records.\n",
+          if not (published_dir / "README.md").exists():
+              (published_dir / "README.md").write_text(
+                  "# Published Records\n\nReserved for confirmed publishing records.\n",
                   encoding="utf-8"
               )
 
           print("SUCCESS: Weekly and daily Markdown files created.")
           PY
- 
+
       - name: Commit generated files
         shell: bash
         env:

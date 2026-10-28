@@ -11,16 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Create Reports Folder
-        run: mkdir -p reports
-
-      - name: Generate Daily Report
+      - name: Generate Social Content
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
+          mkdir -p reports
+
           curl -s https://inference.dahl.global/v1/chat/completions \
           -H "Authorization: Bearer $DAHL_API_KEY" \
           -H "Content-Type: application/json" \
@@ -28,29 +26,38 @@ jobs:
             "model":"MiniMaxAI/MiniMax-M2.7",
             "messages":[
               {
+                "role":"system",
+                "content":"Return only final content. No reasoning. No think tags."
+              },
+              {
                 "role":"user",
-                "content":"You are STRAYD SOCIAL MANAGER. Create:\n\n10 X posts\n\n3 Facebook posts\n\n1 YouTube Community post\n\n5 AI image prompts.\n\nReturn clean markdown only."
+                "content":"Create 10 X posts, 3 Facebook posts, 1 YouTube Community post and 5 AI image prompts for Martin Strayd. Return markdown."
               }
             ]
-          }' > reports/latest.json
+          }' > reports/raw.json
 
-      - name: Save Run Info
+      - name: Convert JSON To Report
         run: |
-          echo "# Strayd Social Agent Report" > reports/README.md
-          echo "" >> reports/README.md
-          echo "Generated: $(date)" >> reports/README.md
-          echo "" >> reports/README.md
-          echo "Open latest.json to view the full AI response." >> reports/README.md
+          python3 - << 'EOF'
+          import json
+
+          with open("reports/raw.json","r",encoding="utf-8") as f:
+              data=json.load(f)
+
+          content=data["choices"][0]["message"]["content"]
+
+          with open("reports/daily-report.md","w",encoding="utf-8") as out:
+              out.write("# Strayd Social Report\n\n")
+              out.write(content)
+          EOF
 
       - name: Commit Report
         run: |
-          git config --global user.name "Strayd Social Agent"
-          git config --global user.email "actions@github.com"
+          git config user.name "Strayd Social Agent"
+          git config user.email "actions@github.com"
 
           git add reports/
 
-          git status
-
-          git commit -m "Agent report update" || echo "Nothing to commit"
+          git diff --staged --quiet || git commit -m "Update social report"
 
           git push

@@ -18,8 +18,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Check configuration
         shell: bash
@@ -29,18 +28,17 @@ jobs:
           set -euo pipefail
 
           test -s brand-profile.md || {
-            echo "::error::brand-profile.md is missing or empty."
+            echo "::error::brand-profile.md missing"
             exit 1
           }
 
           test -n "${DAHL_API_KEY:-}" || {
-            echo "::error::DAHL_API_KEY secret is missing."
+            echo "::error::DAHL_API_KEY missing"
             exit 1
           }
 
           command -v jq >/dev/null
           command -v python3 >/dev/null
-          command -v curl >/dev/null
 
           echo "Configuration checks passed."
 
@@ -66,69 +64,60 @@ jobs:
           set -euo pipefail
 
           PROMPT="$(cat <<'PROMPT_EOF'
-          Create a complete, publishable STRAYD social content calendar
-          for seven days, Monday through Sunday.
+          Create a complete seven-day STRAYD social content calendar,
+          Monday through Sunday.
 
-          BRAND ACCURACY:
-          - Treat the supplied brand profile as the source of truth.
-          - Never invent songs, releases, lyrics, biography, achievements,
-            release dates, streaming links, or other factual claims.
-          - Do not invent URLs. Use https://strayd.com when appropriate
-            and use other links only if confirmed in the profile.
-          - Keep the content relevant to STRAYD and its actual identity.
-          - Make each day's content original and distinct.
+          Use the supplied brand profile as the source of truth.
+          Never invent songs, releases, lyrics, biography, achievements,
+          release dates, streaming links or other facts.
 
-          REQUIRED FORMAT:
-          Use exactly these seven main headings, once each:
-          ## Monday
-          ## Tuesday
-          ## Wednesday
-          ## Thursday
-          ## Friday
-          ## Saturday
-          ## Sunday
+          FORMAT:
+          - Use one main heading for each day:
+            ## Monday, ## Tuesday, ## Wednesday, ## Thursday,
+            ## Friday, ## Saturday, ## Sunday.
+          - Use readable Markdown headings, bold labels and bullet lists.
+          - Include every platform listed below for every day.
+          - Write complete, publishable content, not just advice.
+          - Make each platform's content distinct.
 
-          Under EVERY day, use these exact platform labels as headings:
+          FOR EACH DAY INCLUDE:
 
-          ### X
-          Write one concise, ready-to-publish post.
+          1. X
+          - One concise, ready-to-publish post.
 
-          ### Facebook
-          Write one complete, conversational post.
+          2. Facebook
+          - One complete, conversational post.
 
-          ### YouTube Community
-          Write a complete community post, question, or poll.
-          Include the actual wording that can be published.
+          3. YouTube Community
+          - One complete post, question or poll idea with publishable text.
 
-          ### TikTok
-          Include:
-          - Video concept and visual action.
-          - A strong hook for the first 1-3 seconds.
+          4. TikTok
+          - A practical video concept and visual action.
+          - A strong opening hook for the first 1-3 seconds.
           - On-screen text in sequence.
-          - A complete caption.
+          - A complete, ready-to-publish caption.
           - Relevant hashtags.
           - Suggested sound or music direction.
           - A clear call to action.
+          - Keep the concept achievable with available footage,
+            artwork or simple filming.
 
-          ### Instagram
-          Choose Reel, carousel, or single-image post.
-          Include:
-          - Format and visual concept.
-          - Complete, publishable caption.
-          - Relevant hashtags.
-          - For Reels, the opening hook and on-screen text.
-          - For carousels, the text for every slide.
-          - A clear call to action.
+          5. Instagram
+          - Choose Reel, carousel or single-image post.
+          - Describe the visual concept.
+          - Write the complete, ready-to-publish caption.
+          - Include relevant hashtags.
+          - For Reels, provide the opening hook and on-screen text.
+          - For carousels, provide the text for each slide.
+          - Include a clear call to action.
 
-          ### Image Prompt
-          Write a detailed prompt for creating that day's artwork.
-          Keep the visual direction specific and suitable for social media.
+          6. Image Prompt
+          - A detailed prompt suitable for creating the day's social artwork.
 
-          ### Short Video Idea
-          Give a practical concept, first shot, sequence, and ending.
+          7. Short Video Idea
+          - A practical concept, first shot and ending.
 
-          WEEKLY THEME ROTATION:
-          Rotate these themes naturally across the seven days:
+          Rotate these themes across the week:
           - Weekly Song Journey
           - Fantasy7
           - Creativity After 50
@@ -138,19 +127,15 @@ jobs:
           - Cool Hot Sauce
           - Creative Persistence
 
-          QUALITY RULES:
-          - Every day must include all five platforms: X, Facebook,
-            YouTube Community, TikTok, and Instagram.
-          - Image Prompt and Short Video Idea must also appear every day.
-          - Do not replace publishable content with generic advice.
-          - Avoid repeating the same post across platforms.
-          - Make TikTok and Instagram content fully usable, not just
-            a suggestion to create a video or image.
-          - Use clear Markdown, bold labels, short paragraphs, and bullets.
-          - Return Markdown only. No introduction and no code fences.
+          Use https://strayd.com when appropriate.
+          Only use links confirmed in the brand profile.
+          Do not invent facts to fill gaps.
 
-          Before returning your answer, check that all seven days are
-          present and that every day contains every required section.
+          Keep the existing STRAYD voice and identity.
+          Make the daily content easy to scan and ready to use.
+          Do not repeat the same copy across different platforms.
+
+          Return Markdown only, with no code fences or introduction.
           PROMPT_EOF
           )"
 
@@ -162,7 +147,7 @@ jobs:
               messages: [
                 {
                   role: "system",
-                  content: "You are the STRAYD Content Director. Follow the supplied brand profile accurately. Return complete, publishable Markdown. Never invent factual claims. Follow the requested headings exactly."
+                  content: "You are the STRAYD Content Director. Follow the supplied brand profile. Produce accurate, practical and publishable social content. Never invent factual claims."
                 },
                 {
                   role: "user",
@@ -178,120 +163,23 @@ jobs:
 
           echo "Sending content request to Dahl API..."
 
-          HTTP_CODE="$(
-            curl --silent --show-error \
-              --max-time 240 \
-              --output response.json \
-              --write-out "%{http_code}" \
-              --request POST \
-              "https://inference.dahl.global/v1/chat/completions" \
-              --header "Authorization: Bearer ${DAHL_API_KEY}" \
-              --header "Content-Type: application/json" \
-              --data-binary @request.json
-          )"
-
-          if [[ ! "$HTTP_CODE" =~ ^2[0-9][0-9]$ ]]; then
-            echo "::error::Dahl API returned HTTP ${HTTP_CODE}."
-            jq -r '.error.message // .message // "No error details returned."' \
-              response.json 2>/dev/null || true
-            exit 1
-          fi
+          curl --silent --show-error --fail-with-body \
+            --max-time 240 \
+            https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer ${DAHL_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d @request.json \
+            -o response.json
 
           jq -er '
             .choices[0].message.content
             | strings
             | select(length > 100)
-          ' response.json > generated-calendar.md || {
-            echo "::error::Dahl API returned no usable calendar content."
-            jq -r '.error.message // .message // .' response.json || true
-            exit 1
-          }
+          ' response.json > generated-calendar.md
 
-          echo "Calendar response received."
-          echo "Checking required sections..."
+          echo "Weekly calendar generated."
 
-          python3 <<'PY'
-          from pathlib import Path
-          import re
-          import sys
-
-          text = Path("generated-calendar.md").read_text(
-              encoding="utf-8"
-          ).strip()
-
-          days = [
-              "Monday", "Tuesday", "Wednesday", "Thursday",
-              "Friday", "Saturday", "Sunday"
-          ]
-
-          # Accept a day heading with optional trailing date or description,
-          # while still requiring a Markdown level-two heading.
-          day_pattern = re.compile(
-              r"^##\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b.*$",
-              re.IGNORECASE | re.MULTILINE
-          )
-
-          matches = list(day_pattern.finditer(text))
-          found = [m.group(1).capitalize() for m in matches]
-
-          missing = [day for day in days if day not in found]
-          duplicates = sorted({
-              day for day in found if found.count(day) > 1
-          })
-
-          if missing:
-              print(
-                  "::error::Calendar is missing days: "
-                  + ", ".join(missing)
-              )
-              sys.exit(1)
-
-          if duplicates:
-              print(
-                  "::error::Calendar has duplicate day headings: "
-                  + ", ".join(duplicates)
-              )
-              sys.exit(1)
-
-          required_sections = [
-              "X",
-              "Facebook",
-              "YouTube Community",
-              "TikTok",
-              "Instagram",
-              "Image Prompt",
-              "Short Video Idea",
-          ]
-
-          for index, match in enumerate(matches):
-              day = match.group(1).capitalize()
-              end = (
-                  matches[index + 1].start()
-                  if index + 1 < len(matches)
-                  else len(text)
-              )
-              section = text[match.start():end]
-
-              for label in required_sections:
-                  heading = re.compile(
-                      r"^#{1,6}\s+" + re.escape(label) + r"\s*$",
-                      re.IGNORECASE | re.MULTILINE
-                  )
-                  if not heading.search(section):
-                      print(
-                          f"::error::{day} is missing the "
-                          f"'{label}' heading."
-                      )
-                      sys.exit(1)
-
-          Path("generated-calendar.md").write_text(
-              text + "\n", encoding="utf-8"
-          )
-
-          print("Validation passed: seven days and all required sections.")
-          PY
-
-      - name: Create Weekly and Daily Markdown Files
+      - name: Save Weekly Calendar and README
         shell: bash
         run: |
           set -euo pipefail
@@ -299,68 +187,38 @@ jobs:
           python3 <<'PY'
           from pathlib import Path
           from datetime import datetime, timezone
-          import re
-          import sys
 
           source = Path("generated-calendar.md")
-          text = source.read_text(encoding="utf-8").strip()
+          content = source.read_text(encoding="utf-8").strip()
 
-          weekly_dir = Path("social-posts/weekly")
-          daily_dir = Path("social-posts/daily")
-
-          weekly_dir.mkdir(parents=True, exist_ok=True)
-          daily_dir.mkdir(parents=True, exist_ok=True)
+          if len(content) < 100:
+              raise SystemExit("Generated calendar is empty or too short.")
 
           today = datetime.now(timezone.utc).date().isoformat()
+          weekly_dir = Path("social-posts/weekly")
+          weekly_dir.mkdir(parents=True, exist_ok=True)
 
-          days = [
-              "Monday", "Tuesday", "Wednesday", "Thursday",
-              "Friday", "Saturday", "Sunday"
-          ]
-
-          day_pattern = re.compile(
-              r"^##\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b.*$",
-              re.IGNORECASE | re.MULTILINE
-          )
-
-          matches = list(day_pattern.finditer(text))
-          sections = {}
-
-          for index, match in enumerate(matches):
-              day = match.group(1).capitalize()
-              end = (
-                  matches[index + 1].start()
-                  if index + 1 < len(matches)
-                  else len(text)
-              )
-              sections[day] = text[match.start():end].strip()
-
-          missing = [day for day in days if day not in sections]
-          if missing:
-              print(
-                  "::error::Cannot create files; missing: "
-                  + ", ".join(missing)
-              )
-              sys.exit(1)
-
-          # Save the full weekly calendar.
           weekly_file = weekly_dir / f"{today}-calendar.md"
-          weekly_file.write_text(text + "\n", encoding="utf-8")
-
-          # Save one separate Markdown file for every day.
-          for day in days:
-              output = daily_dir / f"{today}-{day.lower()}.md"
-
-              content = (
-                  f"# STRAYD Daily Social Content — {day}\n\n"
-                  f"Generated: {today} (UTC)\n\n"
-                  f"{sections[day]}\n"
-              )
-
-              output.write_text(content, encoding="utf-8")
-              print(f"Created {output}")
-
+          weekly_file.write_text(content + "\n", encoding="utf-8")
           print(f"Created {weekly_file}")
+
+          readme = Path("social-posts/README.md")
+
+          if not readme.exists():
+              readme.parent.mkdir(parents=True, exist_ok=True)
+              readme.write_text(
+                  "# STRAYD Social Posts\n\n"
+                  "Weekly social content calendars generated by "
+                  "the Strayd Content Director workflow.\n\n"
+                  "Each calendar contains daily content for X, "
+                  "Facebook, YouTube Community, TikTok and Instagram, "
+                  "along with image prompts and short video ideas.\n\n"
+                  "## Weekly Calendars\n\n"
+                  "Open the `weekly/` folder to find the generated "
+                  "Markdown calendars.\n",
+                  encoding="utf-8"
+              )
+              print("Created social-posts/README.md")
           PY
 
       - name: Commit generated files
@@ -374,15 +232,15 @@ jobs:
           git config user.email \
             "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add social-posts/weekly/ social-posts/daily/
+          git add social-posts/
 
           if git diff --cached --quiet; then
-            echo "No new files to commit."
+            echo "No new changes to commit."
             exit 0
           fi
 
-          git commit -m "Generate STRAYD daily and weekly social content"
+          git commit -m "Generate STRAYD weekly social content"
 
           git push origin "HEAD:${TARGET_BRANCH}"
 
-          echo "SUCCESS: Weekly and daily content committed."
+          echo "Weekly STRAYD social calendar committed successfully."

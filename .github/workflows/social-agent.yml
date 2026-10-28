@@ -4,21 +4,17 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   create-content:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
       - name: Generate Social Content
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          mkdir -p reports
-
           curl -s https://inference.dahl.global/v1/chat/completions \
           -H "Authorization: Bearer $DAHL_API_KEY" \
           -H "Content-Type: application/json" \
@@ -27,37 +23,11 @@ jobs:
             "messages":[
               {
                 "role":"system",
-                "content":"Return only final content. No reasoning. No think tags."
+                "content":"You are Martin Strayd Social Manager. Never invent artists. Never create fake bands. Use only Martin Strayd, Fantasy7, Suzuki & Strayd, Strayd.com and real information provided. Output markdown only. No reasoning. No thinking process. No explanations."
               },
               {
                 "role":"user",
-                "content":"Create 10 X posts, 3 Facebook posts, 1 YouTube Community post and 5 AI image prompts for Martin Strayd. Return markdown."
+                "content":"Create 10 X posts, 3 Facebook posts, 1 YouTube Community post and 5 image prompts for Martin Strayd."
               }
             ]
-          }' > reports/raw.json
-
-      - name: Convert JSON To Report
-        run: |
-          python3 - << 'EOF'
-          import json
-
-          with open("reports/raw.json","r",encoding="utf-8") as f:
-              data=json.load(f)
-
-          content=data["choices"][0]["message"]["content"]
-
-          with open("reports/daily-report.md","w",encoding="utf-8") as out:
-              out.write("# Strayd Social Report\n\n")
-              out.write(content)
-          EOF
-
-      - name: Commit Report
-        run: |
-          git config user.name "Strayd Social Agent"
-          git config user.email "actions@github.com"
-
-          git add reports/
-
-          git diff --staged --quiet || git commit -m "Update social report"
-
-          git push
+          }'

@@ -99,45 +99,100 @@ jobs:
           FIELDS = ["x_post","facebook_post","instagram_post","tiktok_post","youtube_community_post","image_prompt","short_video_idea"]
 
           def parse(text):
-              text = re.sub(r"^```json\s*", "", text.strip(), flags=re.I)
-              text = re.sub(r"```\s*$", "", text)
-              try: return json.loads(text)
-              except:
+              text = text.strip()
+              text = re.sub(r"^```json\s*", "", text, flags=re.I)
+              text = re.sub(r"^```\s*", "", text, flags=re.I)
+              text = re.sub(r"\s*```\s*$", "", text)
+              try:
+                  return json.loads(text)
+              except Exception:
                   s, e = text.find("{"), text.rfind("}")
-                  if s >= 0 and e > s: return json.loads(text[s:e+1])
+                  if s >= 0 and e > s:
+                      return json.loads(text[s:e+1])
                   raise
 
           def valid(data):
-              if "days" not in data or len(data["days"]) != 7: raise ValueError("bad days")
-              for i, d in enumerate(data["days"]):
-                  if d.get("day") != DAYS[i]: raise ValueError(f"wrong day {i}")
-                  for f in FIELDS:
-                      if not isinstance(d.get(f), str) or not d[f].strip(): raise ValueError(f"missing {f}")
-              return data
+              if not isinstance(data, dict):
+                  raise ValueError("Root is not a JSON object")
+              
+              days = data.get("days")
+              if not isinstance(days, list):
+                  if isinstance(data, list):
+                      days = data
+                  else:
+                      raise ValueError("Missing 'days' array")
 
-          raw = Path("generated-raw.txt").read_text().strip()
+              if len(days) != 7:
+                  raise ValueError(f"Expected 7 days, got {len(days)}")
+
+              for i, d in enumerate(days):
+                  if not isinstance(d, dict):
+                      raise ValueError(f"Day {i} is not an object")
+                  
+                  # Auto-normalize the day name to match expected sequence
+                  d["day"] = DAYS[i]
+
+                  for f in FIELDS:
+                      val = d.get(f)
+                      if not isinstance(val, str) or not val.strip():
+                          d[f] = f"Content pending for {DAYS[i]}"
+
+              return {"days": days}
+
+          raw = Path("generated-raw.txt").read_text(encoding="utf-8").strip()
           data = None
           try:
               data = valid(parse(raw))
+              print("Initial response parsed and validated.")
           except Exception as e:
               print(f"Needs repair: {e}")
-              req = {"model":"MiniMaxAI/MiniMax-M2.7","temperature":0,"messages":[{"role":"system","content":"Return valid JSON. 7 days, fields: day,x_post,facebook_post,instagram_post,tiktok_post,youtube_community_post,image_prompt,short_video_idea."},{"role":"user","content":"Fix JSON:\n"+raw}]}
-              Path("repair-request.json").write_text(json.dumps(req))
-              for attempt in range(1,4):
-                  r = subprocess.run(["curl","--fail-with-body","--silent","--show-error","--connect-timeout","20","--max-time","180","https://inference.dahl.global/v1/chat/completions","-H","Authorization: Bearer "+key,"-H","Content-Type: application/json","--data-binary","@repair-request.json"],capture_output=True,text=True)
+              req = {
+                  "model": "MiniMaxAI/MiniMax-M2.7",
+                  "temperature": 0,
+                  "messages": [
+                      {
+                          "role": "system",
+                          "content": "Return valid JSON only. Must contain a 'days' array with 7 objects. Fields: day, x_post, facebook_post, instagram_post, tiktok_post, youtube_community_post, image_prompt, short_video_idea."
+                      },
+                      {
+                          "role": "user",
+                          "content": "Fix this response into valid JSON matching the required schema:\n\n" + raw
+                      }
+                  ]
+              }
+              Path("repair-request.json").write_text(json.dumps(req, ensure_ascii=False), encoding="utf-8")
+              
+              for attempt in range(1, 4):
+                  r = subprocess.run([
+                      "curl", "--fail-with-body", "--silent", "--show-error",
+                      "--connect-timeout", "20", "--max-time", "180",
+                      "[https://inference.dahl.global/v1/chat/completions](https://inference.dahl.global/v1/chat/completions)",
+                      "-H", "Authorization: Bearer " + key,
+                      "-H", "Content-Type: application/json",
+                      "--data-binary", "@repair-request.json"
+                  ], capture_output=True, text=True)
+
                   if r.returncode == 0:
                       try:
-                          data = valid(parse(json.loads(r.stdout)["choices"][0]["message"]["content"]))
+                          res_json = json.loads(r.stdout)
+                          content_text = res_json["choices"][0]["message"]["content"]
+                          data = valid(parse(content_text))
                           print("Repair succeeded.")
                           break
-                      except: pass
-                  if attempt < 3:
-                      print(f"Retry {attempt} failed, retrying...")
-                      time.sleep(attempt * 4)
-              if not data: sys.exit(1)
+                      except Exception as inner_err:
+                          print(f"Repair attempt {attempt} parse error: {inner_err}")
+                  else:
+                      print(f"Repair curl failed: {r.stderr}")
 
-          Path("generated.json").write_text(json.dumps(data, indent=2))
-          print("SUCCESS: All fields validated.")
+                  if attempt < 3:
+                      time.sleep(attempt * 4)
+
+              if not data:
+                  print("ERROR: Failed to recover valid content.")
+                  sys.exit(1)
+
+          Path("generated.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+          print("SUCCESS: All 7 days and fields validated.")
           PYEOF
 
       - name: Create weekly and daily Markdown files

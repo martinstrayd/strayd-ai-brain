@@ -3,14 +3,26 @@ name: Strayd Social Agent
 on:
   workflow_dispatch:
 
+  schedule:
+    - cron: '0 1 * * *'
+
+permissions:
+  contents: write
+
 jobs:
   create-content:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate social content
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Content Folder
+        run: mkdir -p content
+
+      - name: Generate Social Content
         run: |
-          curl https://inference.dahl.global/v1/chat/completions \
+          curl -s https://inference.dahl.global/v1/chat/completions \
           -H "Authorization: Bearer ${{ secrets.DAHL_API_KEY }}" \
           -H "Content-Type: application/json" \
           -d '{
@@ -18,7 +30,20 @@ jobs:
             "messages":[
               {
                 "role":"user",
-                "content":"Create 5 short social media posts promoting independent music artists."
+                "content":"You are STRAYD SOCIAL MANAGER. Create: 10 X posts, 3 Facebook posts, 1 YouTube Community post and 5 image prompts for an independent music artist."
               }
             ]
-          }'
+          }' > content/output.json
+
+      - name: Add Date Stamp
+        run: |
+          DATE=$(date +%F)
+          cp content/output.json content/${DATE}.json
+
+      - name: Commit Content
+        run: |
+          git config user.name "Strayd Social Agent"
+          git config user.email "actions@github.com"
+          git add content/
+          git commit -m "Daily social content $(date +%F)" || echo "No changes"
+          git push

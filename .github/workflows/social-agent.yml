@@ -1,3 +1,4 @@
+
 name: Strayd Content Director
 
 on:
@@ -26,52 +27,79 @@ jobs:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           set -euo pipefail
-          test -s brand-profile.md || { echo "::error::brand-profile.md missing"; exit 1; }
-          test -n "${DAHL_API_KEY:-}" || { echo "::error::DAHL_API_KEY missing"; exit 1; }
+          test -s brand-profile.md || {
+            echo "::error::brand-profile.md missing"
+            exit 1
+          }
+          test -n "${DAHL_API_KEY:-}" || {
+            echo "::error::DAHL_API_KEY missing"
+            exit 1
+          }
           echo "Configuration checks passed."
 
       - name: Read Brand Profile
         id: profile
+        shell: bash
         run: |
+          set -euo pipefail
           {
-            echo 'PROFILE<<EOF'
+            echo 'PROFILE<<STRAYD_PROFILE_EOF'
             cat brand-profile.md
-            echo EOF
-          } >> $GITHUB_OUTPUT
+            echo 'STRAYD_PROFILE_EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Generate Weekly Content Calendar
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
           PROFILE: ${{ steps.profile.outputs.PROFILE }}
+        shell: bash
         run: |
           set -euo pipefail
 
-          curl -s --fail-with-body https://inference.dahl.global/v1/chat/completions \
-          -H "Authorization: Bearer $DAHL_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d "$(jq -n \
+          jq -n \
             --arg p "$PROFILE" \
             '{
               model: "MiniMaxAI/MiniMax-M2.7",
+              temperature: 0.7,
               messages: [
                 {
                   role: "system",
-                  content: "You are the STRAYD Content Director. Use only information from the Martin Strayd Brand Profile. Never invent songs. Never invent releases. Never invent history. Create practical publishable content."
+                  content: "You are the STRAYD Content Director. Use the supplied Martin Strayd Brand Profile as the source of truth. Never invent songs, releases, biography, achievements, links or facts. Create useful, publishable social content. Return clean Markdown only, with no introductory commentary or code fences. Every day must have a separate section, and all requested platforms must be included for every day."
                 },
                 {
                   role: "user",
                   content: (
-                    "BRAND PROFILE:\n\n" +
-                    $p +
-                    "\n\nCreate a complete 7-day content calendar.\n\n" +
-                    "Monday through Sunday.\n\n" +
-                    "For each day provide:\n\n" +
-                    "- One X post\n" +
-                    "- One Facebook post\n" +
-                    "- One YouTube Community post idea\n" +
-                    "- One Image Prompt\n" +
-                    "- One Short Video Idea\n\n" +
-                    "Rotate between:\n" +
+                    "BRAND PROFILE:\n\n" + $p +
+                    "\n\nCreate a complete, practical 7-day STRAYD social content calendar, Monday through Sunday.\n\n" +
+                    "FORMAT RULES:\n" +
+                    "- Begin each day with a heading in this exact format: ## Monday, ## Tuesday, ## Wednesday, ## Thursday, ## Friday, ## Saturday, ## Sunday.\n" +
+                    "- Keep each platform in its own clearly labelled subsection.\n" +
+                    "- Use readable Markdown headings, bold labels, paragraphs and bullet lists.\n" +
+                    "- Make the content platform-specific. Do not merely copy the same caption to every platform.\n" +
+                    "- Provide complete publishable copy, not just advice about what to write.\n\n" +
+                    "FOR EACH OF THE SEVEN DAYS, INCLUDE ALL OF THESE:\n\n" +
+                    "1. X: one ready-to-publish post, concise and engaging.\n\n" +
+                    "2. Facebook: one ready-to-publish post with a natural conversational tone.\n\n" +
+                    "3. YouTube Community: one complete community post, question or poll idea with its publishable text.\n\n" +
+                    "4. TikTok:\n" +
+                    "- Video concept and visual action.\n" +
+                    "- A strong opening hook for the first 1-3 seconds.\n" +
+                    "- On-screen text, written in order.\n" +
+                    "- Caption ready to publish.\n" +
+                    "- Relevant hashtags.\n" +
+                    "- Suggested sound or music direction. Do not claim a song exists unless confirmed by the brand profile.\n" +
+                    "- End with a suitable call to action.\n\n" +
+                    "5. Instagram:\n" +
+                    "- Specify whether the post is a Reel, carousel or single image.\n" +
+                    "- Provide the visual concept.\n" +
+                    "- Write the complete caption.\n" +
+                    "- Include relevant hashtags.\n" +
+                    "- For a Reel, include the opening hook and on-screen text.\n" +
+                    "- For a carousel, provide the text for each slide.\n" +
+                    "- End with a suitable call to action.\n\n" +
+                    "6. Image Prompt: a detailed prompt suitable for creating the day's social artwork.\n\n" +
+                    "7. Short Video Idea: a practical short-form video concept, including the first shot and ending.\n\n" +
+                    "Rotate themes across the week using these topics where appropriate:\n" +
                     "- Weekly Song Journey\n" +
                     "- Fantasy7\n" +
                     "- Creativity After 50\n" +
@@ -80,51 +108,144 @@ jobs:
                     "- How To Rock\n" +
                     "- Cool Hot Sauce\n" +
                     "- Creative Persistence\n\n" +
-                    "Send people to strayd.com when appropriate.\n\n" +
-                    "Return markdown only."
+                    "Keep STRAYD branding consistent. Send people to https://strayd.com when appropriate. Use only verified links from the brand profile. Do not invent release dates, lyrics, song titles or streaming links.\n\n" +
+                    "Make each day's TikTok and Instagram content distinct and usable without further writing. Return Markdown only."
                   )
                 }
               ]
-            }')" > response.json
+            }' > request.json
 
-          # Extract content safely
-          jq -er '.choices[0].message.content | strings' response.json > generated-calendar.md
-          echo "Markdown calendar generated successfully."
+          curl --silent --show-error --fail-with-body \
+            --max-time 240 \
+            https://inference.dahl.global/v1/chat/completions \
+            -H "Authorization: Bearer ${DAHL_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d @request.json \
+            -o response.json
 
-      - name: Save and Organize Files
+          jq -er '
+            .choices[0].message.content
+            | strings
+            | select(length > 100)
+          ' response.json > generated-calendar.md
+
+          grep -q 'TikTok' generated-calendar.md || {
+            echo "::error::Generated calendar is missing TikTok content."
+            exit 1
+          }
+
+          grep -q 'Instagram' generated-calendar.md || {
+            echo "::error::Generated calendar is missing Instagram content."
+            exit 1
+          }
+
+          echo "Weekly calendar generated with TikTok and Instagram."
+
+      - name: Create Weekly and Daily Markdown Files
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p social-posts/weekly social-posts/daily
 
-          # Copy generated markdown to weekly folder with date stamp
-          WEEK_DATE=$(date +%Y-%m-%d)
-          cp generated-calendar.md "social-posts/weekly/${WEEK_DATE}-calendar.md"
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+          import sys
 
-          # Create root README if missing
-          if [ ! -f social-posts/README.md ]; then
-            echo "# STRAYD Social Content Library" > social-posts/README.md
-          fi
+          source = Path("generated-calendar.md")
+          weekly_dir = Path("social-posts/weekly")
+          daily_dir = Path("social-posts/daily")
 
-          echo "Files organized."
+          weekly_dir.mkdir(parents=True, exist_ok=True)
+          daily_dir.mkdir(parents=True, exist_ok=True)
+
+          text = source.read_text(encoding="utf-8").strip()
+
+          # Save the complete weekly calendar.
+          from datetime import datetime, timezone
+          today = datetime.now(timezone.utc).date().isoformat()
+
+          weekly_file = weekly_dir / f"{today}-calendar.md"
+          weekly_file.write_text(text + "\n", encoding="utf-8")
+
+          # Split the calendar at its seven day headings.
+          day_names = (
+              "Monday", "Tuesday", "Wednesday", "Thursday",
+              "Friday", "Saturday", "Sunday"
+          )
+
+          pattern = re.compile(
+              r"^##\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s*$",
+              re.MULTILINE | re.IGNORECASE
+          )
+
+          matches = list(pattern.finditer(text))
+
+          found = {
+              m.group(1).capitalize()
+              for m in matches
+          }
+
+          missing = set(day_names) - found
+          if missing:
+              print(
+                  "ERROR: Calendar is missing day headings: "
+                  + ", ".join(sorted(missing)),
+                  file=sys.stderr
+              )
+              sys.exit(1)
+
+          for index, match in enumerate(matches):
+              day = match.group(1).capitalize()
+              start = match.start()
+              end = (
+                  matches[index + 1].start()
+                  if index + 1 < len(matches)
+                  else len(text)
+              )
+
+              section = text[start:end].strip() + "\n"
+
+              # Ensure daily content includes both required platforms.
+              if not re.search(r"TikTok", section, re.IGNORECASE):
+                  print(f"ERROR: {day} is missing TikTok content.", file=sys.stderr)
+                  sys.exit(1)
+
+              if not re.search(r"Instagram", section, re.IGNORECASE):
+                  print(f"ERROR: {day} is missing Instagram content.", file=sys.stderr)
+                  sys.exit(1)
+
+              output = daily_dir / f"{today}-{day.lower()}.md"
+              output.write_text(
+                  f"# STRAYD Daily Social Content — {day}\n\n"
+                  f"Generated: {today}\n\n"
+                  f"{section}",
+                  encoding="utf-8"
+              )
+
+              print(f"Created {output}")
+
+          print(f"Created {weekly_file}")
+          PY
 
       - name: Commit generated files
+        shell: bash
         env:
           TARGET_BRANCH: ${{ github.ref_name }}
         run: |
           set -euo pipefail
 
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git pull --rebase origin "${TARGET_BRANCH}" || true
-          git add social-posts/
+          git add social-posts/weekly/ social-posts/daily/
 
           if git diff --cached --quiet; then
             echo "No new files to commit."
             exit 0
           fi
 
-          git commit -m "Generate STRAYD weekly markdown calendar ${GITHUB_RUN_ID}"
+          git commit -m "Generate STRAYD social content with TikTok and Instagram"
           git push origin "HEAD:${TARGET_BRANCH}"
-          echo "SUCCESS: Committed calendar to ${TARGET_BRANCH}."
+
+          echo "SUCCESS: Weekly and daily content committed."

@@ -1,0 +1,26 @@
+STRAYD CONTENT DIRECTOR
+Date: 2026-10-30 (UTC)
+Day: Friday
+Generation run: 40648742960, attempt 1
+Status: DRAFT — NOT APPROVED FOR PUBLISHING
+
+X POST
+======
+Plant-based. Soy-free. Science-backed. Cool Hot Sauce is reimagining what plant-based food can be. Healthy alternatives that actually taste incredible. Learn more: coolhotsauce.com #PlantBased #Vegan #FutureOfFood
+
+FACEBOOK POST
+=============
+Friday food for thought: what if plant-based eating was simple, soy-free, and actually delicious? Cool Hot Sauce combines science-based food creation with bold flavors. We're building toward franchise opportunities while keeping healthy alternatives accessible. Explore the project at coolhotsauce.com
+
+YOUTUBE COMMUNITY POST
+======================
+Food innovation Friday. Cool Hot Sauce focuses on plant-based, soy-free options made with science-backed methods. Curious about the creation process? We're documenting the journey from concept to kitchen. What healthy food alternatives do you want to see more of?
+
+IMAGE GENERATION PROMPT
+=======================
+Bold colorful hot sauce bottles with fresh plant ingredients, modern food photography style, vibrant colors, clean minimalist background, appetizing and professional presentation
+
+SHORT VIDEO IDEA
+================
+Quick taste test or cooking demo using Cool Hot Sauce. 30-45 seconds. Simple kitchen setup, showing how easy it is to incorporate plant-based options into meals. Appetizing and accessible.
+

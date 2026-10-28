@@ -15,10 +15,11 @@ concurrency:
 jobs:
   content-director:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
       - name: Check configuration
         shell: bash
@@ -72,7 +73,7 @@ jobs:
           release dates, streaming links or other facts.
 
           FORMAT:
-          - Use one main heading for each day:
+          - Use these exact day headings:
             ## Monday, ## Tuesday, ## Wednesday, ## Thursday,
             ## Friday, ## Saturday, ## Sunday.
           - Use readable Markdown headings, bold labels and bullet lists.
@@ -82,40 +83,39 @@ jobs:
 
           FOR EACH DAY INCLUDE:
 
-          1. X
+          ### X
           - One concise, ready-to-publish post.
 
-          2. Facebook
+          ### Facebook
           - One complete, conversational post.
 
-          3. YouTube Community
+          ### YouTube Community
           - One complete post, question or poll idea with publishable text.
 
-          4. TikTok
-          - A practical video concept and visual action.
-          - A strong opening hook for the first 1-3 seconds.
+          ### TikTok
+          - Practical video concept and visual action.
+          - Strong opening hook for the first 1-3 seconds.
           - On-screen text in sequence.
-          - A complete, ready-to-publish caption.
+          - Complete, ready-to-publish caption.
           - Relevant hashtags.
           - Suggested sound or music direction.
-          - A clear call to action.
-          - Keep the concept achievable with available footage,
-            artwork or simple filming.
+          - Clear call to action.
+          - Achievable with available footage, artwork or simple filming.
 
-          5. Instagram
+          ### Instagram
           - Choose Reel, carousel or single-image post.
           - Describe the visual concept.
-          - Write the complete, ready-to-publish caption.
-          - Include relevant hashtags.
+          - Complete, ready-to-publish caption.
+          - Relevant hashtags.
           - For Reels, provide the opening hook and on-screen text.
-          - For carousels, provide the text for each slide.
+          - For carousels, provide text for each slide.
           - Include a clear call to action.
 
-          6. Image Prompt
-          - A detailed prompt suitable for creating the day's social artwork.
+          ### Image Prompt
+          - Detailed prompt suitable for creating the day's social artwork.
 
-          7. Short Video Idea
-          - A practical concept, first shot and ending.
+          ### Short Video Idea
+          - Practical concept, first shot and ending.
 
           Rotate these themes across the week:
           - Weekly Song Journey
@@ -132,7 +132,7 @@ jobs:
           Do not invent facts to fill gaps.
 
           Keep the existing STRAYD voice and identity.
-          Make the daily content easy to scan and ready to use.
+          Make the content easy to scan and ready to use.
           Do not repeat the same copy across different platforms.
 
           Return Markdown only, with no code fences or introduction.
@@ -158,67 +158,260 @@ jobs:
                     $instructions
                   )
                 }
-              ]
+              ],
+              temperature: 0.3,
+              max_tokens: 8000
             }' > request.json
 
-          echo "Sending content request to Dahl API..."
+          python3 <<'PY'
+          import json
+          import os
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
 
-          curl --silent --show-error --fail-with-body \
-            --max-time 240 \
-            https://inference.dahl.global/v1/chat/completions \
-            -H "Authorization: Bearer ${DAHL_API_KEY}" \
-            -H "Content-Type: application/json" \
-            -d @request.json \
-            -o response.json
+          api_url = "https://inference.dahl.global/v1/chat/completions"
+          api_key = os.environ["DAHL_API_KEY"]
 
-          jq -er '
-            .choices[0].message.content
-            | strings
-            | select(length > 100)
-          ' response.json > generated-calendar.md
+          payload = json.loads(
+              open("request.json", encoding="utf-8").read()
+          )
+          body = json.dumps(payload).encode("utf-8")
 
-          echo "Weekly calendar generated."
+          delays = [5, 10, 20, 40, 60, 60]
+          response_data = None
 
-      - name: Save Weekly Calendar and README
+          for attempt in range(1, 7):
+              request = urllib.request.Request(
+                  api_url,
+                  data=body,
+                  headers={
+                      "Authorization": f"Bearer {api_key}",
+                      "Content-Type": "application/json",
+                  },
+                  method="POST",
+              )
+
+              try:
+                  print(
+                      f"Sending content request to DAHL "
+                      f"using MiniMax: attempt {attempt}/6"
+                  )
+
+                  with urllib.request.urlopen(
+                      request, timeout=180
+                  ) as response:
+                      response_data = json.loads(
+                          response.read().decode("utf-8")
+                      )
+
+                  break
+
+              except urllib.error.HTTPError as exc:
+                  print(f"DAHL returned HTTP {exc.code}")
+
+                  if exc.code in (401, 403):
+                      raise SystemExit(
+                          "Authentication failed. Check DAHL_API_KEY."
+                      )
+
+                  if exc.code not in (
+                      408, 409, 425, 429, 500, 502, 503, 504
+                  ):
+                      raise SystemExit(
+                          f"Non-retryable DAHL HTTP error: {exc.code}"
+                      )
+
+              except (
+                  urllib.error.URLError,
+                  TimeoutError,
+                  json.JSONDecodeError,
+              ) as exc:
+                  print(f"Temporary request error: {exc}")
+
+              if attempt < 6:
+                  delay = delays[attempt - 1]
+                  print(f"Retrying MiniMax in {delay} seconds...")
+                  time.sleep(delay)
+
+          if response_data is None:
+              raise SystemExit(
+                  "DAHL failed after six attempts. No content files saved."
+              )
+
+          choices = response_data.get("choices", [])
+          content = (
+              choices[0].get("message", {}).get("content", "")
+              if choices else ""
+          )
+
+          if not isinstance(content, str) or len(content.strip()) < 500:
+              raise SystemExit(
+                  "DAHL returned an empty or incomplete calendar."
+              )
+
+          with open(
+              "generated-calendar.md", "w", encoding="utf-8"
+          ) as output:
+              output.write(content.strip() + "\n")
+
+          print("Weekly calendar generated.")
+          PY
+
+      - name: Validate and Save Weekly and Daily Files
         shell: bash
+        env:
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: |
           set -euo pipefail
 
           python3 <<'PY'
+          import re
+          import os
+          from datetime import date, timedelta
           from pathlib import Path
-          from datetime import datetime, timezone
 
-          source = Path("generated-calendar.md")
-          content = source.read_text(encoding="utf-8").strip()
+          content = Path("generated-calendar.md").read_text(
+              encoding="utf-8"
+          ).strip()
 
-          if len(content) < 100:
-              raise SystemExit("Generated calendar is empty or too short.")
+          days = [
+              "Monday", "Tuesday", "Wednesday", "Thursday",
+              "Friday", "Saturday", "Sunday"
+          ]
 
-          today = datetime.now(timezone.utc).date().isoformat()
+          pattern = re.compile(
+              r"^##\s+("
+              + "|".join(days)
+              + r")\s*$",
+              re.MULTILINE | re.IGNORECASE
+          )
+
+          matches = list(pattern.finditer(content))
+          found_days = [
+              match.group(1).capitalize() for match in matches
+          ]
+
+          if found_days != days:
+              raise SystemExit(
+                  "Calendar validation failed. Expected exactly seven "
+                  "day sections Monday through Sunday in order; found: "
+                  + ", ".join(found_days)
+              )
+
+          sections = {}
+          for index, match in enumerate(matches):
+              start = match.start()
+              end = (
+                  matches[index + 1].start()
+                  if index + 1 < len(matches)
+                  else len(content)
+              )
+              sections[match.group(1).capitalize()] = (
+                  content[start:end].strip() + "\n"
+              )
+
+          required_labels = [
+              "X",
+              "Facebook",
+              "YouTube Community",
+              "TikTok",
+              "Instagram",
+              "Image Prompt",
+              "Short Video Idea",
+          ]
+
+          for day in days:
+              section = sections[day]
+
+              for label in required_labels:
+                  label_pattern = (
+                      r"^#{1,6}\s+" + re.escape(label) + r"\s*$"
+                  )
+                  if not re.search(
+                      label_pattern, section, re.IGNORECASE | re.MULTILINE
+                  ):
+                      raise SystemExit(
+                          f"Calendar validation failed: {day} is missing "
+                          f"the section '{label}'. No content files saved."
+                      )
+
+              if len(section) < 300:
+                  raise SystemExit(
+                      f"Calendar validation failed: {day} is too short."
+                  )
+
+          today = date.today()
+          monday = today - timedelta(days=today.weekday())
+          run_number = os.environ["GITHUB_RUN_NUMBER"]
+
           weekly_dir = Path("social-posts/weekly")
+          daily_dir = Path("social-posts/daily")
           weekly_dir.mkdir(parents=True, exist_ok=True)
+          daily_dir.mkdir(parents=True, exist_ok=True)
 
-          weekly_file = weekly_dir / f"{today}-calendar.md"
-          weekly_file.write_text(content + "\n", encoding="utf-8")
-          print(f"Created {weekly_file}")
+          def safe_write(directory, base_name, text):
+              target = directory / base_name
+
+              # Never overwrite an existing file. Preserve previous work.
+              if target.exists():
+                  target = directory / (
+                      target.stem + f"-run-{run_number}" + target.suffix
+                  )
+
+                  counter = 2
+                  while target.exists():
+                      target = directory / (
+                          Path(base_name).stem
+                          + f"-run-{run_number}-{counter}"
+                          + Path(base_name).suffix
+                      )
+                      counter += 1
+
+              target.write_text(text.rstrip() + "\n", encoding="utf-8")
+              print(f"Created {target}")
+
+          weekly_date = today.isoformat()
+          safe_write(
+              weekly_dir,
+              f"{weekly_date}-calendar.md",
+              content
+          )
+
+          for offset, day in enumerate(days):
+              actual_date = monday + timedelta(days=offset)
+              daily_content = (
+                  f"# STRAYD Daily Social Content — {day}, "
+                  f"{actual_date.isoformat()}\n\n"
+                  + sections[day]
+              )
+
+              safe_write(
+                  daily_dir,
+                  f"{actual_date.isoformat()}-{day.lower()}.md",
+                  daily_content
+              )
 
           readme = Path("social-posts/README.md")
-
           if not readme.exists():
-              readme.parent.mkdir(parents=True, exist_ok=True)
               readme.write_text(
                   "# STRAYD Social Posts\n\n"
-                  "Weekly social content calendars generated by "
-                  "the Strayd Content Director workflow.\n\n"
-                  "Each calendar contains daily content for X, "
-                  "Facebook, YouTube Community, TikTok and Instagram, "
-                  "along with image prompts and short video ideas.\n\n"
-                  "## Weekly Calendars\n\n"
-                  "Open the `weekly/` folder to find the generated "
-                  "Markdown calendars.\n",
+                  "Generated social content from the Strayd Content "
+                  "Director workflow.\n\n"
+                  "## Weekly Calendars\n"
+                  "Open `weekly/` for full Monday-to-Sunday calendars.\n\n"
+                  "## Daily Posts\n"
+                  "Open `daily/` for individual dated daily content files. "
+                  "Each daily file includes X, Facebook, YouTube Community, "
+                  "TikTok, Instagram, an image prompt and a short video idea.\n",
                   encoding="utf-8"
               )
               print("Created social-posts/README.md")
+          else:
+              print("Preserved existing social-posts/README.md")
+
+          print("Validated all seven days and all required platform sections.")
           PY
 
       - name: Commit generated files
@@ -235,12 +428,18 @@ jobs:
           git add social-posts/
 
           if git diff --cached --quiet; then
-            echo "No new changes to commit."
+            echo "No new social content changes to commit."
             exit 0
           fi
 
-          git commit -m "Generate STRAYD weekly social content"
-
+          git commit -m "Generate STRAYD weekly and daily social content"
           git push origin "HEAD:${TARGET_BRANCH}"
 
-          echo "Weekly STRAYD social calendar committed successfully."
+          echo "Weekly calendar and daily content files committed successfully."
+
+      - name: Report result
+        if: always()
+        shell: bash
+        run: |
+          echo "Strayd Content Director finished with status: ${{ job.status }}"
+          echo "Check social-posts/weekly/ and social-posts/daily/."

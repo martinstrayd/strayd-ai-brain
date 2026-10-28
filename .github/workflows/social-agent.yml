@@ -16,341 +16,216 @@ jobs:
   content-director:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - name: Check config
+      - name: Check configuration
+        shell: bash
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
-          test -s brand-profile.md || { echo "Missing brand-profile.md"; exit 1; }
-          echo "Config OK"
+          set -euo pipefail
+          test -s brand-profile.md || { echo "::error::brand-profile.md missing"; exit 1; }
+          test -n "${DAHL_API_KEY:-}" || { echo "::error::DAHL_API_KEY missing"; exit 1; }
+          echo "Configuration checks passed."
 
-      - name: Generate content
-        id: generate
+      - name: Generate weekly content
+        shell: bash
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           set -euo pipefail
 
-          PROFILE=$(cat brand-profile.md)
-
-          jq -n \
-            --arg profile "$PROFILE" \
-            '{
-              model: "MiniMaxAI/MiniMax-M2.7",
-              messages: [
-                {
-                  role: "system",
-                  content: "You are the STRAYD Content Director. Focus on Martin Strayd and his band STRAYD. Never invent facts. Return valid JSON."
-                },
-                {
-                  role: "user",
-                  content: (
-                    "BRAND PROFILE:\n\n" + $profile + "\n\n" +
-                    "STRAYD = Martin Strayd + Suzuki. 55 songs, new single every 7 days. World Tour 2027.\n\n" +
-                    "Create 7-day calendar. JSON with days array, 7 objects. Each: day, x_post, facebook_post, instagram_post, tiktok_post, youtube_community_post, image_prompt, short_video_idea.\n" +
-                    "Days: Monday Tuesday Wednesday Thursday Friday Saturday Sunday.\n" +
-                    "X: 280 chars, hook/question. FB: paragraphs. IG: 150-300 chars + hashtags. TikTok: hook + script.\n" +
-                    "Themes: Weekly Song Journey, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Creative Persistence, STRAYD Updates.\n" +
-                    "Return JSON only."
-                  )
-                }
-              ],
-              temperature: 0.7
-            }' > request.json
+          jq -n --rawfile profile brand-profile.md '{
+            model: "MiniMaxAI/MiniMax-M2.7",
+            messages: [
+              {role: "system", content: "You are the STRAYD Content Director. Focus on Martin Strayd and STRAYD band. Never invent facts. Return valid JSON."},
+              {role: "user", content: ("BRAND PROFILE:\n\n" + $profile + "\n\nKEY CONTEXT:\n- STRAYD = Martin Strayd + Suzuki\n- 55 songs total, new single every 7 days\n- World Tour 2027 coming\n\nCreate 7-day calendar. JSON with days array, 7 objects. Each: day, x_post, facebook_post, instagram_post, tiktok_post, youtube_community_post, image_prompt, short_video_idea.\nDays: Monday Tuesday Wednesday Thursday Friday Saturday Sunday.\nX: 280 chars, hook/question. FB: paragraphs. IG: 150-300 chars + hashtags. TikTok: hook + script.\nThemes: Weekly Song Journey, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Creative Persistence, STRAYD Updates.\nReturn JSON only.")}
+            ],
+            temperature: 0.7
+          }' > request.json
 
           success=0
-          for i in 1 2 3 4; do
-            echo "Generation attempt $i/4..."
-            if curl -s --fail-with-body \
+          for attempt in 1 2 3 4; do
+            echo "Generation attempt ${attempt}/4..."
+            if curl --fail-with-body --silent --show-error \
               --connect-timeout 20 --max-time 180 \
               https://inference.dahl.global/v1/chat/completions \
               -H "Authorization: Bearer ${DAHL_API_KEY}" \
               -H "Content-Type: application/json" \
-              --data-binary @request.json \
-              -o response.json; then
+              --data-binary @request.json -o response.json; then
               success=1
               break
             fi
-            if [ $i -lt 4 ]; then
-              echo "Retrying in $((i * 5)) seconds..."
-              sleep $((i * 5))
-            fi
+            [ "$attempt" -lt 4 ] && sleep $((attempt * 5))
           done
 
-          if [ $success -ne 1 ]; then
-            echo "::error::All generation attempts failed"
-            exit 1
-          fi
+          [ "$success" -ne 1 ] && { echo "::error::Generation failed"; exit 1; }
+          jq -e 'type == "object"' response.json >/dev/null 2>&1 || { echo "::error::Invalid response"; exit 1; }
+          jq -e '.error' response.json >/dev/null 2>&1 && { echo "::error::API error"; exit 1; }
+          jq -er '.choices[0].message.content | strings' response.json > generated-raw.txt || { echo "::error::No content"; exit 1; }
+          [ ! -s generated-raw.txt ] && { echo "::error::Empty content"; exit 1; }
+          echo "AI response received."
 
-          if ! jq -e 'type == "object"' response.json > /dev/null 2>&1; then
-            echo "::error::Invalid API response"
-            head -c 500 response.json
-            exit 1
-          fi
-
-          if jq -e '.error' response.json > /dev/null 2>&1; then
-            echo "::error::API returned error"
-            jq '.error' response.json
-            exit 1
-          fi
-
-          content=$(jq -r '.choices[0].message.content // empty' response.json)
-          if [ -z "$content" ]; then
-            echo "::error::No content in response"
-            exit 1
-          fi
-
-          echo "$content" > generated-raw.txt
-          echo "Content generated successfully"
-
-      - name: Parse and create files
-        id: parse
+      - name: Parse, repair and validate
+        shell: bash
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
 
-          python3 << 'HEREDOC_END'
-import json
-import os
-import re
-import subprocess
-import time
+          python3 <<'PY'
+import json, os, re, subprocess, time
 from pathlib import Path
-from datetime import date, timedelta
 
-DAHL_API_KEY = os.environ.get("DAHL_API_KEY", "")
-GITHUB_RUN_ID = os.environ.get("GITHUB_RUN_ID", "unknown")
-
-DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-FIELDS = [
-    "x_post",
-    "facebook_post",
-    "instagram_post",
-    "tiktok_post",
-    "youtube_community_post",
-    "image_prompt",
-    "short_video_idea"
-]
+DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+FIELDS = ["x_post","facebook_post","instagram_post","tiktok_post","youtube_community_post","image_prompt","short_video_idea"]
 
 def parse_json(text):
     text = text.strip()
-    text = re.sub(r"^```json\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"```\s*$", "", text)
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        start = text.find("{")
-        end = text.rfind("}")
-        if start >= 0 and end > start:
-            return json.loads(text[start:end + 1])
+    text = re.sub(r"^\s*```(?:json)?\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*```\s*$", "", text)
+    try: return json.loads(text)
+    except:
+        s, e = text.find("{"), text.rfind("}")
+        if s >= 0 and e > s: return json.loads(text[s:e+1])
         raise
 
 def validate(data):
-    if not isinstance(data, dict):
-        raise ValueError("Expected JSON object")
+    if not isinstance(data, dict): raise ValueError("Expected JSON object")
     days = data.get("days")
-    if not isinstance(days, list) or len(days) != 7:
-        raise ValueError("Expected exactly 7 days")
+    if not isinstance(days, list) or len(days) != 7: raise ValueError("Expected 7 days")
     for i, day in enumerate(days):
-        expected_day = DAYS[i]
-        if not isinstance(day, dict):
-            raise ValueError(f"{expected_day} is not an object")
-        if day.get("day") != expected_day:
-            raise ValueError(f"Expected {expected_day} at position {i}")
-        for field in FIELDS:
-            value = day.get(field)
-            if not isinstance(value, str) or not value.strip():
-                raise ValueError(f"{expected_day}: missing or empty {field}")
+        if not isinstance(day, dict): raise ValueError(f"{DAYS[i]} not object")
+        if day.get("day") != DAYS[i]: raise ValueError(f"Wrong day at {i}")
+        for f in FIELDS:
+            v = day.get(f)
+            if not isinstance(v, str) or not v.strip(): raise ValueError(f"{DAYS[i]}: missing {f}")
     return data
 
-def call_api(messages, temperature=0.7):
-    request_data = {
-        "model": "MiniMaxAI/MiniMax-M2.7",
-        "messages": messages,
-        "temperature": temperature
-    }
-    for attempt in range(1, 5):
-        result = subprocess.run(
-            [
-                "curl", "-s", "--fail-with-body",
-                "--connect-timeout", "20", "--max-time", "180",
-                "https://inference.dahl.global/v1/chat/completions",
-                "-H", f"Authorization: Bearer {DAHL_API_KEY}",
-                "-H", "Content-Type: application/json",
-                "-d", json.dumps(request_data)
-            ],
-            capture_output=True,
-            text=True
-        )
-        if result.returncode == 0:
-            try:
-                response = json.loads(result.stdout)
-                if "error" not in response or not response["error"]:
-                    return response["choices"][0]["message"]["content"]
-            except (json.JSONDecodeError, KeyError, IndexError):
-                pass
-        if attempt < 4:
-            time.sleep(attempt * 5)
-    raise Exception("API call failed after 4 attempts")
-
-raw_text = Path("generated-raw.txt").read_text(encoding="utf-8").strip()
+raw = Path("generated-raw.txt").read_text(encoding="utf-8").strip()
 data = None
 
 try:
-    data = validate(parse_json(raw_text))
-    print("Initial generation is valid")
+    data = validate(parse_json(raw))
+    print("Generation response is valid.")
 except (json.JSONDecodeError, ValueError) as exc:
-    print(f"Generation needs repair: {exc}")
-    repair_messages = [
-        {
-            "role": "system",
-            "content": "Return valid JSON only. Repair the JSON. 7 days with fields: day, x_post, facebook_post, instagram_post, tiktok_post, youtube_community_post, image_prompt, short_video_idea."
-        },
-        {
-            "role": "user",
-            "content": f"Repair this JSON:\n{raw_text}"
-        }
-    ]
-    try:
-        repaired_text = call_api(repair_messages, temperature=0)
-        data = validate(parse_json(repaired_text))
-        print("Repair successful")
-    except Exception as repair_exc:
-        print(f"Repair failed: {repair_exc}")
-        raise SystemExit(1)
+    print(f"Needs repair: {exc}")
+    repair_req = {"model":"MiniMaxAI/MiniMax-M2.7","temperature":0,"messages":[{"role":"system","content":"Return valid JSON. 7 days, fields: day,x_post,facebook_post,instagram_post,tiktok_post,youtube_community_post,image_prompt,short_video_idea."},{"role":"user","content":"Fix JSON:\n"+raw}]}
+    Path("repair-request.json").write_text(json.dumps(repair_req, ensure_ascii=False), encoding="utf-8")
+    key = os.environ.get("DAHL_API_KEY","")
+    if not key: raise SystemExit("ERROR: DAHL_API_KEY missing")
+    last_error = ""
+    for attempt in range(1, 4):
+        result = subprocess.run(["curl","--fail-with-body","--silent","--show-error","--connect-timeout","20","--max-time","180","https://inference.dahl.global/v1/chat/completions","-H",f"Authorization: Bearer {key}","-H","Content-Type: application/json","--data-binary","@repair-request.json"],capture_output=True,text=True)
+        response_text = result.stdout or ""
+        if result.returncode != 0:
+            last_error = f"HTTP failed: {result.returncode}"
+        else:
+            try:
+                api_response = json.loads(response_text)
+                if api_response.get("error"): raise ValueError(f"API error")
+                choices = api_response.get("choices")
+                if not choices: raise ValueError("No choices")
+                message = choices[0].get("message") or {}
+                repaired_text = message.get("content")
+                if not repaired_text or not repaired_text.strip(): raise ValueError("Empty content")
+                data = validate(parse_json(repaired_text))
+                print("Repair succeeded.")
+                break
+            except Exception as repair_exc:
+                last_error = f"{repair_exc}"
+        if attempt < 3:
+            print(f"Retry {attempt} failed, retrying...")
+            time.sleep(attempt * 4)
+    if data is None: raise SystemExit(f"ERROR: Repair failed. {last_error}")
 
-Path("validated.json").write_text(
-    json.dumps(data, ensure_ascii=False, indent=2),
-    encoding="utf-8"
-)
+Path("generated.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+print("SUCCESS: All fields validated.")
+PY
 
+      - name: Create weekly and daily files
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+import json, os
+from datetime import date, timedelta
+from pathlib import Path
+
+data = json.loads(Path("generated.json").read_text(encoding="utf-8"))
 today = date.today()
 monday = today - timedelta(days=today.weekday())
+run_id = os.environ["RUN_ID"]
+attempt = os.environ["RUN_ATTEMPT"]
 
 root = Path("social-posts")
-(root / "weekly").mkdir(parents=True, exist_ok=True)
-(root / "daily").mkdir(parents=True, exist_ok=True)
-(root / "approved").mkdir(parents=True, exist_ok=True)
-(root / "published").mkdir(parents=True, exist_ok=True)
+(root/"weekly").mkdir(parents=True, exist_ok=True)
+(root/"daily").mkdir(parents=True, exist_ok=True)
+(root/"approved").mkdir(parents=True, exist_ok=True)
+(root/"published").mkdir(parents=True, exist_ok=True)
 
-print(f"Creating files for week of {monday.isoformat()}")
+fields = [
+    ("X POST","x_post","280 chars, hook/question"),
+    ("FACEBOOK POST","facebook_post","engaging paragraphs"),
+    ("INSTAGRAM POST","instagram_post","150-300 chars + hashtags"),
+    ("TIKTOK POST","tiktok_post","hook + 15-60 sec script"),
+    ("YOUTUBE COMMUNITY POST","youtube_community_post","community idea"),
+    ("IMAGE GENERATION PROMPT","image_prompt","visual prompt"),
+    ("SHORT VIDEO IDEA","short_video_idea","video concept")
+]
+
+def render_day(day, post_date):
+    lines = [f"# {day['day']} — {post_date.strftime('%d %B %Y')}","","**STRAYD CONTENT DIRECTOR**","",
+             f"**Date:** {post_date.isoformat()}","**Status:** DRAFT — NOT APPROVED","**Run:** {run_id} · Attempt {attempt}","","---",""]
+    for title, key, note in fields:
+        lines.extend([f"## {title}",f"*{note}*","",day[key].strip(),"","---",""])
+    return "\n".join(lines).rstrip() + "\n"
+
+weekly_lines = ["# STRAYD — Weekly Content Calendar","",
+                f"**Week beginning:** {monday.strftime('%d %B %Y')}",f"**Run:** {run_id} · Attempt {attempt}",
+                "**Status:** DRAFT — REVIEW BEFORE PUBLISHING","","Review each draft before publishing.","","---",""]
 
 for i, day in enumerate(data["days"]):
     post_date = monday + timedelta(days=i)
     slug = day["day"].lower()
+    daily_file = root/"daily"/f"{post_date.isoformat()}-{slug}-run-{run_id}-attempt-{attempt}.md"
+    with daily_file.open("x", encoding="utf-8") as h: h.write(render_day(day, post_date))
+    weekly_lines.extend([f"# {day['day']} — {post_date.strftime('%d %B %Y')}","",f"**Date:** {post_date.isoformat()}","**Status:** DRAFT","","---",""])
+    for title, key, note in fields:
+        weekly_lines.extend([f"## {title}",f"*{note}*","",day[key].strip(),"","---",""])
+    print(f"Created {daily_file}")
 
-    daily_lines = [
-        f"# {day['day']} — {post_date.strftime('%d %B %Y')}",
-        "",
-        "**STRAYD CONTENT DIRECTOR**",
-        "",
-        f"**Date:** {post_date.isoformat()}",
-        f"**Run ID:** {GITHUB_RUN_ID}",
-        "**Status:** DRAFT — NOT APPROVED",
-        "",
-        "---",
-        ""
-    ]
+weekly_file = root/"weekly"/f"{monday.isoformat()}-calendar-run-{run_id}-attempt-{attempt}.md"
+with weekly_file.open("x", encoding="utf-8") as h: h.write("\n".join(weekly_lines).rstrip() + "\n")
+print(f"Created {weekly_file}")
 
-    for field in FIELDS:
-        field_title = field.replace("_", " ").title()
-        daily_lines.extend([
-            f"## {field_title}",
-            "",
-            day[field].strip(),
-            "",
-            "---",
-            ""
-        ])
+(root/"README.md").write_text("# STRAYD Social Content Library\n\n## About\nContent for Martin Strayd and STRAYD band.\n- 55 songs total, new single weekly\n- World Tour 2027 coming\n\n## Folders\n- weekly/ — calendars\n- daily/ — individual day files\n- approved/ — approved content\n- published/ — published records\n\n## Content Types\n- X Post (280 chars)\n- Facebook Post\n- Instagram Post (+ hashtags)\n- TikTok Post\n- YouTube Community\n- Image Prompt\n- Short Video\n\n**All content is DRAFT until approved.**\n", encoding="utf-8")
 
-    daily_file = root / "daily" / f"{post_date.isoformat()}-{slug}.md"
-    daily_file.write_text("\n".join(daily_lines), encoding="utf-8")
-    print(f"Created: {daily_file}")
+if not (root/"approved"/"README.md").exists():
+    (root/"approved"/"README.md").write_text("# Approved Content\n\nMove content here after review.\n", encoding="utf-8")
+if not (root/"published"/"README.md").exists():
+    (root/"published"/"README.md").write_text("# Published Content\n\nConfirmed posts.\n", encoding="utf-8")
 
-weekly_lines = [
-    "# STRAYD — Weekly Content Calendar",
-    "",
-    f"**Week of:** {monday.strftime('%d %B %Y')}",
-    f"**Run ID:** {GITHUB_RUN_ID}",
-    "**Status:** DRAFT — REVIEW BEFORE PUBLISHING",
-    "",
-    "---",
-    ""
-]
+print("SUCCESS: All files created.")
+PY
 
-for i, day in enumerate(data["days"]):
-    post_date = monday + timedelta(days=i)
-    weekly_lines.extend([
-        f"## {day['day']} — {post_date.strftime('%d %B %Y')}",
-        "",
-        "---",
-        ""
-    ])
-    for field in FIELDS:
-        field_title = field.replace("_", " ").title()
-        weekly_lines.extend([
-            f"### {field_title}",
-            "",
-            day[field].strip(),
-            "",
-            "---",
-            ""
-        ])
-
-weekly_file = root / "weekly" / f"{monday.isoformat()}-calendar.md"
-weekly_file.write_text("\n".join(weekly_lines), encoding="utf-8")
-print(f"Created: {weekly_file}")
-
-(root / "README.md").write_text(
-    "# STRAYD Social Content Library\n\n"
-    "## About\n\n"
-    "Content for Martin Strayd and the band STRAYD.\n\n"
-    "- 55 songs total, new single every 7 days\n"
-    "- World Tour 2027 coming soon\n\n"
-    "## Folders\n\n"
-    "- `weekly/` — weekly calendars\n"
-    "- `daily/` — individual day files\n"
-    "- `approved/` — approved content\n"
-    "- `published/` — published records\n\n"
-    "## Content Types\n\n"
-    "- X Post (280 chars, hook/question)\n"
-    "- Facebook Post (paragraphs)\n"
-    "- Instagram Post (150-300 chars + hashtags)\n"
-    "- TikTok Post (hook + script)\n"
-    "- YouTube Community Post\n"
-    "- Image Prompt\n"
-    "- Short Video Idea\n\n"
-    "**All content is DRAFT until approved.**\n",
-    encoding="utf-8"
-)
-
-if not (root / "approved" / "README.md").exists():
-    (root / "approved" / "README.md").write_text(
-        "# Approved Content\n\nMove content here after review.\n",
-        encoding="utf-8"
-    )
-
-if not (root / "published" / "README.md").exists():
-    (root / "published" / "README.md").write_text(
-        "# Published Content\n\nConfirmed published posts.\n",
-        encoding="utf-8"
-    )
-
-print("SUCCESS: All files created")
-HEREDOC_END
-
-      - name: Commit files
+      - name: Commit generated files
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add social-posts/
-          if git diff --cached --quiet; then
-            echo "No new files to commit"
-            exit 0
-          fi
-          git commit -m "STRAYD content $(date +%Y-%m-%d) run ${GITHUB_RUN_ID}"
-          git push origin ${GITHUB_REF_NAME}
-          echo "Committed successfully"
+          if git diff --cached --quiet; then echo "No new files to commit."; exit 0; fi
+          git commit -m "STRAYD content run ${GITHUB_RUN_ID}"
+          git push origin "HEAD:${TARGET_BRANCH}"
+          echo "SUCCESS: Committed to ${TARGET_BRANCH}."

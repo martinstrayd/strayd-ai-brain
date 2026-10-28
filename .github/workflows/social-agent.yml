@@ -42,22 +42,8 @@ jobs:
           {
             model: "MiniMaxAI/MiniMax-M2.7",
             messages: [
-              {
-                role: "system",
-                content: "You are the STRAYD Content Director. Focus on Martin Strayd and STRAYD band. Never invent facts. Return valid JSON."
-              },
-              {
-                role: "user",
-                content: (
-                  "BRAND PROFILE:\n\n" + $profile +
-                  "\n\nSTRAYD = Martin Strayd + Suzuki. 55 songs, new single weekly. World Tour 2027." +
-                  "\n\nCreate 7-day calendar. JSON with days array, 7 objects. Fields: day, x_post, facebook_post, instagram_post, tiktok_post, youtube_community_post, image_prompt, short_video_idea." +
-                  "\nDays: Monday to Sunday." +
-                  "\nX: 280 chars, hook/question. FB: paragraphs. IG: 150-300 chars + hashtags. TikTok: hook + script." +
-                  "\nThemes: Weekly Song Journey, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Creative Persistence, STRAYD Updates." +
-                  "\nReturn JSON only."
-                )
-              }
+              {role: "system", content: "You are the STRAYD Content Director. Focus on Martin Strayd and STRAYD band. Never invent facts. Return valid JSON."},
+              {role: "user", content: ("BRAND PROFILE:\n\n" + $profile + "\n\nSTRAYD = Martin Strayd + Suzuki. 55 songs, new single weekly. World Tour 2027.\n\nCreate 7-day calendar. JSON with days array, 7 objects. Fields: day, x_post, facebook_post, instagram_post, tiktok_post, youtube_community_post, image_prompt, short_video_idea.\nDays: Monday to Sunday.\nX: 280 chars, hook/question. FB: paragraphs. IG: 150-300 chars + hashtags. TikTok: hook + script.\nThemes: Weekly Song Journey, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Creative Persistence, STRAYD Updates.\nReturn JSON only.")}
             ],
             temperature: 0.7
           }' > request.json
@@ -99,100 +85,53 @@ jobs:
           FIELDS = ["x_post","facebook_post","instagram_post","tiktok_post","youtube_community_post","image_prompt","short_video_idea"]
 
           def parse(text):
-              text = text.strip()
-              text = re.sub(r"^```json\s*", "", text, flags=re.I)
-              text = re.sub(r"^```\s*", "", text, flags=re.I)
-              text = re.sub(r"\s*```\s*$", "", text)
-              try:
-                  return json.loads(text)
-              except Exception:
+              text = re.sub(r"^```json\s*", "", text.strip(), flags=re.I)
+              text = re.sub(r"```\s*$", "", text)
+              try: return json.loads(text)
+              except:
                   s, e = text.find("{"), text.rfind("}")
-                  if s >= 0 and e > s:
-                      return json.loads(text[s:e+1])
+                  if s >= 0 and e > s: return json.loads(text[s:e+1])
                   raise
 
           def valid(data):
-              if not isinstance(data, dict):
-                  raise ValueError("Root is not a JSON object")
-              
-              days = data.get("days")
-              if not isinstance(days, list):
-                  if isinstance(data, list):
-                      days = data
-                  else:
-                      raise ValueError("Missing 'days' array")
-
-              if len(days) != 7:
-                  raise ValueError(f"Expected 7 days, got {len(days)}")
-
-              for i, d in enumerate(days):
-                  if not isinstance(d, dict):
-                      raise ValueError(f"Day {i} is not an object")
-                  
-                  # Auto-normalize the day name to match expected sequence
-                  d["day"] = DAYS[i]
-
+              if "days" not in data or len(data["days"]) != 7: raise ValueError("bad days")
+              for i, d in enumerate(data["days"]):
+                  if d.get("day") != DAYS[i]: raise ValueError(f"wrong day {i}")
                   for f in FIELDS:
-                      val = d.get(f)
-                      if not isinstance(val, str) or not val.strip():
-                          d[f] = f"Content pending for {DAYS[i]}"
+                      if not isinstance(d.get(f), str) or not d[f].strip(): raise ValueError(f"missing {f}")
+              return data
 
-              return {"days": days}
-
-          raw = Path("generated-raw.txt").read_text(encoding="utf-8").strip()
+          raw = Path("generated-raw.txt").read_text().strip()
           data = None
           try:
               data = valid(parse(raw))
-              print("Initial response parsed and validated.")
           except Exception as e:
               print(f"Needs repair: {e}")
-              req = {
-                  "model": "MiniMaxAI/MiniMax-M2.7",
-                  "temperature": 0,
-                  "messages": [
-                      {
-                          "role": "system",
-                          "content": "Return valid JSON only. Must contain a 'days' array with 7 objects. Fields: day, x_post, facebook_post, instagram_post, tiktok_post, youtube_community_post, image_prompt, short_video_idea."
-                      },
-                      {
-                          "role": "user",
-                          "content": "Fix this response into valid JSON matching the required schema:\n\n" + raw
-                      }
-                  ]
-              }
-              Path("repair-request.json").write_text(json.dumps(req, ensure_ascii=False), encoding="utf-8")
-              
-              for attempt in range(1, 4):
+              req = {"model":"MiniMaxAI/MiniMax-M2.7","temperature":0,"messages":[{"role":"system","content":"Return valid JSON. 7 days, fields: day,x_post,facebook_post,instagram_post,tiktok_post,youtube_community_post,image_prompt,short_video_idea."},{"role":"user","content":"Fix JSON:\n"+raw}]}
+              Path("repair-request.json").write_text(json.dumps(req))
+              for attempt in range(1,4):
                   r = subprocess.run([
-                      "curl", "--fail-with-body", "--silent", "--show-error",
-                      "--connect-timeout", "20", "--max-time", "180",
-                      "[https://inference.dahl.global/v1/chat/completions](https://inference.dahl.global/v1/chat/completions)",
-                      "-H", "Authorization: Bearer " + key,
-                      "-H", "Content-Type: application/json",
-                      "--data-binary", "@repair-request.json"
+                      "curl","--fail-with-body","--silent","--show-error",
+                      "--connect-timeout","20","--max-time","180",
+                      "https://inference.dahl.global/v1/chat/completions",
+                      "-H","Authorization: Bearer "+key,
+                      "-H","Content-Type: application/json",
+                      "--data-binary","@repair-request.json"
                   ], capture_output=True, text=True)
-
                   if r.returncode == 0:
                       try:
-                          res_json = json.loads(r.stdout)
-                          content_text = res_json["choices"][0]["message"]["content"]
-                          data = valid(parse(content_text))
+                          data = valid(parse(json.loads(r.stdout)["choices"][0]["message"]["content"]))
                           print("Repair succeeded.")
                           break
-                      except Exception as inner_err:
-                          print(f"Repair attempt {attempt} parse error: {inner_err}")
-                  else:
-                      print(f"Repair curl failed: {r.stderr}")
-
+                      except Exception as inner:
+                          print(f"Repair parse attempt failed: {inner}")
                   if attempt < 3:
+                      print(f"Retry {attempt} failed, retrying...")
                       time.sleep(attempt * 4)
+              if not data: sys.exit(1)
 
-              if not data:
-                  print("ERROR: Failed to recover valid content.")
-                  sys.exit(1)
-
-          Path("generated.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-          print("SUCCESS: All 7 days and fields validated.")
+          Path("generated.json").write_text(json.dumps(data, indent=2))
+          print("SUCCESS: All fields validated.")
           PYEOF
 
       - name: Create weekly and daily Markdown files

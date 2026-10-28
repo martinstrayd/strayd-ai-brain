@@ -11,23 +11,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Read Brand Profile
+        id: profile
+        run: |
+          {
+            echo 'PROFILE<<EOF'
+            cat brand-profile.md
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
       - name: Generate Social Content
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+          PROFILE: ${{ steps.profile.outputs.PROFILE }}
         run: |
           curl -s https://inference.dahl.global/v1/chat/completions \
           -H "Authorization: Bearer $DAHL_API_KEY" \
           -H "Content-Type: application/json" \
-          -d '{
-            "model":"MiniMaxAI/MiniMax-M2.7",
-            "messages":[
-              {
-                "role":"system",
-                "content":"You are Martin Strayd Social Manager. Use only Martin Strayd, Fantasy7, Suzuki & Strayd and Strayd.com. Never invent artists. Never create fake bands. Return only final content."
-              },
-              {
-                "role":"user",
-                "content":"Create 10 X posts, 3 Facebook posts, 1 YouTube Community post and 5 image prompts for Martin Strayd."
-              }
-            ]
-          }'
+          -d "$(jq -n \
+            --arg p "$PROFILE" \
+            '{
+              model:"MiniMaxAI/MiniMax-M2.7",
+              messages:[
+                {
+                  role:"system",
+                  content:"You are Martin Strayd Social Manager. Read the provided brand profile carefully and create content based only on that information. Never invent artists, songs, releases or history."
+                },
+                {
+                  role:"user",
+                  content:("BRAND PROFILE:\n\n" + $p + "\n\nCreate:\n\n10 X posts\n\n3 Facebook posts\n\n1 YouTube Community post\n\n10 future content ideas\n\n5 image prompts\n\n5 quote graphics.\n\nReturn markdown only.")
+                }
+              ]
+            }')"

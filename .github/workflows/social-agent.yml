@@ -1,10 +1,93 @@
-- name: Parse, repair and validate content
+name: Strayd Content Director
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: strayd-content-director-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  content-director:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check configuration
+        shell: bash
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          set -euo pipefail
+          test -s brand-profile.md || { echo "::error::brand-profile.md missing"; exit 1; }
+          test -n "${DAHL_API_KEY:-}" || { echo "::error::DAHL_API_KEY missing"; exit 1; }
+          echo "Configuration checks passed."
+
+      - name: Generate weekly content with Dahl and MiniMax
         shell: bash
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           set -euo pipefail
 
+          jq -n --rawfile profile brand-profile.md '
+          {
+            model: "MiniMaxAI/MiniMax-M2.7",
+            messages: [
+              {
+                role: "system",
+                content: "You are the STRAYD Content Director. Focus on Martin Strayd and STRAYD band. Never invent facts. Return valid JSON."
+              },
+              {
+                role: "user",
+                content: (
+                  "BRAND PROFILE:\n\n" + $profile +
+                  "\n\nSTRAYD = Martin Strayd + Suzuki. 55 songs, new single weekly. World Tour 2027." +
+                  "\n\nCreate 7-day calendar. JSON with days array, 7 objects. Fields: day, x_post, facebook_post, instagram_post, tiktok_post, youtube_community_post, image_prompt, short_video_idea." +
+                  "\nDays: Monday to Sunday." +
+                  "\nX: 280 chars, hook/question. FB: paragraphs. IG: 150-300 chars + hashtags. TikTok: hook + script." +
+                  "\nThemes: Weekly Song Journey, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Creative Persistence, STRAYD Updates." +
+                  "\nReturn JSON only."
+                )
+              }
+            ],
+            temperature: 0.7
+          }' > request.json
+
+          success=0
+          for attempt in 1 2 3 4; do
+            echo "Generation attempt ${attempt}/4..."
+            if curl --fail-with-body --silent --show-error \
+              --connect-timeout 20 --max-time 180 \
+              https://inference.dahl.global/v1/chat/completions \
+              -H "Authorization: Bearer ${DAHL_API_KEY}" \
+              -H "Content-Type: application/json" \
+              --data-binary @request.json -o response.json; then
+              success=1
+              break
+            fi
+            [ "$attempt" -lt 4 ] && sleep $((attempt * 5))
+          done
+
+          [ "$success" -ne 1 ] && { echo "::error::Generation failed"; exit 1; }
+          jq -e 'type == "object"' response.json >/dev/null 2>&1 || { echo "::error::Invalid response"; exit 1; }
+          jq -e '.error' response.json >/dev/null 2>&1 && { echo "::error::API error"; exit 1; }
+          jq -er '.choices[0].message.content | strings' response.json > generated-raw.txt || { echo "::error::No content"; exit 1; }
+          echo "AI response received."
+
+      - name: Parse, repair and validate content
+        shell: bash
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
           python3 - "$DAHL_API_KEY" << 'PYEOF'
           import json, sys, re, subprocess, time
           from pathlib import Path
@@ -20,7 +103,6 @@
               try:
                   return json.loads(text)
               except Exception:
-                  # Extract strictly between the first '{' and the last '}'
                   s, e = text.find("{"), text.rfind("}")
                   if s >= 0 and e > s:
                       return json.loads(text[s:e+1])
@@ -38,13 +120,11 @@
                   if not isinstance(d, dict):
                       raise ValueError(f"Day position {i} is not an object")
                   
-                  # Force standard day naming to match array order
                   d["day"] = DAYS[i]
 
                   for f in FIELDS:
                       val = d.get(f)
                       if not isinstance(val, str) or not val.strip():
-                          # Fallback placeholder if field was skipped
                           d[f] = f"Content for {DAYS[i]} ({f})"
 
               return {"days": days}
@@ -106,3 +186,90 @@
           Path("generated.json").write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
           print("SUCCESS: Content saved to generated.json.")
           PYEOF
+
+      - name: Create weekly and daily Markdown files
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          python3 << 'PYEOF'
+          import json, os
+          from datetime import date, timedelta
+          from pathlib import Path
+
+          data = json.loads(Path("generated.json").read_text(encoding="utf-8"))
+          today = date.today()
+          monday = today - timedelta(days=today.weekday())
+          run_id = os.environ["RUN_ID"]
+          attempt = os.environ["RUN_ATTEMPT"]
+
+          root = Path("social-posts")
+          (root/"weekly").mkdir(parents=True, exist_ok=True)
+          (root/"daily").mkdir(parents=True, exist_ok=True)
+          (root/"approved").mkdir(parents=True, exist_ok=True)
+          (root/"published").mkdir(parents=True, exist_ok=True)
+
+          fields = [
+              ("X POST","x_post","280 chars, hook/question"),
+              ("FACEBOOK POST","facebook_post","engaging paragraphs"),
+              ("INSTAGRAM POST","instagram_post","150-300 chars + hashtags"),
+              ("TIKTOK POST","tiktok_post","hook + 15-60 sec script"),
+              ("YOUTUBE COMMUNITY POST","youtube_community_post","community idea"),
+              ("IMAGE GENERATION PROMPT","image_prompt","visual prompt"),
+              ("SHORT VIDEO IDEA","short_video_idea","video concept")
+          ]
+
+          def render_day(day, post_date):
+              lines = [f"# {day['day']} — {post_date.strftime('%d %B %Y')}","","**STRAYD CONTENT DIRECTOR**","",f"**Date:** {post_date.isoformat()}","**Status:** DRAFT",f"**Run:** {run_id} · Attempt {attempt}","","---",""]
+              for title, key, note in fields:
+                  lines.extend([f"## {title}",f"*{note}*","",day[key].strip(),"","---",""])
+              return "\n".join(lines).rstrip() + "\n"
+
+          weekly_lines = ["# STRAYD — Weekly Content Calendar","",f"**Week beginning:** {monday.strftime('%d %B %Y')}",f"**Run:** {run_id} · Attempt {attempt}","**Status:** DRAFT","","---",""]
+
+          for i, day in enumerate(data["days"]):
+              post_date = monday + timedelta(days=i)
+              slug = day["day"].lower()
+              daily_file = root/"daily"/f"{post_date.isoformat()}-{slug}.md"
+              with daily_file.open("w", encoding="utf-8") as h: h.write(render_day(day, post_date))
+              weekly_lines.extend([f"# {day['day']} — {post_date.strftime('%d %B %Y')}","",f"**Date:** {post_date.isoformat()}","**Status:** DRAFT","","---",""])
+              for title, key, note in fields:
+                  weekly_lines.extend([f"## {title}",f"*{note}*","",day[key].strip(),"","---",""])
+              print(f"Created {daily_file}")
+
+          weekly_file = root/"weekly"/f"{monday.isoformat()}-calendar.md"
+          with weekly_file.open("w", encoding="utf-8") as h: h.write("\n".join(weekly_lines).rstrip() + "\n")
+          print(f"Created {weekly_file}")
+
+          (root/"README.md").write_text("# STRAYD Social Content Library\n\n## About\nContent for Martin Strayd and STRAYD band.\n- 55 songs total, new single weekly\n- World Tour 2027 coming soon\n\n## Folders\n- weekly/ — calendars\n- daily/ — day files\n- approved/ — approved content\n- published/ — published records\n\n## Content Types\n- X Post (280 chars)\n- Facebook Post\n- Instagram Post + hashtags\n- TikTok Post\n- YouTube Community\n- Image Prompt\n- Short Video\n\n**DRAFT until approved.**\n", encoding="utf-8")
+
+          if not (root/"approved"/"README.md").exists():
+              (root/"approved"/"README.md").write_text("# Approved Content\n\nMove content here after review.\n", encoding="utf-8")
+          if not (root/"published"/"README.md").exists():
+              (root/"published"/"README.md").write_text("# Published Content\n\nConfirmed posts.\n", encoding="utf-8")
+
+          print("SUCCESS: All files created.")
+          PYEOF
+
+      - name: Commit generated files
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git pull --rebase origin "${TARGET_BRANCH}" || true
+          git add social-posts/
+
+          if git diff --cached --quiet; then
+            echo "No new files to commit."
+            exit 0
+          fi
+
+          git commit -m "Generate STRAYD social content run ${GITHUB_RUN_ID}"
+          git push origin "HEAD:${TARGET_BRANCH}"
+          echo "SUCCESS: Generated files committed to ${TARGET_BRANCH}."

@@ -16,8 +16,8 @@ concurrency:
 jobs:
   content-director:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
- 
+    timeout-minutes: 20
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -29,17 +29,19 @@ jobs:
         run: |
           set -euo pipefail
 
-          test -s brand-profile.md || {
-            echo "ERROR: brand-profile.md is missing or empty."
+          if [ ! -s brand-profile.md ]; then
+            echo "::error::brand-profile.md is missing or empty."
             exit 1
-          }
+          fi
 
-          test -n "${DAHL_API_KEY:-}" || {
-            echo "ERROR: DAHL_API_KEY secret is missing."
+          if [ -z "${DAHL_API_KEY:-}" ]; then
+            echo "::error::GitHub secret DAHL_API_KEY is missing."
             exit 1
-          }
+          fi
 
-      - name: Generate calendar with Dahl and MiniMax
+          echo "Brand profile and API secret are configured."
+
+      - name: Generate weekly content with Dahl and MiniMax
         shell: bash
         env:
           DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
@@ -52,21 +54,22 @@ jobs:
               messages: [
                 {
                   role: "system",
-                  content: "You are the STRAYD Content Director. Use only facts supported by the supplied brand profile. Never invent songs, releases, dates, history, achievements, products or URLs. Create practical, publishable social content. Return valid JSON only."
+                  content: "You are the STRAYD Content Director. Use only facts supported by the supplied brand profile. Never invent songs, releases, dates, history, achievements, products, URLs or claims. Write practical, engaging social content. Return one valid JSON object only, with no Markdown fences."
                 },
                 {
                   role: "user",
                   content: (
                     "BRAND PROFILE:\n\n" + $profile +
-                    "\n\nCreate a complete seven-day calendar, Monday through Sunday." +
+                    "\n\nCreate a complete Monday-to-Sunday social content calendar." +
                     "\nReturn one JSON object with a days array containing exactly seven objects." +
-                    "\nEach object must have these six string fields: day, x_post, facebook_post, youtube_community_post, image_prompt, short_video_idea." +
-                    "\nUse the day names Monday, Tuesday, Wednesday, Thursday, Friday, Saturday and Sunday in that order." +
-                    "\nCreate actual post drafts for X, Facebook and YouTube Community, plus one image prompt and one short-video idea per day." +
-                    "\nRotate between Weekly Song Journey, Fantasy7, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Cool Hot Sauce and Creative Persistence where supported by the brand profile." +
-                    "\nUse strayd.com when appropriate. Do not invent URLs or facts." +
-                    "\nWrite with strong hooks, natural language and useful calls to action. Avoid generic filler." +
-                    "\nReturn JSON only, with no Markdown fences."
+                    "\nEach day object must contain six string fields: day, x_post, facebook_post, youtube_community_post, image_prompt, short_video_idea." +
+                    "\nUse these exact day names in order: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday." +
+                    "\nWrite a publishable X post, a publishable Facebook post, a YouTube Community post, an image-generation prompt, and a practical short-video idea for each day." +
+                    "\nRotate between Weekly Song Journey, Fantasy7, Creativity After 50, Independent Music, NATRON THEORY, How To Rock, Cool Hot Sauce and Creative Persistence only where supported by the profile." +
+                    "\nUse strayd.com when appropriate. Do not invent URLs, facts, songs or releases." +
+                    "\nUse strong hooks, readable paragraphs and clear calls to action. Avoid generic filler and repeated posts." +
+                    "\nReturn valid JSON only. Escape quotation marks inside strings correctly. Do not put unescaped line breaks inside JSON strings." +
+                    "\nRequired shape: {\"days\":[{\"day\":\"Monday\",\"x_post\":\"...\",\"facebook_post\":\"...\",\"youtube_community_post\":\"...\",\"image_prompt\":\"...\",\"short_video_idea\":\"...\"}]}"
                   )
                 }
               ],
@@ -88,41 +91,33 @@ jobs:
           jq -er '.choices[0].message.content | strings' \
             response.json > generated-raw.txt
 
-      - name: Validate AI response
+          if [ ! -s generated-raw.txt ]; then
+            echo "::error::Dahl returned an empty content response."
+            exit 1
+          fi
+
+          echo "AI response received."
+
+      - name: Parse, repair if necessary, and validate content
         shell: bash
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           set -euo pipefail
 
           python3 <<'PY'
           import json
+          import os
           import re
+          import subprocess
           from pathlib import Path
 
-          raw = Path("generated-raw.txt").read_text(encoding="utf-8").strip()
-
-          raw = re.sub(
-              r"^\s*```(?:json)?\s*", "", raw, flags=re.IGNORECASE
-          )
-          raw = re.sub(r"\s*```\s*$", "", raw)
-
-          try:
-              data = json.loads(raw)
-          except json.JSONDecodeError:
-              start = raw.find("{")
-              end = raw.rfind("}")
-              if start < 0 or end <= start:
-                  raise SystemExit("ERROR: No JSON object in AI response.")
-              try:
-                  data = json.loads(raw[start:end + 1])
-              except json.JSONDecodeError as exc:
-                  raise SystemExit(f"ERROR: Invalid AI JSON: {exc}")
-
-          expected = [
+          EXPECTED_DAYS = [
               "Monday", "Tuesday", "Wednesday", "Thursday",
               "Friday", "Saturday", "Sunday"
           ]
 
-          fields = [
+          REQUIRED_FIELDS = [
               "x_post",
               "facebook_post",
               "youtube_community_post",
@@ -130,23 +125,165 @@ jobs:
               "short_video_idea"
           ]
 
-          if not isinstance(data, dict):
-              raise SystemExit("ERROR: Response must be a JSON object.")
+          def parse_json(text):
+              text = text.strip()
 
-          days = data.get("days")
-          if not isinstance(days, list) or len(days) != 7:
-              raise SystemExit("ERROR: Expected exactly seven days.")
+              text = re.sub(
+                  r"^\s*```(?:json)?\s*",
+                  "",
+                  text,
+                  flags=re.IGNORECASE
+              )
+              text = re.sub(r"\s*```\s*$", "", text)
 
-          for i, day in enumerate(days):
-              if not isinstance(day, dict) or day.get("day") != expected[i]:
-                  raise SystemExit(f"ERROR: Incorrect day at position {i + 1}.")
+              try:
+                  return json.loads(text)
+              except json.JSONDecodeError:
+                  start = text.find("{")
+                  end = text.rfind("}")
 
-              for field in fields:
-                  value = day.get(field)
-                  if not isinstance(value, str) or not value.strip():
-                      raise SystemExit(
-                          f"ERROR: Missing {field} for {expected[i]}."
+                  if start < 0 or end <= start:
+                      raise
+
+                  return json.loads(text[start:end + 1])
+
+          def validate(data):
+              if not isinstance(data, dict):
+                  raise ValueError("Response must be a JSON object.")
+
+              days = data.get("days")
+
+              if not isinstance(days, list) or len(days) != 7:
+                  raise ValueError(
+                      "Response must contain exactly seven days."
+                  )
+
+              for index, day in enumerate(days):
+                  expected = EXPECTED_DAYS[index]
+
+                  if not isinstance(day, dict):
+                      raise ValueError(
+                          f"{expected} must be an object."
                       )
+
+                  if day.get("day") != expected:
+                      raise ValueError(
+                          f"Expected {expected} at position {index + 1}."
+                      )
+
+                  for field in REQUIRED_FIELDS:
+                      value = day.get(field)
+
+                      if not isinstance(value, str) or not value.strip():
+                          raise ValueError(
+                              f"{expected} is missing a valid {field}."
+                          )
+
+              return data
+
+          raw = Path("generated-raw.txt").read_text(
+              encoding="utf-8"
+          ).strip()
+
+          data = None
+
+          try:
+              data = validate(parse_json(raw))
+              print("Original response is valid and complete.")
+
+          except (json.JSONDecodeError, ValueError) as original_error:
+              print(f"Initial response needs repair: {original_error}")
+              print("Requesting one JSON repair from Dahl/MiniMax.")
+
+              repair_request = {
+                  "model": "MiniMaxAI/MiniMax-M2.7",
+                  "messages": [
+                      {
+                          "role": "system",
+                          "content": (
+                              "You repair malformed JSON. Return exactly "
+                              "one valid JSON object, without Markdown "
+                              "fences or explanations. Preserve all "
+                              "recoverable original content. Do not invent "
+                              "facts or fabricate missing posts. Properly "
+                              "escape quotes, backslashes and newlines."
+                          )
+                      },
+                      {
+                          "role": "user",
+                          "content": (
+                              "Repair this malformed response. It must "
+                              "contain a days array of exactly seven objects "
+                              "in Monday-to-Sunday order. Each object must "
+                              "have string fields day, x_post, facebook_post, "
+                              "youtube_community_post, image_prompt and "
+                              "short_video_idea. Preserve the content. "
+                              "If any required content is unrecoverable, "
+                              "do not invent it.\n\n"
+                              + raw
+                          )
+                      }
+                  ],
+                  "temperature": 0
+              }
+
+              Path("repair-request.json").write_text(
+                  json.dumps(repair_request, ensure_ascii=False),
+                  encoding="utf-8"
+              )
+
+              env = os.environ.copy()
+              api_key = env.get("DAHL_API_KEY", "")
+
+              if not api_key:
+                  raise SystemExit(
+                      "ERROR: DAHL_API_KEY is unavailable for repair."
+                  )
+
+              command = [
+                  "curl",
+                  "--fail-with-body",
+                  "--silent",
+                  "--show-error",
+                  "--retry", "2",
+                  "--retry-delay", "3",
+                  "--retry-all-errors",
+                  "--connect-timeout", "20",
+                  "--max-time", "180",
+                  "https://inference.dahl.global/v1/chat/completions",
+                  "-H", f"Authorization: Bearer {api_key}",
+                  "-H", "Content-Type: application/json",
+                  "--data-binary", "@repair-request.json"
+              ]
+
+              result = subprocess.run(
+                  command,
+                  capture_output=True,
+                  text=True,
+                  env=env
+              )
+
+              if result.returncode != 0:
+                  detail = (result.stderr or result.stdout)[-2000:]
+                  raise SystemExit(
+                      "ERROR: Repair API request failed. " + detail
+                  )
+
+              try:
+                  api_response = json.loads(result.stdout)
+                  repaired_text = (
+                      api_response["choices"][0]["message"]["content"]
+                  )
+
+                  data = validate(parse_json(repaired_text))
+
+              except Exception as repair_error:
+                  raise SystemExit(
+                      "ERROR: Repair failed or returned incomplete "
+                      f"content: {repair_error}"
+                  )
+
+              print("Repair succeeded and all content validated.")
 
           Path("generated.json").write_text(
               json.dumps(data, ensure_ascii=False, indent=2) + "\n",
@@ -156,7 +293,7 @@ jobs:
           print("SUCCESS: Seven days and all five content types validated.")
           PY
 
-      - name: Create matching weekly and daily Markdown files
+      - name: Create weekly and daily Markdown files
         shell: bash
         env:
           RUN_ID: ${{ github.run_id }}
@@ -187,7 +324,10 @@ jobs:
           published_dir = root / "published"
 
           for folder in (
-              weekly_dir, daily_dir, approved_dir, published_dir
+              weekly_dir,
+              daily_dir,
+              approved_dir,
+              published_dir
           ):
               folder.mkdir(parents=True, exist_ok=True)
 
@@ -196,21 +336,21 @@ jobs:
               ("FACEBOOK POST", "facebook_post"),
               ("YOUTUBE COMMUNITY POST", "youtube_community_post"),
               ("IMAGE PROMPT", "image_prompt"),
-              ("SHORT VIDEO IDEA", "short_video_idea"),
+              ("SHORT VIDEO IDEA", "short_video_idea")
           ]
 
-          def render_post(day, post_date):
+          def render_day(day, post_date):
               lines = [
                   f"# {day['day']} — {post_date.strftime('%d %B %Y')}",
                   "",
                   "**STRAYD CONTENT DIRECTOR**",
                   "",
                   f"**Date:** {post_date.isoformat()}",
-                  f"**Status:** DRAFT — NOT APPROVED FOR PUBLISHING",
-                  f"**Run:** {run_id} · Attempt {attempt}",
+                  "**Status:** DRAFT — NOT APPROVED FOR PUBLISHING",
+                  f"**Generation run:** {run_id} · Attempt {attempt}",
                   "",
                   "---",
-                  "",
+                  ""
               ]
 
               for title, key in fields:
@@ -220,7 +360,7 @@ jobs:
                       day[key].strip(),
                       "",
                       "---",
-                      "",
+                      ""
                   ])
 
               return "\n".join(lines).rstrip() + "\n"
@@ -232,11 +372,10 @@ jobs:
               f"**Generation run:** {run_id} · Attempt {attempt}",
               "**Status:** DRAFT — REVIEW BEFORE PUBLISHING",
               "",
-              "This calendar contains seven daily drafts. Each daily file "
-              "uses the same headings and section order.",
+              "Review each draft before publishing.",
               "",
               "---",
-              "",
+              ""
           ]
 
           for index, day in enumerate(data["days"]):
@@ -248,13 +387,18 @@ jobs:
                   f"-run-{run_id}-attempt-{attempt}.md"
               )
 
-              # Exclusive creation prevents overwriting previous drafts.
+              # Exclusive creation: never overwrite previous drafts.
               with daily_file.open("x", encoding="utf-8") as handle:
-                  handle.write(render_post(day, post_date))
+                  handle.write(render_day(day, post_date))
 
               weekly_lines.extend([
                   f"# {day['day']} — {post_date.strftime('%d %B %Y')}",
                   "",
+                  f"**Date:** {post_date.isoformat()}",
+                  "**Status:** DRAFT — NOT APPROVED FOR PUBLISHING",
+                  "",
+                  "---",
+                  ""
               ])
 
               for title, key in fields:
@@ -264,7 +408,7 @@ jobs:
                       day[key].strip(),
                       "",
                       "---",
-                      "",
+                      ""
                   ])
 
               print(f"Created {daily_file}")
@@ -279,29 +423,38 @@ jobs:
 
           print(f"Created {weekly_file}")
 
-          (root / "README.md").write_text(
+          readme = root / "README.md"
+          readme.write_text(
               "# STRAYD Social Content Library\n\n"
               "## Folders\n\n"
               "- `weekly/` — complete weekly Markdown calendars.\n"
               "- `daily/` — individual daily Markdown files.\n"
               "- `approved/` — reserved for explicitly approved posts.\n"
               "- `published/` — reserved for confirmed publishing records.\n\n"
-              "Weekly and daily files use matching headings and section order. "
-              "Every generation run has unique filenames to preserve earlier "
-              "drafts.\n\n"
-              "**Important:** Generation does not approve or publish posts.\n",
+              "Weekly and daily files use consistent headings and section "
+              "order. Unique run IDs preserve earlier drafts.\n\n"
+              "**Important:** generated drafts are not automatically "
+              "approved or published.\n",
               encoding="utf-8"
           )
 
-          (approved_dir / "README.md").write_text(
-              "# Approved Posts\n\nReserved for explicitly approved content.\n",
-              encoding="utf-8"
-          )
+          approved_readme = approved_dir / "README.md"
+          if not approved_readme.exists():
+              approved_readme.write_text(
+                  "# Approved Posts\n\n"
+                  "Reserved for explicitly approved content.\n",
+                  encoding="utf-8"
+              )
 
-          (published_dir / "README.md").write_text(
-              "# Published Records\n\nReserved for confirmed publishing records.\n",
-              encoding="utf-8"
-          )
+          published_readme = published_dir / "README.md"
+          if not published_readme.exists():
+              published_readme.write_text(
+                  "# Published Records\n\n"
+                  "Reserved for confirmed publishing records.\n",
+                  encoding="utf-8"
+              )
+
+          print("SUCCESS: Weekly and daily Markdown files created.")
           PY
 
       - name: Commit generated files
@@ -322,7 +475,9 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Generate STRAYD social content run ${GITHUB_RUN_ID}"
+          git commit -m \
+            "Generate STRAYD social content run ${GITHUB_RUN_ID}"
+
           git push origin "HEAD:${TARGET_BRANCH}"
 
-          echo "SUCCESS: Generated content committed to ${TARGET_BRANCH}."
+          echo "SUCCESS: Generated files committed to ${TARGET_BRANCH}."

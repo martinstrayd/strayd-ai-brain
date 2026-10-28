@@ -1,0 +1,259 @@
+
+name: STRAYD SEO Manager Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: strayd-seo-audit
+  cancel-in-progress: false
+
+jobs:
+  seo-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check required files
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${DAHL_API_KEY:-}" ]; then
+            echo "::error::DAHL_API_KEY is missing from repository secrets."
+            exit 1
+          fi
+
+          for file in \
+            "agents/seo-manager.agent.md" \
+            "brand-profile.md" \
+            "songarchive.md" \
+            "martinstrayd.md" \
+            "suzukimusic.md"
+          do
+            if [ ! -s "$file" ]; then
+              echo "::error::Required file is missing or empty: $file"
+              exit 1
+            fi
+          done
+
+          command -v jq
+          command -v curl
+
+          echo "All required files are available."
+
+      - name: Prepare SEO audit
+        run: |
+          set -euo pipefail
+
+          cat > audit-instructions.txt <<'EOF'
+          Audit the STRAYD SEO Manager instructions against the supplied
+          knowledge and brand files.
+
+          This is a review, not a request to rewrite the agent instructions.
+
+          Check:
+          1. Consistency of STRAYD, Martin Strayd and Suzuki naming.
+          2. Search-friendly titles, descriptions and page headings.
+          3. Artist, song and release metadata accuracy.
+          4. Official music links and social profile handling.
+          5. Music discovery, website SEO and structured metadata guidance.
+          6. Duplicate titles, alternate mixes and unreleased material.
+          7. Claims about streaming availability, licensing and identifiers.
+          8. Rules against inventing facts, URLs, credits or release dates.
+          9. Practical missing instructions and contradictions.
+
+          Branding guidance:
+          - Main artist identity: STRAYD.
+          - Artist descriptor: STRAYD featuring Martin Strayd & Suzuki.
+          - Collaborative artwork billing: SUZUKI & STRAYD.
+          - Suzuki is a media guru and band manager and provides backing
+            vocals on selected songs only. Do not assume she is lead vocalist
+            or a guitarist.
+          - The working catalogue contains originals, remixes, demos and
+            alternate versions. Do not treat every entry as a released song.
+          - More than 100 tracks are reported as live and all master files
+            are reported as licensed. These are artist-provided statements,
+            not independently verified facts.
+          - UPC and ISRC identifiers have not yet been systematically
+            verified. Do not invent identifiers.
+
+          Use only the supplied source files. Do not claim to have visited
+          websites, checked search rankings, or verified streaming platforms.
+          Distinguish documented facts, possible issues and recommendations.
+          Quote short phrases or name relevant sections as evidence.
+          Do not modify source files.
+
+          Produce a complete Markdown report with these exact sections:
+
+          # STRAYD SEO Manager Audit
+          ## Executive Summary
+          ## Responsibilities and Scope
+          ## Artist Branding and Naming
+          ## Website and Music Discovery SEO
+          ## Metadata, Links and Release Accuracy
+          ## Contradictions and Missing Safeguards
+          ## Recommended Improvements
+          ## Limitations
+
+          Keep the report focused and practical. Finish with a final line
+          containing exactly: AUDIT COMPLETE
+          Do not output that final line until all report sections are finished.
+          EOF
+
+          {
+            echo "# SEO MANAGER INSTRUCTIONS"
+            cat agents/seo-manager.agent.md
+            echo
+            echo "# BRAND PROFILE"
+            cat brand-profile.md
+            echo
+            echo "# SONG ARCHIVE"
+            cat songarchive.md
+            echo
+            echo "# MARTIN STRAYD INFORMATION"
+            cat martinstrayd.md
+            echo
+            echo "# SUZUKI MUSIC INFORMATION"
+            cat suzukimusic.md
+          } > seo-audit-source.txt
+
+          echo "SEO audit source material prepared."
+          echo "Source size: $(wc -c < seo-audit-source.txt) bytes."
+
+      - name: Run SEO audit through DAHL
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          jq -n \
+            --rawfile instructions audit-instructions.txt \
+            --rawfile sources seo-audit-source.txt \
+            '{
+              model: "MiniMaxAI/MiniMax-M2.7",
+              messages: [
+                {
+                  role: "system",
+                  content: "You are a careful STRAYD SEO Manager auditor. Evaluate the supplied instructions against the supplied files. Do not invent facts or claim external verification. Follow the required report structure and final completion marker."
+                },
+                {
+                  role: "user",
+                  content: ($instructions + "\n\nSOURCE MATERIAL:\n\n" + $sources)
+                }
+              ]
+            }' > request.json
+
+          ATTEMPT=1
+          SUCCESS=0
+
+          while [ "$ATTEMPT" -le 3 ]; do
+            echo "DAHL request attempt ${ATTEMPT}/3..."
+
+            if curl \
+              --silent \
+              --show-error \
+              --fail-with-body \
+              --connect-timeout 30 \
+              --max-time 300 \
+              --retry 2 \
+              --retry-connrefused \
+              --retry-delay 5 \
+              https://inference.dahl.global/v1/chat/completions \
+              -H "Authorization: Bearer ${DAHL_API_KEY}" \
+              -H "Content-Type: application/json" \
+              -d @request.json \
+              -o response.json
+            then
+              SUCCESS=1
+              break
+            fi
+
+            if [ "$ATTEMPT" -lt 3 ]; then
+              echo "Request failed. Waiting before retrying."
+              sleep $((ATTEMPT * 15))
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [ "$SUCCESS" -ne 1 ]; then
+            echo "::error::DAHL request failed after retries."
+            exit 1
+          fi
+
+          if ! jq -er '
+            .choices[0].message.content
+            | strings
+            | select(length > 500)
+          ' response.json > seo-audit-report.md; then
+            echo "::error::DAHL returned no usable audit report."
+            exit 1
+          fi
+
+          if ! grep -q '^# STRAYD SEO Manager Audit$' seo-audit-report.md; then
+            echo "::error::The report is missing its expected title."
+            exit 1
+          fi
+
+          for heading in \
+            "## Executive Summary" \
+            "## Artist Branding and Naming" \
+            "## Website and Music Discovery SEO" \
+            "## Metadata, Links and Release Accuracy" \
+            "## Recommended Improvements" \
+            "## Limitations"
+          do
+            if ! grep -Fq "$heading" seo-audit-report.md; then
+              echo "::error::The report is incomplete. Missing section: $heading"
+              exit 1
+            fi
+          done
+
+          LAST_LINE="$(sed '/^[[:space:]]*$/d' seo-audit-report.md | tail -n 1)"
+
+          if [ "$LAST_LINE" != "AUDIT COMPLETE" ]; then
+            echo "::error::The report appears incomplete: final marker is missing."
+            echo "The report will not be committed."
+            exit 1
+          fi
+
+          echo "All required report sections and completion marker are present."
+
+      - name: Save SEO audit report
+        run: |
+          set -euo pipefail
+
+          mkdir -p reports
+
+          REPORT_PATH="reports/seo-audit-$(date -u +%Y-%m-%d).md"
+
+          cp seo-audit-report.md "$REPORT_PATH"
+
+          echo "Report saved to $REPORT_PATH."
+
+      - name: Commit SEO audit report
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add reports/
+
+          if git diff --cached --quiet; then
+            echo "No report changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Add STRAYD SEO Manager audit"
+          git push
+
+          echo "SEO audit report committed successfully."

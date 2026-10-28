@@ -3,9 +3,6 @@ name: Strayd Social Agent
 on:
   workflow_dispatch:
 
-  schedule:
-    - cron: '0 1 * * *'
-
 permissions:
   contents: write
 
@@ -17,33 +14,43 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Create Content Folder
-        run: mkdir -p content
+      - name: Create Reports Folder
+        run: mkdir -p reports
 
-      - name: Generate Social Content
+      - name: Generate Daily Report
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
         run: |
           curl -s https://inference.dahl.global/v1/chat/completions \
-          -H "Authorization: Bearer ${{ secrets.DAHL_API_KEY }}" \
+          -H "Authorization: Bearer $DAHL_API_KEY" \
           -H "Content-Type: application/json" \
           -d '{
             "model":"MiniMaxAI/MiniMax-M2.7",
             "messages":[
               {
                 "role":"user",
-                "content":"You are STRAYD SOCIAL MANAGER. Create: 10 X posts, 3 Facebook posts, 1 YouTube Community post and 5 image prompts for an independent music artist."
+                "content":"You are STRAYD SOCIAL MANAGER. Create:\n\n10 X posts\n\n3 Facebook posts\n\n1 YouTube Community post\n\n5 AI image prompts.\n\nReturn clean markdown only."
               }
             ]
-          }' > content/output.json
+          }' > reports/latest.json
 
-      - name: Add Date Stamp
+      - name: Save Run Info
         run: |
-          DATE=$(date +%F)
-          cp content/output.json content/${DATE}.json
+          echo "# Strayd Social Agent Report" > reports/README.md
+          echo "" >> reports/README.md
+          echo "Generated: $(date)" >> reports/README.md
+          echo "" >> reports/README.md
+          echo "Open latest.json to view the full AI response." >> reports/README.md
 
-      - name: Commit Content
+      - name: Commit Report
         run: |
-          git config user.name "Strayd Social Agent"
-          git config user.email "actions@github.com"
-          git add content/
-          git commit -m "Daily social content $(date +%F)" || echo "No changes"
+          git config --global user.name "Strayd Social Agent"
+          git config --global user.email "actions@github.com"
+
+          git add reports/
+
+          git status
+
+          git commit -m "Agent report update" || echo "Nothing to commit"
+
           git push

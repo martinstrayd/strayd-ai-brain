@@ -1,0 +1,46 @@
+
+name: Export DAILY and WEEKLY Social Posts
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "social-posts/daily/**"
+      - "social-posts/weekly/**"
+      - ".github/workflows/export-social-posts.yml"
+      - "scripts/build-social-posts-exports.py"
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    name: Build Downloads
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download repository files
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PDF tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended texlive-plain-generic fonts-dejavu-core
+
+      - name: Build DAILY and WEEKLY exports
+        run: python scripts/build-social-posts-exports.py
+
+      - name: Upload downloadable files
+        uses: actions/upload-artifact@v4
+        with:
+          name: social-posts-exports
+          path: exports/*
+          if-no-files-found: error
+          retention-days: 30

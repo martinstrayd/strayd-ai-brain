@@ -1,0 +1,24 @@
+name: Strayd Social Agent
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-content:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate social content
+        run: |
+          curl https://inference.dahl.global/v1/chat/completions \
+          -H "Authorization: Bearer ${{ secrets.DAHL_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "model":"MiniMaxAI/MiniMax-M2.7",
+            "messages":[
+              {
+                "role":"user",
+                "content":"Create 5 short social media posts promoting independent music artists."
+              }
+            ]
+          }'

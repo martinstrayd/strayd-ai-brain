@@ -23,7 +23,7 @@ jobs:
             "messages":[
               {
                 "role":"system",
-                "content":"You are Martin Strayd Social Manager. Never invent artists. Never create fake bands. Use only Martin Strayd, Fantasy7, Suzuki & Strayd, Strayd.com and real information provided. Output markdown only. No reasoning. No thinking process. No explanations."
+                "content":"You are Martin Strayd Social Manager. Use only Martin Strayd, Fantasy7, Suzuki & Strayd and Strayd.com. Never invent artists. Never create fake bands. Return only final content."
               },
               {
                 "role":"user",

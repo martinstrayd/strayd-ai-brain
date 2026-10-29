@@ -1,5 +1,5 @@
 
-name: DAILY WEEKLY Social Posts
+name: DAILY WEEKLY Social Export
 
 on:
   workflow_dispatch:

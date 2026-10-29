@@ -6,9 +6,9 @@ on:
       test_mode:
         description: "Test mode (no actual replies)"
         required: false
-        default: "false"
+        default: "true"
   schedule:
-    - cron: "*/15 * * * *"  # Every 15 minutes
+    - cron: "*/15 * * * *"
 
 permissions:
   contents: write
@@ -22,7 +22,7 @@ env:
   X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
   X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
   X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
-  TEST_MODE: ${{ github.event.inputs.test_mode || 'false' }}
+  TEST_MODE: ${{ github.event.inputs.test_mode || 'true' }}
 
 jobs:
   monitor-and-reply:
@@ -47,48 +47,33 @@ jobs:
           import urllib.request
           import urllib.parse
           import time
-          import base64
-          import hashlib
-          import hmac
           import random
           import string
 
-          # X API Credentials
           API_KEY = os.environ["X_API_KEY"]
           API_SECRET = os.environ["X_API_SECRET"]
           ACCESS_TOKEN = os.environ["X_ACCESS_TOKEN"]
           ACCESS_SECRET = os.environ["X_ACCESS_SECRET"]
           BEARER_TOKEN = os.environ["X_BEARER_TOKEN"]
 
-          # DAHL
-          DAHL_API_URL = os.environ["DAHL_API_KEY"]
+          DAHL_API_URL = os.environ["DAHL_API_URL"]
+          DAHL_API_KEY = os.environ["DAHL_API_KEY"]
           DAHL_MODEL = os.environ["DAHL_MODEL"]
 
-          # Mode
-          TEST_MODE = os.environ.get("TEST_MODE", "false").lower() == "true"
-
-          TIMESTAMP = str(int(time.time()))
-          NONCE = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+          TEST_MODE = os.environ.get("TEST_MODE", "true").lower() == "true"
 
           print("=== STRAYD X REPLY AGENT ===")
           print(f"Time: {datetime.datetime.now(datetime.timezone.utc)}")
           print(f"Test Mode: {TEST_MODE}")
           print()
 
-          # ============================================
-          # STEP 1: Get recent mentions using X API v2
-          # ============================================
-
           def x_api_get(endpoint, params=None):
-              """Make authenticated GET request to X API v2"""
               url = f"https://api.twitter.com{endpoint}"
               if params:
                   url += "?" + urllib.parse.urlencode(params)
-
               request = urllib.request.Request(url)
               request.add_header("Authorization", f"Bearer {BEARER_TOKEN}")
               request.add_header("Content-Type", "application/json")
-
               try:
                   with urllib.request.urlopen(request, timeout=30) as response:
                       return json.loads(response.read().decode("utf-8"))
@@ -97,20 +82,13 @@ jobs:
                   return None
 
           def x_api_post(endpoint, data):
-              """Make authenticated POST request to X API v2"""
               url = f"https://api.twitter.com{endpoint}"
               request_data = json.dumps(data).encode("utf-8")
-
               request = urllib.request.Request(
-                  url,
-                  data=request_data,
-                  headers={
-                      "Authorization": f"Bearer {BEARER_TOKEN}",
-                      "Content-Type": "application/json"
-                  },
+                  url, data=request_data,
+                  headers={"Authorization": f"Bearer {BEARER_TOKEN}", "Content-Type": "application/json"},
                   method="POST"
               )
-
               try:
                   with urllib.request.urlopen(request, timeout=30) as response:
                       return json.loads(response.read().decode("utf-8"))
@@ -118,32 +96,30 @@ jobs:
                   print(f"X POST Error: {e}")
                   return None
 
-          # Get my user ID first
           print("Fetching X user info...")
           me = x_api_get("/2/users/me")
-          if not me:
+          if not me or "data" not in me:
               print("Failed to get user info. Check API credentials.")
               sys.exit(1)
 
           my_id = me["data"]["id"]
           my_username = me["data"]["username"]
-          print(f"Logged in as: @{my_username} (ID: {my_id})")
+          print(f"Logged in as: @{my_username}")
           print()
 
-          # Get recent mentions
           print("Fetching recent mentions...")
           mentions = x_api_get(
               f"/2/users/{my_id}/mentions",
               {
                   "max_results": 10,
-                  "tweet.fields": "created_at,author_id,conversation_id",
+                  "tweet.fields": "created_at,author_id",
                   "expansions": "author_id",
                   "user.fields": "username,name"
               }
           )
 
           if not mentions or "data" not in mentions:
-              print("No mentions found or API error.")
+              print("No mentions found.")
               sys.exit(0)
 
           tweets = mentions.get("data", [])
@@ -156,15 +132,8 @@ jobs:
           print(f"Found {len(tweets)} mentions")
           print()
 
-          # ============================================
-          # STEP 2: Generate replies using DAHL
-          # ============================================
-
           def generate_reply(tweet_text, author_username):
-              """Use DAHL to generate a relevant reply"""
-              prompt = f"""You are STRAYD's AI assistant. Natron Theory is artificial stone technology by Martin Strayd + a few friends like Marcell Foti and MondoStone - a rock lover building a megalithic retreat, making prototype geopolymer with abundant materials.
-
-The brand voice is: Authentic, inspiring, rock-forward, community-building.
+              prompt = f"""You are Natron Theory's AI assistant. Natron Theory is artificial stone technology by Martin Strayd + a few friends like Marcell Foti and MondoStone - a rock lover building a megalithic retreat, making prototype geopolymer with abundant materials.
 
 Generate a reply to this tweet directed at Natron Theory's X account:
 
@@ -182,18 +151,16 @@ Rules:
 
 Return ONLY the reply text, nothing else.
 """
-
               try:
                   payload = {
                       "model": DAHL_MODEL,
                       "messages": [
-                          {"role": "system", "content": "You are STRAYD's AI assistant. Return only the reply text."},
+                          {"role": "system", "content": "You are Natron Theory's AI assistant. Return only the reply text."},
                           {"role": "user", "content": prompt}
                       ],
                       "temperature": 0.7,
                       "max_tokens": 280,
                   }
-
                   request_data = json.dumps(payload).encode("utf-8")
                   request = urllib.request.Request(
                       DAHL_API_URL,
@@ -204,19 +171,12 @@ Return ONLY the reply text, nothing else.
                       },
                       method="POST",
                   )
-
                   with urllib.request.urlopen(request, timeout=30) as response:
                       data = json.loads(response.read().decode("utf-8"))
-                      reply = data["choices"][0]["message"]["content"].strip()
-                      return reply
-
+                      return data["choices"][0]["message"]["content"].strip()
               except Exception as e:
                   print(f"DAHL Error: {e}")
                   return None
-
-          # ============================================
-          # STEP 3: Post replies
-          # ============================================
 
           print("=== PROCESSING MENTIONS ===")
           processed = 0
@@ -229,67 +189,47 @@ Return ONLY the reply text, nothing else.
               author = users.get(author_id, {})
               author_username = author.get("username", "unknown")
 
-              print(f"\n--- Mention from @{author_username} ---")
-              print(f"Tweet: {tweet_text[:100]}...")
+              print(f"\n--- @{author_username}: {tweet_text[:80]}...")
 
-              # Generate reply
               reply_text = generate_reply(tweet_text, author_username)
-
               if not reply_text:
                   print("Skipping - could not generate reply")
                   continue
 
-              print(f"Generated reply: {reply_text}")
+              print(f"Reply: {reply_text}")
 
               if TEST_MODE:
-                  print("TEST MODE - Would have posted this reply")
+                  print("TEST MODE - Would have posted")
               else:
-                  # Post the reply
                   result = x_api_post("/2/tweets", {
                       "text": reply_text,
                       "reply": {"in_reply_to_tweet_id": tweet_id}
                   })
-
                   if result and "data" in result:
                       print(f"REPLIED: {result['data']['id']}")
                       replied += 1
                   else:
-                      print(f"Failed to reply: {result}")
+                      print(f"Failed: {result}")
 
               processed += 1
-              time.sleep(2)  # Rate limit protection
+              time.sleep(2)
 
           print()
-          print("=== SUMMARY ===")
-          print(f"Processed: {processed}")
-          print(f"Replied: {replied}")
-          print(f"Test Mode: {TEST_MODE}")
+          print(f"Processed: {processed}, Replied: {replied}")
 
-          # Save log
-          log_entry = f"""# STRAYD X Reply Agent Log
+          log_entry = f"""# X Reply Agent Log
 
 **Time:** {datetime.datetime.now(datetime.timezone.utc)}
 **Test Mode:** {TEST_MODE}
 **Processed:** {processed}
 **Replied:** {replied}
-
-## Mentions Handled
-
 """
-
-          for tweet in tweets[:5]:
-              author_id = tweet["author_id"]
-              author = users.get(author_id, {})
-              log_entry += f"- @{author.get('username', 'unknown')}: {tweet['text'][:80]}...\n"
-
           os.makedirs("x-replies", exist_ok=True)
           log_file = f"x-replies/log-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
           with open(log_file, "w") as f:
               f.write(log_entry)
 
           print(f"Log saved: {log_file}")
-          print("=== AGENT COMPLETE ===")
-
           PY
 
       - name: Commit log
@@ -299,9 +239,5 @@ Return ONLY the reply text, nothing else.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add x-replies/
-          if git diff --cached --quiet; then
-            echo "No changes"
-          else
-            git commit -m "X reply agent run - $(date +%Y%m%d-%H%M%S)"
-            git push
-          fi
+          git diff --cached --quiet || git commit -m "X reply agent run - $(date +%Y%m%d-%H%M%S)"
+          git push 2>/dev/null || echo "Nothing to push"

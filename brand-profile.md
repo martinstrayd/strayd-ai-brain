@@ -1,15 +1,15 @@
 # MARTIN STRAYD — MASTER BRAND PROFILE
 
-**Official Website:**  
+Official Website:
 https://strayd.com
 
-**Primary Artist Identity:**  
+Primary Artist Identity:
 Martin Strayd
 
-**Primary Collaborative Identity:**  
+Primary Collaborative Identity:
 STRAYD featuring Martin Strayd & Suzuki
 
-**Collaborative Billing:**  
+Collaborative Billing:
 SUZUKI & STRAYD
 
 © 2026 SS SUZUKI & STRAYD. All rights reserved.
@@ -237,7 +237,12 @@ Historical archive project documenting the early-1990s rock band Fantasy7.
 
 ### Associated Future Project
 
-Fantasy7 book project documenting personal experiences, backstage stories, touring memories and historical archive discoveries.
+Fantasy7 book project documenting:
+
+- Personal experiences
+- Backstage stories
+- Touring memories
+- Historical archive discoveries
 
 ### Topics
 
@@ -287,7 +292,8 @@ You are never too old to begin.
 
 ## Cool Hot Sauce
 
-**Website:**  
+Website:
+
 https://coolhotsauce.com
 
 Community-focused food, entrepreneurship and education project.
@@ -307,6 +313,7 @@ Martin Strayd is a shareholder, co-founder and creative contributor involved in 
 - Franchise development
 - Marketing systems
 - Ecosystem building
+## Cool Hot Sauce (continued)
 
 ### Topics
 
@@ -346,7 +353,7 @@ Alongside music and publishing, Martin explores opportunities involving:
 - Online business
 - Financial technology
 - Cryptocurrency
-- Digital ownership models
+- Digital ownership systems
 - Intellectual property
 - Brand development
 - Community-driven business systems
@@ -355,9 +362,56 @@ Technology is viewed as a tool that helps independent creators build audiences, 
 
 ---
 
+# FINANCIAL TECHNOLOGY & CRYPTO GUIDANCE
+
+Martin Strayd has an interest in:
+
+- Financial technology
+- Cryptocurrency
+- Blockchain technology
+- Digital ownership systems
+- Creator monetisation
+- Alternative business models
+
+These interests may appear in:
+
+- Music projects
+- Educational content
+- Community projects
+- Entrepreneurial discussions
+- Future business initiatives
+
+## Accuracy Requirements
+
+Do not assume that Martin Strayd endorses any specific cryptocurrency, token, NFT project, investment platform or financial product unless explicitly stated and independently verified.
+
+Do not claim:
+
+- Guaranteed profits
+- Investment returns
+- Trading success
+- Future token values
+- Financial predictions
+- Financial advice
+
+## AI Agent Rules
+
+When discussing cryptocurrency or financial technology:
+
+- Present educational information only.
+- Distinguish facts from opinions.
+- Distinguish experiments from proven business models.
+- Avoid financial advice.
+- Avoid promises of profit.
+- Avoid investment recommendations.
+
+Technology should be discussed as a creative and entrepreneurial tool rather than a guaranteed financial outcome.
+
+---
+
 # AUDIENCE
 
-### Primary Audiences
+## Primary Audiences
 
 - Independent musicians
 - Songwriters
@@ -370,7 +424,7 @@ Technology is viewed as a tool that helps independent creators build audiences, 
 - People over 50 pursuing new goals
 - Creative thinkers
 
-### Secondary Audiences
+## Secondary Audiences
 
 - Students
 - Archivists
@@ -493,7 +547,7 @@ Creative freedom matters.
 
 Build a globally recognised Martin Strayd ecosystem.
 
-### Grow
+## Grow
 
 - Audience
 - Music catalogue
@@ -505,7 +559,7 @@ Build a globally recognised Martin Strayd ecosystem.
 - Partnerships
 - Sustainable businesses
 
-### Promote
+## Promote
 
 - Weekly song releases
 - STRAYD
@@ -517,16 +571,18 @@ Build a globally recognised Martin Strayd ecosystem.
 - Future businesses
 - Independent creativity
 
-### Create
+## Create
 
 - New music
 - New stories
 - New educational content
-- New technology-driven opportunities
+- AI-assisted creative systems
+- Technology-driven opportunities
+- Community-driven business models
 - New business ventures
 - New community connections
 
-### Preserve
+## Preserve
 
 - Rock history
 - Music archives
@@ -540,7 +596,7 @@ Build a globally recognised Martin Strayd ecosystem.
 
 This file functions as the master ecosystem profile.
 
-### martinstrayd.md
+## martinstrayd.md
 
 Defines:
 
@@ -551,7 +607,7 @@ Defines:
 - Music background
 - Character consistency
 
-### suzukimusic.md
+## suzukimusic.md
 
 Defines:
 
@@ -562,7 +618,7 @@ Defines:
 - Media background
 - Character consistency
 
-### songarchive.md
+## songarchive.md
 
 Defines:
 
@@ -573,7 +629,7 @@ Defines:
 - Archive material
 - Listening resources
 
-### Priority Order
+## Priority Order
 
 1. Character reference files
 2. Song archive
@@ -644,6 +700,9 @@ Alongside music, Martin's interests include:
 - Entrepreneurship
 - Financial technology
 - Cryptocurrency
+- Blockchain technologies
+- Creator-owned platforms
+- Community-based digital economies
 - Business development
 - Community-focused ventures
 
@@ -694,24 +753,29 @@ His interests include exploring opportunities in:
 - Music technology
 - Financial technology
 - Cryptocurrency
+- Blockchain technologies
+- Creator-owned platforms
+- Community-based digital economies
 - Community-based entrepreneurship
 - Franchise systems
 - Intellectual property development
 
-Long-Term Vision:
+### Long-Term Vision
 
 Continue creating music, documenting history, publishing stories, developing educational resources, expanding creative technology projects and participating in sustainable businesses that support creativity, independence and opportunity.
 
 Everything should reinforce:
 
 - Creativity
-- Independence
+- Finding investors and partners for building
+- finding people who like to help others
+- Financial Independence
 - Persistence
 - Lifelong learning
 - Authenticity
-- Curiosity
+- Backstage Curiosity
 - Entrepreneurship
-- Innovation
+- Food Innovation
 - Human connection
 - Real music
 - Real stories

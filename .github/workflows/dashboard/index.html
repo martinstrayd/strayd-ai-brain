@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRAYD AI Command Center</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 20px 40px;
+            border-bottom: 2px solid #e94560;
+        }
+        .header h1 {
+            color: #e94560;
+            font-size: 28px;
+            letter-spacing: 4px;
+        }
+        .header p { color: #888; margin-top: 5px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .card {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 25px;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-3px); border-color: #e94560; }
+        .card h2 {
+            color: #e94560;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .status { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .green { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+        .yellow { background: #ffdd00; box-shadow: 0 0 10px #ffdd00; }
+        .red { background: #ff4444; box-shadow: 0 0 10px #ff4444; }
+        .btn {
+            display: inline-block;
+            background: #e94560;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #ff6b6b; }
+        .log {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .log div { padding: 3px 0; border-bottom: 1px solid #222; }
+        .gpu-card {
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            border: 1px solid #e94560;
+        }
+        .prompt-section {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        .prompt-section textarea {
+            width: 100%;
+            background: #0d0d0d;
+            border: 1px solid #333;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        .prompt-section button {
+            background: #00ff88;
+            color: #0a0a0a;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .prompt-section button:hover { background: #00cc6a; }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #555;
+            font-size: 12px;
+            border-top: 1px solid #222;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>STRAYD AI COMMAND CENTER</h1>
+        <p>Martin Strayd | World Tour 2027 | AI-Powered Creative System</p>
+    </div>
+
+    <div class="container">
+        <!-- GPU Status -->
+        <h2 style="color:#e94560; margin: 20px 0 10px 0; font-size: 14px; letter-spacing: 3px;">GPU AVAILABILITY</h2>
+        <div class="grid">
+            <div class="card gpu-card">
+                <h2>Google Colab</h2>
+                <div class="status"><span class="dot yellow"></span> <span>Check manually</span></div>
+                <p style="color:#888; font-size:13px; margin-top:10px;">Status: Limited by usage limits</p>
+                <p style="color:#888; font-size:13px;">Reset: 4-24 hours</p>
+                <a href="https://colab.research.google.com" target="_blank" class="btn">Open Colab</a>
+            </div>
+            <div class="card gpu-card">
+                <h2>Hailuo AI (MiniMax)</h2>
+                <div class="status"><span class="dot green"></span> <span>Available now</span></div>
+                <p style="color:#888; font-size:13px; margin-top:10px;">Free daily credits for video</p>
+                <p style="color:#888; font-size:13px;">Image to video: Ready</p>
+                <a href="https://hailuoai.video" target="_blank" class="btn">Open Hailuo</a>
+            </div>
+            <div class="card gpu-card">
+                <h2>Kling AI</h2>
+                <div class="status"><span class="dot green"></span> <span>Available now</span></div>
+                <p style="color:#888; font-size:13px; margin-top:10px;">Daily free video credits</p>
+                <p style="color:#888; font-size:13px;">Quality: Excellent</p>
+                <a href="https://klingai.com" target="_blank" class="btn">Open Kling AI</a>
+            </div>
+            <div class="card gpu-card">
+                <h2>PixVerse</h2>
+                <div class="status"><span class="dot green"></span> <span>Available now</span></div>
+                <p style="color:#888; font-size:13px; margin-top:10px;">Daily free credits</p>
+                <p style="color:#888; font-size:13px;">Video generation: Ready</p>
+                <a href="https://pixverse.ai" target="_blank" class="btn">Open PixVerse</a>
+            </div>
+        </div>
+
+        <!-- Agent Status -->
+        <h2 style="color:#e94560; margin: 30px 0 10px 0; font-size: 14px; letter-spacing: 3px;">AGENT STATUS</h2>
+        <div class="grid">
+            <div class="card">
+                <h2>Social Content Agent</h2>
+                <div class="status"><span class="dot green"></span> <span>Running weekly</span></div>
+                <p style="color:#888; font-size:13px;">Schedule: Every Monday 00:00 UTC</p>
+                <p style="color:#888; font-size:13px;">Output: social-posts/daily/</p>
+                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions" target="_blank" class="btn">View Runs</a>
+            </div>
+            <div class="card">
+                <h2>GPU Checker Agent</h2>
+                <div class="status"><span class="dot yellow"></span> <span>Active</span></div>
+                <p style="color:#888; font-size:13px;">Schedule: 4x daily</p>
+                <p style="color:#888; font-size:13px;">Last run: Check GitHub</p>
+                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions" target="_blank" class="btn">View Runs</a>
+            </div>
+            <div class="card">
+                <h2>X GPU Monitor</h2>
+                <div class="status"><span class="dot yellow"></span> <span>Active</span></div>
+                <p style="color:#888; font-size:13px;">Schedule: Every 30 min</p>
+                <p style="color:#888; font-size:13px;">Search: Free GPU alerts</p>
+                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions" target="_blank" class="btn">View Runs</a>
+            </div>
+            <div class="card">
+                <h2>Image Generator</h2>
+                <div class="status"><span class="dot red"></span> <span>Waiting for GPU</span></div>
+                <p style="color:#888; font-size:13px;">Platform: Google Colab T4</p>
+                <p style="color:#888; font-size:13px;">Status: Usage limited</p>
+                <a href="https://colab.research.google.com" target="_blank" class="btn">Check Colab</a>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <h2 style="color:#e94560; margin: 30px 0 10px 0; font-size: 14px; letter-spacing: 3px;">QUICK ACTIONS</h2>
+        <div class="grid">
+            <div class="card">
+                <h2>Run Social Agent Now</h2>
+                <p style="color:#888; font-size:13px;">Trigger social content generation immediately</p>
+                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/social-agent.yml" target="_blank" class="btn">Run Workflow</a>
+            </div>
+            <div class="card">
+                <h2>Run GPU Check Now</h2>
+                <p style="color:#888; font-size:13px;">Check all platforms for free GPU availability</p>
+                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/gpu-checker.yml" target="_blank" class="btn">Run Check</a>
+            </div>
+            <div class="card">
+                <h2>View Latest Posts</h2>
+                <p style="color:#888; font-size:13px;">Browse generated social content</p>
+                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/tree/main/social-posts/daily" target="_blank" class="btn">Browse Posts</a>
+            </div>
+            <div class="card">
+                <h2>Video Generation</h2>
+                <p style="color:#888; font-size:13px;">Use Hailuo or Kling AI for free video</p>
+                <a href="https://hailuoai.video" target="_blank" class="btn">Try Hailuo</a>
+            </div>
+        </div>
+
+        <!-- Prompt Input -->
+        <div class="prompt-section">
+            <h2 style="color:#e94560; font-size: 16px; margin-bottom: 15px; letter-spacing: 2px;">ASK STRAYD AI</h2>
+            <textarea id="promptInput" placeholder="Enter your question or prompt here...">What should I work on today for STRAYD?</textarea>
+            <button onclick="sendToDAHL()">Send to DAHL</button>
+            <div id="response" style="margin-top: 15px; color: #00ff88; font-size: 13px;"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        STRAYD AI Command Center | World Tour 2027<br>
+        Powered by GitHub Actions + DAHL AI | All agents running on free infrastructure
+    </div>
+
+    <script>
+        async function sendToDAHL() {
+            const prompt = document.getElementById('promptInput').value;
+            const response = document.getElementById('response');
+            response.innerHTML = 'Sending to DAHL...';
+
+            // This calls your GitHub webhook or you can connect directly
+            // For now it shows the prompt to copy
+            response.innerHTML = `<strong>Prompt ready:</strong><br>${prompt.substring(0, 100)}...<br><br>Connect a webhook to enable direct DAHL calls.`;
+        }
+    </script>
+</body>
+</html>

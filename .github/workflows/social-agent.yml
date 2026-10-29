@@ -109,14 +109,14 @@ jobs:
 
           PILLARS = [
               "Weekly Song Journey",
-              "Fantasy7",
-              "Creativity After 50",
-              "Independent Music",
+              "Rock & Roll Fantasy",
+              "Creativity After 55",
+              "Why Make Music",
               "How To Rock",
-              "Cool Hot Sauce",
+              "How To Write A Hit Song",
               "Creative Persistence",
               "Suzuki & Strayd",
-              "AI & Creativity",
+              "Daily Creativity",
               "Entrepreneur Journey",
               "Archive Discoveries",
               "Rock History",
@@ -125,29 +125,29 @@ jobs:
           PLATFORM_HASHTAGS = {
               "X": [
                   "#STRAYD", "#MartinStrayd", "#RockMusic",
-                  "#IndieArtist", "#MusicProducer", "#RockGuitar",
-                  "#NewMusic", "#MusicLife", "#GuitarLife",
-                  "#RockAndRoll", "#IndieMusic", "#MusicianLife"
+                  "#Suzuki", "#Antipop", "#RockGuitar",
+                  "#NewMusic", "#MusicLife", "#Backstage",
+                  "#RockRoll", "#Straya", "#MusicianLife"
               ],
               "Facebook": [
                   "STRAYD", "Martin Strayd", "Rock Music",
-                  "Indie Artist", "Music Producer", "Rock Guitar",
+                  "Suzuki", "Music Producer", "Antipop",
                   "New Music", "Music Life", "Guitar Life",
                   "Rock And Roll", "Indie Music", "Musician Life"
               ],
               "YouTube Community": [
                   "#STRAYD", "#MartinStrayd", "#RockMusic",
-                  "#NewMusicFriday", "#MusicCommunity"
+                  "#NewMusicFriday", "#Suzuki"
               ],
               "TikTok": [
                   "#STRAYD", "#martinstrayd", "#rockmusic",
-                  "#indiemusic", "#musicianlife", "#guitar",
-                  "#newmusic", "#rockguitar", "#fyp", "#viral",
-                  "#indieartist", "#musicproducer"
+                  "#straya", "#musicianlife", "#suzuki",
+                  "#newmusic", "#antipop", "#fyp", "#viral",
+                  "#australian", "#musicproducer"
               ],
               "Instagram": [
                   "#STRAYD", "#MartinStrayd", "#RockMusic",
-                  "#IndieArtist", "#MusicProducer", "#RockGuitar",
+                  "#Antipop", "#MusicProducer", "#RockGuitar",
                   "#NewMusic", "#MusicLife", "#GuitarLife",
                   "#RockAndRoll", "#IndieMusic", "#MusicianLife",
                   "#StudioLife", "#GuitarPlayer", "#MusicIsLife"

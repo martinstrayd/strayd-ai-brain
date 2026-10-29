@@ -1,0 +1,128 @@
+name: X Reply Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Test mode"
+        required: false
+        default: "true"
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
+
+env:
+  DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+  DAHL_API_URL: https://inference.dahl.global/v1/chat/completions
+  DAHL_MODEL: MiniMaxAI/MiniMax-M2.7
+  X_BEARER: ${{ secrets.X_BEARER_TOKEN }}
+  TEST: ${{ github.event.inputs.test || 'true' }}
+
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run
+        shell: bash
+        run: python3 <<'PY'
+import datetime, json, os, sys, urllib.request, urllib.parse, time
+
+BEARER = os.environ["X_BEARER"]
+DAHL_URL = os.environ["DAHL_API_URL"]
+DAHL_KEY = os.environ["DAHL_API_KEY"]
+DAHL_MODEL = os.environ["DAHL_MODEL"]
+TEST = os.environ.get("TEST", "true").lower() == "true"
+
+print("=== X REPLY AGENT ===")
+print(f"Test: {TEST}")
+
+def get(url, params=None):
+    if params:
+        url += "?" + urllib.parse.urlencode(params)
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {BEARER}"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read())
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+def post(url, data):
+    req = urllib.request.Request(url, data=json.dumps(data).encode(),
+        headers={"Authorization": f"Bearer {BEARER}", "Content-Type": "application/json"},
+        method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read())
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+me = get("/2/users/me")
+if not me or "data" not in me:
+    print("Auth failed - check X_BEARER_TOKEN secret")
+    sys.exit(1)
+
+my_id = me["data"]["id"]
+print(f"Logged in as @{me['data']['username']}")
+
+mentions = get(f"/2/users/{my_id}/mentions", {
+    "max_results": 10,
+    "tweet.fields": "author_id",
+    "expansions": "author_id",
+    "user.fields": "username"
+})
+
+if not mentions or "data" not in mentions:
+    print("No mentions")
+    sys.exit(0)
+
+tweets = mentions.get("data", [])
+users = {u["id"]: u for u in mentions.get("includes", {}).get("users", [])}
+print(f"Found {len(tweets)} mentions")
+
+def reply(text, author):
+    prompt = f"""Reply to this tweet as Natron Theory CEO.
+
+Tweet from @{author}: "{text}"
+
+Keep under 200 chars. Be friendly and real. Return only the reply."""
+    try:
+        req = urllib.request.Request(DAHL_URL,
+            data=json.dumps({"model": DAHL_MODEL, "messages": [{"role": "user", "content": prompt}], "max_tokens": 200}).encode(),
+            headers={"Authorization": f"Bearer {DAHL_KEY}", "Content-Type": "application/json"},
+            method="POST")
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read())["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print(f"DAHL error: {e}")
+        return None
+
+for t in tweets:
+    author = users.get(t["author_id"], {}).get("username", "?")
+    print(f"@{author}: {t['text'][:50]}...")
+    r = reply(t["text"], author)
+    if r:
+        print(f"Reply: {r}")
+        if not TEST:
+            post("/2/tweets", {"text": r, "reply": {"in_reply_to_tweet_id": t["id"]}})
+        else:
+            print("TEST MODE - not posting")
+    time.sleep(1)
+
+print("Done")
+PY
+
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p x-replies
+          echo "# X Agent Log - $(date)" > x-replies/log-$(date +%Y%m%d-%H%M%S).md
+          git add x-replies/ || true
+          git diff --cached --quiet || git commit -m "X agent run" || true
+          git push || true

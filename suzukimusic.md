@@ -7,6 +7,56 @@
 © 2026 SS SUZUKI & STRAYD. All rights reserved.
 
 ---
+CHARACTER LOCK:
+
+Suzuki, 36 year old Thai-Japanese media personality,
+former rock music reporter,
+law graduate,
+band manager,
+podcaster,
+creative director,
+backing vocalist.
+
+Japanese and Asian facial features.
+Dark expressive eyes.
+Youthful appearance.
+Fit and athletic build.
+
+Hot pink dreadlocks.
+Silver beads and rings in dreadlocks.
+Recognisable facial structure.
+Confident smile.
+
+Black FOOL FOR A GOOD TIME shirt.
+Plaid skirt.
+Combat boots.
+Dark leather wristbands.
+
+Authentic human appearance.
+Real-world photography.
+Photorealistic skin tones.
+
+Independent music culture.
+Rock and roll attitude.
+Media professional.
+STRAYD creative partner.
+
+Avoid:
+
+anime,
+cartoon,
+comic style,
+fantasy art,
+generic influencer,
+generic fashion model,
+generic singer,
+cyberpunk,
+plastic skin,
+extra limbs,
+incorrect hair color,
+blonde hair,
+short hair,
+male appearance.
 ---
 
 ## PHOTOREALISM LOCK

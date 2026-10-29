@@ -1,4 +1,4 @@
-# SUZUKI MUSIC — OFFICIAL KNOWLEDGE BASE
+<img width="974" height="2268" alt="image" src="https://github.com/user-attachments/assets/f6471bf5-4edd-4577-9f49-fd4d20b85172" /># SUZUKI MUSIC — OFFICIAL KNOWLEDGE BASE
 
 **Project:** STRAYD featuring Martin Strayd & Suzuki  
 **Collaborative billing:** SUZUKI & STRAYD  
@@ -7,7 +7,88 @@
 © 2026 SS SUZUKI & STRAYD. All rights reserved.
 
 ---
-CHARACTER LOCK:
+---
+character_id: suzuki_music
+
+name: Suzuki
+
+public_age: 36
+
+nationality:
+  - Japanese
+  - Thai
+
+roles:
+  - Media Guru
+  - Band Manager
+  - Creative Director
+  - Publicist
+  - Social Media Manager
+  - Podcaster
+  - Occasional Backing Vocalist
+
+education:
+  - Law Studies
+
+career_background:
+  - Japanese Rock Reporter
+  - Entertainment Journalist
+  - Music Media Professional
+
+reference_image:
+
+
+appearance:
+
+  ethnicity:
+        Thai
+        Japanese
+
+  eyes:
+    dark_brown
+
+  build:
+    athletic
+    slender
+
+  hair:
+    hot_pink_dreadlocks
+
+  hairstyle:
+    half_up
+    long_dreadlocks
+
+height_cm: 162
+
+brand_keywords:
+  - rock and roll
+  - music media
+  - independent music
+  - band management
+  - publicity
+  - podcasting
+  - anti-pop
+  - artist development
+  - independent releases
+
+negative_prompts:
+  - anime
+  - cartoon
+  - fantasy
+  - cyberpunk
+  - generic model
+  - blonde hair
+  - short hair
+  - plastic skin
+
+photography_style:
+  - photorealistic
+  - lifestyle photography
+  - concert photography
+  - magazine photography
+  - professional portraiture
+
+---
 
 Suzuki, 36 year old Thai-Japanese media personality,
 former rock music reporter,
@@ -167,6 +248,21 @@ She is both a visual character and a working member of the music project. Her pu
 Suzuki is the media guru, band manager and creative force helping STRAYD reach a new audience. With a background in media and entertainment, a vegan lifestyle and an energetic rock-and-roll persona, she combines publicity, visual branding, management and occasional backing vocals. Alongside Martin Strayd, she is helping build an independent music project focused on real creative work, consistent releases and music made on their own terms.
 
 ---
+## Suzuki Career Timeline
+
+Suzuki studied law before moving into media and entertainment.
+
+She later became a rock music reporter and interviewer covering musicians and music culture.
+
+Her media work eventually led to an interview with Martin Strayd regarding his independent music catalogue and career as a former Hollywood guitar technician.
+
+Following the interview she became increasingly involved in promotion, publicity, release planning, social media development and audience engagement.
+
+Her role expanded into management, creative direction, visual branding and campaign coordination.
+
+Today Suzuki serves as media guru, creative partner, band manager and promotional lead for STRAYD.
+
+She also contributes lead and backing vocals on selected recordings.
 
 ## 3. Suzuki Character Bible
 

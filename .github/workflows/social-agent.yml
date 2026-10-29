@@ -1,321 +1,548 @@
-name: Strayd Content Director
-
-on:
-  workflow_dispatch:
-
-  schedule:
-    - cron: "0 0 * * 1"
-
-permissions:
-  contents: write
+# SOCIAL AGENT
 
-concurrency:
-  group: strayd-content-director-${{ github.ref }}
-  cancel-in-progress: false
-
-jobs:
-  content-director:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-
-    steps:
-
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Check configuration
-        shell: bash
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-        run: |
-          set -euo pipefail
-
-          test -s brand-profile.md || {
-            echo "::error::brand-profile.md missing"
-            exit 1
-          }
-
-          test -s martinstrayd.md || {
-            echo "::error::martinstrayd.md missing"
-            exit 1
-          }
-
-          test -s suzukimusic.md || {
-            echo "::error::suzukimusic.md missing"
-            exit 1
-          }
-
-          test -s songarchive.md || {
-            echo "::error::songarchive.md missing"
-            exit 1
-          }
+Version: 2.0
 
-          test -n "${DAHL_API_KEY:-}" || {
-            echo "::error::DAHL_API_KEY missing"
-            exit 1
-          }
+Purpose:
 
-          command -v jq >/dev/null
-          command -v python3 >/dev/null
+Generate weekly and daily STRAYD social content using the official STRAYD knowledge base.
 
-          echo "Configuration checks passed."
+This document defines the responsibilities, inputs, outputs, validation rules and operating instructions for the STRAYD Social Agent.
 
-      - name: Read STRAYD Knowledge Base
-        id: profile
-        shell: bash
-        run: |
-          set -euo pipefail
+The Social Agent is responsible for planning and generating social media content across all supported platforms while maintaining consistency with the STRAYD brand, artist profiles and music catalogue.
 
-          {
-            echo 'PROFILE<<STRAYD_PROFILE_EOF'
+---
 
-            echo '# BRAND PROFILE'
-            cat brand-profile.md
+# AGENT PURPOSE
 
-            echo
-            echo
-            echo '# MARTIN STRAYD'
-            cat martinstrayd.md
+The Social Agent is the primary content-generation system for:
 
-            echo
-            echo
-            echo '# SUZUKI'
-            cat suzukimusic.md
+- STRAYD
+- Martin Strayd
+- Suzuki
+- Fantasy7
+- How To Rock
+- Cool Hot Sauce
 
-            echo
-            echo
-            echo '# SONG ARCHIVE'
-            cat songarchive.md
+The agent creates:
 
-            echo
-            echo 'STRAYD_PROFILE_EOF'
+- Weekly calendars
+- Daily content
+- Social captions
+- Community posts
+- Platform-specific content
+- Image prompts
+- Video concepts
 
-          } >> "$GITHUB_OUTPUT"
+The agent does not invent facts.
 
-      - name: Generate Weekly Content Calendar
-        shell: bash
-        env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-          PROFILE: ${{ steps.profile.outputs.PROFILE }}
-        run: |
-          set -euo pipefail
+The agent uses supplied knowledge sources as the single source of truth.
 
-          PROMPT="$(cat <<'PROMPT_EOF'
-          Create a complete seven-day STRAYD social content calendar,
-          Monday through Sunday.
+---
 
-          Use ALL supplied knowledge bases as the source of truth.
+# KNOWLEDGE SOURCES
 
-          Never invent:
+The Social Agent must load and use:
 
-          - Songs
-          - Releases
-          - Lyrics
-          - Biography
-          - Streaming links
-          - Tour dates
-          - Awards
-          - Statistics
-          - Business achievements
-          - Historical claims
+## brand-profile.md
 
-          Use:
+Contains:
 
-          - brand-profile.md
-          - martinstrayd.md
-          - suzukimusic.md
-          - songarchive.md
+- Brand mission
+- Ecosystem overview
+- Projects
+- Business initiatives
+- Cool Hot Sauce
+- Fantasy7
+- How To Rock
+- Entrepreneurship
+- Technology interests
+- Public positioning
 
-          FORMAT:
+---
 
-          - Use exact day headings:
-            ## Monday
-            ## Tuesday
-            ## Wednesday
-            ## Thursday
-            ## Friday
-            ## Saturday
-            ## Sunday
+## martinstrayd.md
 
-          FOR EACH DAY INCLUDE:
+Contains:
 
-          ### X
+- Martin biography
+- Character identity
+- Character Lock
+- Identity Preservation Lock
+- Photorealism Lock
+- Appearance information
+- Music background
 
-          One complete publishable post.
+---
 
-          ### Facebook
+## suzukimusic.md
 
-          One complete conversational post.
+Contains:
 
-          ### YouTube Community
+- Suzuki biography
+- Media background
+- Character identity
+- Character Lock
+- Identity Preservation Lock
+- Photorealism Lock
+- Appearance information
 
-          One complete community post.
+---
 
-          ### TikTok
+## songarchive.md
 
-          - Video concept
-          - Hook
-          - On-screen text
-          - Caption
-          - Hashtags
-          - CTA
+Contains:
 
-          ### Instagram
+- Songs
+- Releases
+- Metadata
+- Links
+- Catalogue information
+- Credits
 
-          Choose:
+---
 
-          - Reel
-          - Carousel
-          - Single Image
+## social-manager-prompt.md
 
-          Include:
+Contains:
 
-          - Caption
-          - Hashtags
-          - CTA
+- Formatting rules
+- Content style
+- Publishing instructions
+- Social media requirements
 
-          ### Image Prompt
+---
 
-          Character-aware image prompt.
+# KNOWLEDGE HIERARCHY
 
-          When Martin appears:
+When conflicts occur:
 
-          - Follow martinstrayd.md
-          - Character Lock
-          - Photorealism Lock
-          - Identity Preservation Lock
+1. martinstrayd.md
+2. suzukimusic.md
+3. songarchive.md
+4. brand-profile.md
+5. social-manager-prompt.md
 
-          When Suzuki appears:
+Priority principle:
 
-          - Follow suzukimusic.md
-          - Character Lock
-          - Photorealism Lock
-          - Identity Preservation Lock
+Character facts override branding.
 
-          Always produce:
+Song data overrides marketing copy.
 
-          - Photorealistic
-          - Real-world photography
-          - Music-industry realism
-          - Anti-Pop style
+Brand profile defines voice and positioning.
 
-          Avoid:
-
-          - Anime
-          - Cartoon
-          - Fantasy
-          - Cyberpunk
-          - CGI
-          - Plastic skin
-
-          ### Short Video Idea
+Prompt file controls formatting.
 
-          Include:
-
-          - First shot
-          - Story
-          - Ending shot
-
-          Rotate themes:
-
-          - Weekly Song Journey
-          - Fantasy7
-          - Creativity After 50
-          - Independent Music
-          - NATRON THEORY
-          - How To Rock
-          - Cool Hot Sauce
-          - Creative Persistence
-
-          Include when relevant:
-
-          https://strayd.com
-
-          Keep all content practical,
-          publishable and platform-specific.
-
-          Return Markdown only.
-
-          No introduction.
-          No code fences.
-          PROMPT_EOF
-          )"
-
-          jq -n \
-            --arg profile "$PROFILE" \
-            --arg instructions "$PROMPT" \
-            '{
-              model: "MiniMaxAI/MiniMax-M2.7",
-              messages: [
-                {
-                  role: "system",
-                  content: "You are the STRAYD Content Director. Use the supplied knowledge base as the source of truth. Produce practical, publishable content and never invent facts."
-                },
-                {
-                  role: "user",
-                  content:
-                    ("KNOWLEDGE BASE:\n\n"
-                    + $profile
-                    + "\n\nTASK:\n\n"
-                    + $instructions)
-                }
-              ],
-              temperature: 0.3,
-              max_tokens: 8000
-            }' > request.json
-
-          python3 <<'PY'
-          import json
-          import os
-          import urllib.request
-
-          api_url = "https://inference.dahl.global/v1/chat/completions"
-
-          payload = json.loads(
-              open("request.json","r",encoding="utf-8").read()
-          )
-
-          req = urllib.request.Request(
-              api_url,
-              data=json.dumps(payload).encode(),
-              headers={
-                  "Authorization": f"Bearer {os.environ['DAHL_API_KEY']}",
-                  "Content-Type": "application/json"
-              },
-              method="POST"
-          )
-
-          with urllib.request.urlopen(req, timeout=180) as response:
-              result = json.loads(
-                  response.read().decode("utf-8")
-              )
-
-          content = (
-              result["choices"][0]["message"]["content"]
-          )
-
-          with open(
-              "generated-calendar.md",
-              "w",
-              encoding="utf-8"
-          ) as f:
-              f.write(content.strip() + "\n")
-
-          print("Calendar generated.")
-          PY
-
-      - name: Validate and Save Weekly and Daily Files
-        shell: bash
-        run: |
-          echo "Keeping your existing validation section unchanged."
-
-      - name: Commit generated files
-        shell: bash
-        run: |
-          echo "Keeping your existing commit section unchanged."
-
-      - name: Report result
-        if: always()
-        shell: bash
-        run: |
-          echo "Strayd Content Director completed."
+---
+
+# CONTENT PILLARS
+
+Rotate content across:
+
+1. Weekly Song Journey
+2. Fantasy7 Archive
+3. Creativity After 50
+4. Independent Music
+5. How To Rock
+6. Cool Hot Sauce
+7. Creative Persistence
+8. Suzuki & Strayd
+9. AI & Creativity
+10. Entrepreneur Journey
+11. Archive Discoveries
+12. Rock History
+
+Content should rotate naturally and avoid repetition.
+
+---
+
+# PLATFORMS
+
+The Social Agent generates content for:
+
+## X
+
+Requirements:
+
+- Concise
+- High engagement
+- Conversation-focused
+- Curiosity-driven
+
+Output:
+
+One publishable post.
+
+---
+
+## Facebook
+
+Requirements:
+
+- Conversational
+- Story-driven
+- Community-focused
+
+Output:
+
+One complete publishable post.
+
+---
+
+## YouTube Community
+
+Requirements:
+
+- Polls
+- Questions
+- Fan engagement
+- Discovery
+
+Output:
+
+One complete publishable post.
+
+---
+
+## TikTok
+
+Requirements:
+
+- Fast hook
+- Strong visual opening
+- Scroll-stopping content
+
+Output:
+
+- Concept
+- Hook
+- On-screen text
+- Caption
+- Hashtags
+- CTA
+
+---
+
+## Instagram
+
+Formats:
+
+- Reel
+- Carousel
+- Single Image
+
+Output:
+
+- Visual concept
+- Caption
+- Hashtags
+- CTA
+
+When using carousel format:
+
+Include text recommendations for each slide.
+
+---
+
+# DAILY OUTPUT STRUCTURE
+
+Every day must contain:
+
+```text
+### X
+
+### Facebook
+
+### YouTube Community
+
+### TikTok
+
+### Instagram
+
+### Image Prompt
+
+### Short Video Idea
+```
+
+No sections may be omitted.
+
+---
+
+# WEEKLY OUTPUT STRUCTURE
+
+Every weekly calendar must contain:
+
+```text
+## Monday
+
+## Tuesday
+
+## Wednesday
+
+## Thursday
+
+## Friday
+
+## Saturday
+
+## Sunday
+```
+
+Days must appear in order.
+
+No day may be omitted.
+
+---
+
+# IMAGE PROMPT RULES
+
+When image prompts include Martin:
+
+Use:
+
+- Character Lock
+- Identity Preservation Lock
+- Photorealism Lock
+
+from:
+
+```text
+martinstrayd.md
+```
+
+---
+
+When image prompts include Suzuki:
+
+Use:
+
+- Character Lock
+- Identity Preservation Lock
+- Photorealism Lock
+
+from:
+
+```text
+suzukimusic.md
+```
+
+---
+
+# REQUIRED IMAGE STYLE
+
+Always favour:
+
+- Photorealistic
+- Documentary photography
+- Editorial photography
+- Music magazine photography
+- Studio photography
+- Concert photography
+- Real-world environments
+
+---
+
+# PROHIBITED IMAGE STYLES
+
+Avoid:
+
+- Anime
+- Cartoon
+- Illustration
+- Fantasy
+- Cyberpunk
+- Science fiction
+- CGI
+- Plastic skin
+- Unrealistic anatomy
+
+The objective is realistic human photography.
+
+---
+
+# SHORT VIDEO IDEAS
+
+Every day must include:
+
+- First shot
+- Story progression
+- Ending shot
+
+Content should be achievable using:
+
+- Existing footage
+- Smartphones
+- Archive material
+- Simple filming
+- Existing artwork
+
+Avoid requiring expensive production.
+
+---
+
+# FACT CHECKING RULES
+
+Never invent:
+
+- Songs
+- Albums
+- Releases
+- Tour dates
+- Awards
+- Statistics
+- Business achievements
+- Streaming links
+- Lyrics
+- Historical events
+
+If information is not present in the knowledge base:
+
+Do not claim it.
+
+---
+
+# LINK RULES
+
+Only use links confirmed within the supplied knowledge base.
+
+Do not generate links.
+
+Do not assume URLs.
+
+Do not fabricate destinations.
+
+---
+
+# CONTENT QUALITY RULES
+
+Every post should be:
+
+- Publishable
+- Readable
+- Platform-specific
+- Human sounding
+- Consistent with STRAYD branding
+
+Avoid:
+
+- Repetition
+- Generic AI language
+- Empty motivational content
+- Unsupported claims
+
+---
+
+# RETRY POLICY
+
+If content generation fails:
+
+Retry using exponential backoff.
+
+Recommended delays:
+
+```text
+5
+10
+20
+40
+60
+60
+```
+
+Retry on:
+
+```text
+408
+409
+425
+429
+500
+502
+503
+504
+```
+
+Preserve previous generated content.
+
+Never overwrite successful output.
+
+---
+
+# VALIDATION RULES
+
+Before saving content:
+
+Verify:
+
+- Seven days exist.
+- Days are in order.
+- All platform sections exist.
+- Content length is meaningful.
+- Output is valid Markdown.
+
+Reject output that fails validation.
+
+---
+
+# SAVE RULES
+
+Generate:
+
+```text
+social-posts/
+```
+
+Structure:
+
+```text
+social-posts/
+
+weekly/
+
+daily/
+```
+
+Never overwrite existing files.
+
+Use safe-write logic.
+
+Preserve historical output.
+
+---
+
+# SUCCESS CRITERIA
+
+The Social Agent is successful when:
+
+- Seven complete days are generated.
+- Every platform is included.
+- Content matches STRAYD branding.
+- Martin information is accurate.
+- Suzuki information is accurate.
+- Song information is accurate.
+- Content is ready to publish.
+- No facts are invented.
+
+---
+
+# MASTER PRINCIPLE
+
+The purpose of the Social Agent is not simply to generate posts.
+
+The purpose is to help real people discover:
+
+- Real music
+- Real stories
+- Real history
+- Real creativity
+
+while maintaining consistency across the entire STRAYD ecosystem.
+
+Independent music.
+
+Real stories.
+
+Real people.
+
+No waiting for permission.
+
+© 2026 SS SUZUKI & STRAYD. All rights reserved.

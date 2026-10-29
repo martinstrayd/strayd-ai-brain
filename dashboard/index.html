@@ -6,33 +6,13 @@
     <title>STRAYD AI Command Center</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0a0a0a;
-            color: #e0e0e0;
-            font-family: 'Courier New', monospace;
-            min-height: 100vh;
-        }
-        .header {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 20px 40px;
-            border-bottom: 2px solid #e94560;
-        }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 20px 40px; border-bottom: 2px solid #e94560; }
         .header h1 { color: #e94560; font-size: 28px; letter-spacing: 4px; }
         .header p { color: #888; margin-top: 5px; }
         .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .card {
-            background: #1a1a2e;
-            border: 1px solid #333;
-            border-radius: 10px;
-            padding: 25px;
-            transition: transform 0.2s;
-        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-top: 20px; }
+        .card { background: #1a1a2e; border: 1px solid #333; border-radius: 10px; padding: 25px; transition: transform 0.2s; }
         .card:hover { transform: translateY(-3px); border-color: #e94560; }
         .card h2 { color: #e94560; font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
         .status { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
@@ -40,58 +20,11 @@
         .green { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
         .yellow { background: #ffdd00; box-shadow: 0 0 10px #ffdd00; }
         .red { background: #ff4444; box-shadow: 0 0 10px #ff4444; }
-        .btn {
-            display: inline-block;
-            background: #e94560;
-            color: white;
-            padding: 12px 25px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 15px;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
+        .btn { display: inline-block; background: #e94560; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin-top: 15px; font-size: 14px; transition: background 0.2s; }
         .btn:hover { background: #ff6b6b; }
         .gpu-card { background: linear-gradient(135deg, #1a1a2e, #0f3460); border: 1px solid #e94560; }
-        .prompt-section {
-            background: #1a1a2e;
-            border: 1px solid #333;
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 20px;
-        }
-        .prompt-section textarea {
-            width: 100%;
-            background: #0d0d0d;
-            border: 1px solid #333;
-            color: #00ff88;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            min-height: 100px;
-            resize: vertical;
-        }
-        .prompt-section button {
-            background: #00ff88;
-            color: #0a0a0a;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
-            font-weight: bold;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-        .prompt-section button:hover { background: #00cc6a; }
-        .footer {
-            text-align: center;
-            padding: 30px;
-            color: #555;
-            font-size: 12px;
-            border-top: 1px solid #222;
-            margin-top: 40px;
-        }
         .section-title { color: #e94560; margin: 30px 0 10px 0; font-size: 14px; letter-spacing: 3px; }
+        .footer { text-align: center; padding: 30px; color: #555; font-size: 12px; border-top: 1px solid #222; margin-top: 40px; }
     </style>
 </head>
 <body>
@@ -140,21 +73,21 @@
                 <div class="status"><span class="dot green"></span> <span>Running weekly</span></div>
                 <p style="color:#888; font-size:13px;">Schedule: Every Monday 00:00 UTC</p>
                 <p style="color:#888; font-size:13px;">Output: social-posts/daily/</p>
-                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions" target="_blank" class="btn">View Runs</a>
+                <a href="https://github.com/martinstrayd/strayd-ai-brain/actions" target="_blank" class="btn">View Runs</a>
             </div>
             <div class="card">
                 <h2>GPU Checker Agent</h2>
                 <div class="status"><span class="dot yellow"></span> <span>Active</span></div>
                 <p style="color:#888; font-size:13px;">Schedule: 4x daily</p>
                 <p style="color:#888; font-size:13px;">Last run: Check GitHub</p>
-                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions" target="_blank" class="btn">View Runs</a>
+                <a href="https://github.com/martinstrayd/strayd-ai-brain/actions" target="_blank" class="btn">View Runs</a>
             </div>
             <div class="card">
                 <h2>X GPU Monitor</h2>
                 <div class="status"><span class="dot yellow"></span> <span>Active</span></div>
                 <p style="color:#888; font-size:13px;">Schedule: Every 30 min</p>
                 <p style="color:#888; font-size:13px;">Search: Free GPU alerts</p>
-                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions" target="_blank" class="btn">View Runs</a>
+                <a href="https://github.com/martinstrayd/strayd-ai-brain/actions" target="_blank" class="btn">View Runs</a>
             </div>
             <div class="card">
                 <h2>Image Generator</h2>
@@ -170,17 +103,17 @@
             <div class="card">
                 <h2>Run Social Agent Now</h2>
                 <p style="color:#888; font-size:13px;">Trigger social content generation immediately</p>
-                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/social-agent.yml" target="_blank" class="btn">Run Workflow</a>
+                <a href="https://github.com/martinstrayd/strayd-ai-brain/actions/workflows/social-agent.yml" target="_blank" class="btn">Run Workflow</a>
             </div>
             <div class="card">
                 <h2>Run GPU Check Now</h2>
                 <p style="color:#888; font-size:13px;">Check all platforms for free GPU availability</p>
-                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/gpu-checker.yml" target="_blank" class="btn">Run Check</a>
+                <a href="https://github.com/martinstrayd/strayd-ai-brain/actions/workflows/gpu-checker.yml" target="_blank" class="btn">Run Check</a>
             </div>
             <div class="card">
                 <h2>View Latest Posts</h2>
                 <p style="color:#888; font-size:13px;">Browse generated social content</p>
-                <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/tree/main/social-posts/daily" target="_blank" class="btn">Browse Posts</a>
+                <a href="https://github.com/martinstrayd/strayd-ai-brain/tree/main/social-posts/daily" target="_blank" class="btn">Browse Posts</a>
             </div>
             <div class="card">
                 <h2>Video Generation</h2>
@@ -188,27 +121,11 @@
                 <a href="https://hailuoai.video" target="_blank" class="btn">Try Hailuo</a>
             </div>
         </div>
-
-        <div class="prompt-section">
-            <h2 style="color:#e94560; font-size: 16px; margin-bottom: 15px; letter-spacing: 2px;">ASK STRAYD AI</h2>
-            <textarea id="promptInput" placeholder="Enter your question or prompt here...">What should I work on today for STRAYD?</textarea>
-            <button onclick="sendToDAHL()">Send to DAHL</button>
-            <div id="response" style="margin-top: 15px; color: #00ff88; font-size: 13px;"></div>
-        </div>
     </div>
 
     <div class="footer">
         STRAYD AI Command Center | Martin Strayd + Suzuki | World Tour 2027<br>
         Powered by GitHub Actions + DAHL AI | All agents running on free infrastructure
     </div>
-
-    <script>
-        async function sendToDAHL() {
-            const prompt = document.getElementById('promptInput').value;
-            const response = document.getElementById('response');
-            response.innerHTML = 'Sending to DAHL...';
-            response.innerHTML = '<strong>Prompt ready:</strong><br>' + prompt.substring(0, 100) + '...<br><br>Connect a webhook to enable direct DAHL calls.';
-        }
-    </script>
 </body>
 </html>

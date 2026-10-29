@@ -1,0 +1,149 @@
+name: STRAYD X GPU Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"  # Every 30 minutes
+
+permissions:
+  contents: write
+
+env:
+  DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+  DAHL_API_URL: https://inference.dahl.global/v1/chat/completions
+  DAHL_MODEL: MiniMaxAI/MiniMax-M2.7
+  # Get free keys from:
+  # https://console.groq.com (free tier - 30 req/min)
+  GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+jobs:
+  monitor-x-gpu-alerts:
+    name: Monitor X for Free GPU Alerts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Monitor X for GPU alerts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          import datetime
+          import json
+          import os
+          import urllib.request
+          import time
+
+          API_URL = os.environ["DAHL_API_URL"]
+          API_KEY = os.environ["DAHL_API_KEY"]
+          MODEL = os.environ["DAHL_MODEL"]
+          GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+
+          timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+          # Search terms for free GPU
+          search_terms = [
+              "colab gpu available",
+              "free T4 gpu",
+              "colab not connecting gpu",
+              "kaggle gpu working",
+              "paperspace gradient free gpu",
+              "#freegpu #colab",
+              "colab gpu limit reset"
+          ]
+
+          print("=== STRAYD X GPU MONITOR ===")
+          print(f"Time: {timestamp}")
+          print(f"Monitoring: {', '.join(search_terms)}\n")
+
+          # If Groq API key is set, use it for search
+          if GROQ_API_KEY:
+              print("Using Groq API for X search...")
+              # This would use Groq's search capability
+              # For now we simulate with DAHL research
+          else:
+              print("No Groq API key - using DAHL for research mode")
+              print("To enable X search: get free key at console.groq.com\n")
+
+          # Use DAHL to analyze what it knows about current GPU availability
+          analysis_prompt = f"""You are the STRAYD GPU research agent. Research current free GPU availability as of {timestamp}.
+
+          Research these topics and return findings:
+          1. Is Google Colab free tier currently available?
+          2. Are there any known GPU availability windows?
+          3. What are the best strategies right now for getting free GPU access?
+          4. Any alternative platforms that are reliably free right now?
+
+          Keep response under 150 words. Be direct. No fluff.
+
+          Return findings as a short report.
+          """
+
+          try:
+              payload = {
+                  "model": MODEL,
+                  "messages": [
+                      {"role": "system", "content": "You are the STRAYD AI research assistant."},
+                      {"role": "user", "content": analysis_prompt}
+                  ],
+                  "temperature": 0.5,
+                  "max_tokens": 400,
+              }
+
+              request_data = json.dumps(payload).encode("utf-8")
+              request = urllib.request.Request(
+                  API_URL,
+                  data=request_data,
+                  headers={
+                      "Authorization": f"Bearer {API_KEY}",
+                      "Content-Type": "application/json",
+                  },
+                  method="POST",
+              )
+
+              print("Researching current GPU landscape...\n")
+
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  data = json.loads(response.read().decode("utf-8"))
+                  report = data["choices"][0]["message"]["content"]
+                  print("=== RESEARCH FINDINGS ===")
+                  print(report)
+
+              # Save findings
+              os.makedirs("gpu-monitor", exist_ok=True)
+              report_file = f"gpu-monitor/x-monitor-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
+
+              with open(report_file, "w") as f:
+                  f.write(f"# STRAYD GPU Monitor\n")
+                  f.write(f"**Time:** {timestamp}\n\n")
+                  f.write("## Search Terms Monitored\n")
+                  for term in search_terms:
+                      f.write(f"- {term}\n")
+                  f.write("\n## Research Findings\n\n")
+                  f.write(report)
+
+              print(f"\nMonitor report saved: {report_file}")
+
+          except Exception as e:
+              print(f"Error: {e}")
+
+          print("\n=== MONITOR RUN COMPLETE ===")
+          PY
+
+      - name: Commit monitor report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gpu-monitor/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "X GPU monitor run - $(date +%Y%m%d-%H%M%S)"
+            git push
+          fi

@@ -1,184 +1,736 @@
-# MARTIN STRAYD MASTER PROFILE
+# MARTIN STRAYD — MASTER BRAND PROFILE
 
-## Identity
-
-Martin Strayd is an Australian musician, songwriter, author, archivist, creative technologist and entrepreneur.
-
-Official website:
+**Official Website:**  
 https://strayd.com
 
-Additional project:
-https://coolhotsauce.com
+**Primary Artist Identity:**  
+Martin Strayd
 
-Social Media Twitter X
-https://x.com/iammartinstrayd
----
+**Primary Collaborative Identity:**  
+STRAYD featuring Martin Strayd & Suzuki
 
-## Major Projects
+**Collaborative Billing:**  
+SUZUKI & STRAYD
 
-### Martin Strayd
-
-Independent music artist.
-
-Goal:
-
-Release one new song every week for the next year.
-
-Topics:
-
-- songwriting
-- recording
-- creativity
-- music production
-- artist journey
-- independent music
+© 2026 SS SUZUKI & STRAYD. All rights reserved.
 
 ---
 
-### Fantasy7
+# BRAND MISSION
 
-Fantasy7 is an archive and book project of a early 90's band with founder of the Sex pistol guitarist Steve Jones.
+Create meaningful music, stories, archives, education, technology and entrepreneurial projects that encourage people to keep building, keep learning and keep creating throughout life.
 
-Topics:
+The Martin Strayd ecosystem combines:
 
-- personal stories of F7 shows, tours and 90's stories
-- Steve Jones former Sex Pistol
-- F7 archive discoveries
-- Fantasy7 rare memories
-- 90's punk rock band
-- singer: Mark McCoy
-- music history
-- creative worlds
+- Music
+- Songwriting
+- Storytelling
+- Books
+- Rock history
+- Archives
+- Education
+- Technology
+- Artificial Intelligence
+- Entrepreneurship
+- Community projects
+- Independent creativity
 
----
+The goal is not simply entertainment.
 
-### STRAYD | Suzuki & Strayd
-
-Collaboration project.
-
-Focus:
-
-- music
-- songwriting
-- creative partnership
-- 2027 tour
-- weekly release song
+The goal is to inspire creativity, independence, lifelong curiosity, meaningful human connection and financial freedom through creative action.
 
 ---
 
-### NATRON THEORY
+# IDENTITY
 
-Author of:
+Martin Strayd is an Australian:
 
-NATRON THEORY DIY Artificial Stone Made The Caveman Way
+- Musician
+- Songwriter
+- Lyricist
+- Composer
+- Producer
+- Audio Engineer
+- Author
+- Archivist
+- Creative Technologist
+- Entrepreneur
 
-Topics:
+His work combines:
 
-- innovation
-- stone age technology
-- casting megalithic today 
-- geopolymer
-- megalithic technology
-- experimentation
-- DIY
-- unconventional thinking
+- Anti-Pop music
+- Rock and roll culture
+- Storytelling
+- Independent publishing
+- Education
+- Technology
+- Historical preservation
+- Community building
+- Creative experimentation
 
----
+Core personality traits:
 
-### How To Rock Community
+- Creative
+- Curious
+- Independent
+- Experimental
+- Optimistic
+- Persistent
+- Romantic
+- Rebellious
 
-Topics:
+Additional interests:
 
-- creativity
-- confidence
-- persistence
-- self development
-- staying creative at any age
-
----
-
-### Cool Hot Sauce
-
-Website:
-https://coolhotsauce.com
-
-Focus:
-
-- plant based food
-- vegan vegetarian
-- soy free food
-- science based food creation
-- future franchise opportunities
-- healthy alternatives
-
----
-
-## Audience
-
-Independent musicians
-
-Creators
-
-Songwriters
-
-DIY innovators
-
-Entrepreneurs
-
-People over 50 building new careers
-
-People interested in creativity and self-expression
+- Music archives
+- Rock history
+- Artificial Intelligence
+- Creative technology
+- Business development
+- Entrepreneurship
+- Education
+- Community building
+- Financial technology
+- Cryptocurrency
+- Food innovation
+- Sustainable business systems
 
 ---
 
-## Core Beliefs
+# CORE MESSAGE
+
+Independent music.
+
+Real stories.
+
+Real people.
+
+No waiting for permission.
 
 Keep creating.
 
 Keep building.
 
-Never stop learning.
+Keep learning.
 
-Age is not a limitation.
+---
+
+# MAJOR PROJECTS
+
+## Martin Strayd
+
+Independent recording artist.
+
+### Focus
+
+- Original songs
+- Weekly releases
+- Songwriting
+- Music production
+- Studio work
+- Audio engineering
+- Remixes
+- Catalogue development
+- Audience growth
+
+### Topics
+
+- Songwriting
+- Recording
+- Creativity
+- Music production
+- Life lessons
+- Artist journey
+- Independent music
+- Rock and roll culture
+
+### Long-Term Goal
+
+Release and promote a large catalogue of original music while building a global audience and meaningful connections with listeners.
+
+---
+
+## STRAYD
+
+### Official Identity
+
+STRAYD featuring Martin Strayd & Suzuki
+
+### Collaborative Billing
+
+SUZUKI & STRAYD
+
+### Focus
+
+- Weekly releases
+- Original music
+- Creative partnership
+- Audience growth
+- Music discovery
+- Independent artist development
+
+### Topics
+
+- Music
+- Collaboration
+- Creativity
+- Artist development
+- Independent releases
+- Technology-assisted promotion
+- Audience engagement
+
+### Core Message
+
+Real music.
+
+Real people.
+
+No waiting for permission.
+
+---
+
+## Suzuki & Strayd
+
+Represents the public-facing creative partnership.
+
+### Focus
+
+- Music promotion
+- Media
+- Branding
+- Audience engagement
+- Creative projects
+- Artist development
+
+### Themes
+
+- Partnership
+- Creativity
+- Music culture
+- Independent success
+- Building something meaningful
+- Human connection
+
+---
+
+## Fantasy7 Archive Project
+
+Historical archive project documenting the early-1990s rock band Fantasy7.
+
+### Historical References
+
+- Steve Jones
+- Mark McCoy
+- Touring stories
+- Backstage experiences
+- Rare photographs
+- Memorabilia
+- Personal memories
+
+### Focus
+
+- Preservation
+- Music history
+- Rock culture
+- Storytelling
+- Historical research
+- Archive restoration
+
+### Associated Future Project
+
+Fantasy7 book project documenting personal experiences, backstage stories, touring memories and historical archive discoveries.
+
+### Topics
+
+- 1990s rock culture
+- Touring life
+- Music history
+- Lessons learned
+- Avoiding addiction
+- Personal growth
+- Behind-the-scenes stories
+
+---
+
+## How To Rock Community
+
+Educational project.
+
+### Mission
+
+Teach creativity, confidence and persistence through real-world experience.
+
+### Topics
+
+- DIY creativity
+- Confidence
+- Music
+- Goal setting
+- Personal development
+- Problem solving
+- Independent thinking
+- Creative careers
+- Lifelong learning
+
+### Audience
+
+- Students
+- Musicians
+- Creators
+- Entrepreneurs
+- Lifelong learners
+
+### Core Message
+
+You are never too old to begin.
+
+---
+
+## Cool Hot Sauce
+
+**Website:**  
+https://coolhotsauce.com
+
+Community-focused food, entrepreneurship and education project.
+
+Martin Strayd is a shareholder, co-founder and creative contributor involved in the project's growth, vision and future development.
+
+### Focus
+
+- Plant-based products
+- Vegan-friendly alternatives
+- Food innovation
+- Community development
+- Entrepreneurship
+- Business education
+- Thailand-focused opportunities
+- Independent business ownership
+- Franchise development
+- Marketing systems
+- Ecosystem building
+
+### Topics
+
+- Healthy alternatives
+- Food production
+- Marketing
+- Entrepreneurship
+- Branding
+- Community building
+- Thailand business opportunities
+- Business partnerships
+- Franchise systems
+- Sustainable business growth
+
+### Long-Term Vision
+
+Build scalable business opportunities, educational initiatives and franchise-style expansion models that support local communities while creating unique products, jobs and long-term economic opportunities.
+
+The project may combine:
+
+- Food innovation
+- Education
+- Technology
+- Community development
+- Digital marketing
+- Business ownership
+- Future franchise opportunities
+
+---
+
+# ENTREPRENEURSHIP & TECHNOLOGY
+
+Alongside music and publishing, Martin explores opportunities involving:
+
+- Artificial Intelligence
+- Creative automation
+- Online business
+- Financial technology
+- Cryptocurrency
+- Digital ownership models
+- Intellectual property
+- Brand development
+- Community-driven business systems
+
+Technology is viewed as a tool that helps independent creators build audiences, businesses and opportunities without relying entirely on traditional gatekeepers.
+
+---
+
+# AUDIENCE
+
+### Primary Audiences
+
+- Independent musicians
+- Songwriters
+- Creators
+- DIY innovators
+- Entrepreneurs
+- Rock music fans
+- History enthusiasts
+- Lifelong learners
+- People over 50 pursuing new goals
+- Creative thinkers
+
+### Secondary Audiences
+
+- Students
+- Archivists
+- Authors
+- Educators
+- Technology enthusiasts
+- Independent business owners
+- Music historians
+- Investors interested in creator-led projects
+
+---
+
+# CORE BELIEFS
+
+Keep creating.
+
+Keep building.
+
+Keep learning.
+
+Creativity has no age limit.
 
 Independent creators matter.
 
+Persistence beats perfection.
+
 Experimentation creates opportunity.
+
+Technology should serve creators.
 
 Music can change lives.
 
+Stories matter.
+
+Authenticity matters.
+
+Community matters.
+
+Human connection matters.
+
+Financial literacy matters.
+
+Ownership matters.
+
+Creative freedom matters.
+
 ---
 
-## Current Mission
+# CONTENT PILLARS
 
-Build a global Martin Strayd brand.
+## Music
 
-Release one song per week.
+- Songs
+- Albums
+- Singles
+- Remixes
+- Studio work
+- Songwriting
+- Audio production
 
-Grow audience across social media.
+## Stories
 
-Grow website traffic.
+- Personal experiences
+- Touring memories
+- Rock history
+- Artist life
+- Behind-the-scenes moments
 
-Promote music, books, ideas and future businesses.
+## Creativity
+
+- Ideas
+- Experiments
+- Lessons learned
+- Creative thinking
+- Creative technology
+
+## Education
+
+- How To Rock
+- DIY learning
+- Personal growth
+- Confidence building
+
+## Technology
+
+- AI tools
+- Music technology
+- Digital workflows
+- Creative automation
+- Emerging technologies
+
+## Entrepreneurship
+
+- Independent projects
+- Community initiatives
+- Business experiments
+- Sustainable growth
+- Opportunity creation
+
+## Archives
+
+- Fantasy7
+- Music history
+- Backstage stories
+- Rare discoveries
+- Rock culture preservation
+
+## Food Innovation
+
+- Cool Hot Sauce
+- Plant-based products
+- Community development
+- Branding
+- Franchising
+- Independent food businesses
 
 ---
 
-## Rules
+# CURRENT MISSION
 
-Never invent songs.
+Build a globally recognised Martin Strayd ecosystem.
 
-Never invent releases.
+### Grow
 
-Never invent history.
+- Audience
+- Music catalogue
+- Website traffic
+- Community engagement
+- Merchandising
+- Education projects
+- Publishing opportunities
+- Partnerships
+- Sustainable businesses
 
-Never invent achievements.
+### Promote
 
-Use real Martin Strayd projects.
+- Weekly song releases
+- STRAYD
+- Fantasy7 Archive
+- Upcoming books
+- How To Rock
+- Creative projects
+- Cool Hot Sauce
+- Future businesses
+- Independent creativity
 
-Create curiosity.
+### Create
 
-Create engagement.
+- New music
+- New stories
+- New educational content
+- New technology-driven opportunities
+- New business ventures
+- New community connections
 
-Send people to Strayd.com when appropriate.
+### Preserve
 
-Promote creativity, independence and persistence.
+- Rock history
+- Music archives
+- Historical documents
+- Rare photographs
+- Real stories
+
+---
+
+# RELATIONSHIP TO OTHER KNOWLEDGE BASES
+
+This file functions as the master ecosystem profile.
+
+### martinstrayd.md
+
+Defines:
+
+- Martin Strayd biography
+- Character identity
+- Appearance
+- Image generation rules
+- Music background
+- Character consistency
+
+### suzukimusic.md
+
+Defines:
+
+- Suzuki biography
+- Character identity
+- Appearance
+- Image generation rules
+- Media background
+- Character consistency
+
+### songarchive.md
+
+Defines:
+
+- Songs
+- Releases
+- Metadata
+- Music catalogue
+- Archive material
+- Listening resources
+
+### Priority Order
+
+1. Character reference files
+2. Song archive
+3. Brand profile
+4. Promotional content
+
+Where conflicts exist, the most specialised source takes priority.
+
+---
+
+# AI AGENT RULES
+
+Always:
+
+- Use verified information.
+- Promote creativity.
+- Promote independence.
+- Encourage learning.
+- Encourage persistence.
+- Preserve artist credits.
+- Preserve historical accuracy.
+- Maintain brand consistency.
+- Respect the distinction between facts and plans.
+
+Never:
+
+- Invent songs.
+- Invent releases.
+- Invent achievements.
+- Invent awards.
+- Invent history.
+- Invent collaborations.
+- Invent chart success.
+- Invent business claims.
+- Invent tour dates.
+- Invent relationships.
+- Invent credits.
+
+When uncertain:
+
+- Verify first.
+- Leave unconfirmed information unasserted.
+- Distinguish facts from goals.
+- Distinguish released projects from future plans.
+
+---
+
+# MASTER BRAND PRINCIPLE
+
+Martin Strayd is building more than a music career.
+
+Music remains the centre of everything.
+
+Songwriting, recording, releasing music and connecting with listeners are the foundation of the entire ecosystem.
+
+Songs are the first love.
+
+The search for meaningful human connection and real-life experiences continues to influence the stories, characters and emotions found throughout the music.
+
+Alongside music, Martin's interests include:
+
+- Music archives
+- Rock history
+- Publishing
+- Education
+- Artificial Intelligence
+- Creative technology
+- Entrepreneurship
+- Financial technology
+- Cryptocurrency
+- Business development
+- Community-focused ventures
+
+The Martin Strayd ecosystem includes:
+
+- Original music
+- STRAYD
+- Songwriting
+- Audio production
+- Books and publishing
+- Fantasy7 archives
+- Music-history preservation
+- How To Rock education
+- Creative technology
+- Artificial Intelligence
+- Entrepreneurship
+- Cool Hot Sauce
+- Community projects
+
+Martin believes creators should never stop building.
+
+His projects often connect:
+
+- Music
+- Storytelling
+- Technology
+- Education
+- Business
+- Community development
+
+into one evolving creative ecosystem.
+
+Professionally, Martin has participated in ventures spanning:
+
+- Music
+- Publishing
+- Archives
+- Education
+- Food innovation
+- Technology
+- Independent business development
+
+His interests include exploring opportunities in:
+
+- AI
+- Digital publishing
+- Online business
+- Music technology
+- Financial technology
+- Cryptocurrency
+- Community-based entrepreneurship
+- Franchise systems
+- Intellectual property development
+
+Long-Term Vision:
+
+Continue creating music, documenting history, publishing stories, developing educational resources, expanding creative technology projects and participating in sustainable businesses that support creativity, independence and opportunity.
+
+Everything should reinforce:
+
+- Creativity
+- Independence
+- Persistence
+- Lifelong learning
+- Authenticity
+- Curiosity
+- Entrepreneurship
+- Innovation
+- Human connection
+- Real music
+- Real stories
+- Real people
+
+### Core Brand Message
+
+Independent music.
+
+Real stories.
+
+Real people.
+
+No waiting for permission.
+
+Keep creating.
+
+Keep building.
+
+Keep learning.
+
+© 2026 SS SUZUKI & STRAYD. All rights reserved.

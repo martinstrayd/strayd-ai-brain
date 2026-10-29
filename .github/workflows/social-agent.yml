@@ -1,4 +1,4 @@
-name: STRAYD Social Agent
+name: Strayd Social Agent
 
 on:
   workflow_dispatch:
@@ -107,7 +107,6 @@ jobs:
               "Short Video Idea",
           ]
 
-          # Content pillars derived from brand identity
           PILLARS = [
               "Weekly Song Journey",
               "Fantasy7",
@@ -123,10 +122,9 @@ jobs:
               "Rock History",
           ]
 
-          # Platform-specific hashtag sets for discovery
           PLATFORM_HASHTAGS = {
               "X": [
-                  "#STRAYD", "#MartinStrayd", "#RockMusic", 
+                  "#STRAYD", "#MartinStrayd", "#RockMusic",
                   "#IndieArtist", "#MusicProducer", "#RockGuitar",
                   "#NewMusic", "#MusicLife", "#GuitarLife",
                   "#RockAndRoll", "#IndieMusic", "#MusicianLife"
@@ -156,7 +154,6 @@ jobs:
               ],
           }
 
-          # Platform-specific handles and mentions
           PLATFORM_HANDLES = {
               "X": "@STRAYD",
               "Facebook": "STRAYD",
@@ -197,6 +194,23 @@ jobs:
                   for i in range(7)
               ]
 
+          def normalize_dashes(content):
+              """Replace em dashes and other AI-tell characters with plain alternatives."""
+              replacements = {
+                  '\u2014': '-',
+                  '\u2013': '-',
+                  '\u2212': '-',
+                  '\u2018': "'",
+                  '\u2019': "'",
+                  '\u201c': '"',
+                  '\u201d': '"',
+                  '\u2026': '...',
+              }
+              result = content
+              for old, new in replacements.items():
+                  result = result.replace(old, new)
+              return result
+
           def build_prompt(knowledge, week_dates):
               date_lines = "\n".join(
                   f"{day}: {date.isoformat()}"
@@ -205,7 +219,6 @@ jobs:
               pillar_lines = "\n".join(f"- {p}" for p in PILLARS)
               section_lines = "\n".join(f"### {s}" for s in SECTIONS)
 
-              # Build hashtag reference for the prompt
               hashtag_ref = []
               for platform, tags in PLATFORM_HASHTAGS.items():
                   hashtag_ref.append(f"\n{platform}:")
@@ -245,6 +258,8 @@ jobs:
           - Make every item suitable for a human to review and publish.
           - Do not include unsupported placeholders presented as real facts.
           - Use clear, natural language and avoid repetitive generic copy.
+          - NEVER use em dashes. Use plain hyphens only: -
+          - NEVER use smart quotes. Use plain quotes only: ' and "
 
           BRAND AND IDENTITY
           - STRAYD = Martin Strayd + Suzuki united
@@ -499,7 +514,7 @@ jobs:
 
               day_pattern = re.compile(
                   r"^##\s+(Monday|Tuesday|Wednesday|Thursday|Friday|"
-                  r"Saturday|Sunday)\s+[—–-]\s+(\d{4}-\d{2}-\d{2})\s*$",
+                  r"Saturday|Sunday)\s+[—\u2014\-]\s+(\d{4}-\d{2}-\d{2})\s*$",
                   re.MULTILINE,
               )
 
@@ -609,8 +624,10 @@ jobs:
                   )
                   counter += 1
 
+              normalized = normalize_dashes(content.rstrip()) + "\n"
+
               with target.open("x", encoding="utf-8", newline="\n") as handle:
-                  handle.write(content.rstrip() + "\n")
+                  handle.write(normalized)
 
               log(f"Created {target}")
               return target
@@ -642,7 +659,7 @@ jobs:
                   )
 
                   daily_content = (
-                      f"# STRAYD Social Content — {day}, "
+                      f"# STRAYD Social Content - {day}, "
                       f"{date.isoformat()}\n\n"
                       f"Source calendar: {weekly_saved.as_posix()}\n\n"
                       f"{daily_sections[day]}"

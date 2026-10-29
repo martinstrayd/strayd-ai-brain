@@ -1,4 +1,4 @@
-name: Strayd Social Agent
+name: STRAYD Content Director
 
 on:
   workflow_dispatch:

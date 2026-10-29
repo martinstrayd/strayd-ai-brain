@@ -3,18 +3,15 @@ import requests
 import json
 from datetime import datetime, timedelta, timezone
 
-# Secrets from GitHub
 BEARER_TOKEN = os.getenv("X_BEARER_TOKEN")
 USER_ACCESS_TOKEN = os.getenv("X_USER_ACCESS_TOKEN")
 AI_API_KEY = os.getenv("AI_API_KEY")
 
 AI_ENDPOINT = "https://inference.dahl.global/v1/chat/completions"
 MODEL = "MiniMaxAI/MiniMax-M2.7"
-
 KEYWORDS = '"Natron theory" OR geopolymer OR "artificial stone"'
 
 def search_recent():
-    """Search for recent tweets matching the keywords."""
     url = "https://api.x.com/2/tweets/search/recent"
     params = {
         "query": KEYWORDS,
@@ -43,16 +40,36 @@ def reply(tweet_id, text):
     url = "https://api.x.com/2/tweets"
     payload = {"reply": {"in_reply_to_tweet_id": tweet_id}, "text": text[:280]}
     headers = {"Authorization": f"Bearer {USER_ACCESS_TOKEN}", "Content-Type": "application/json"}
-    requests.post(url, headers=headers, json=payload)
+    r = requests.post(url, headers=headers, json=payload)
+    return r.status_code
 
 def main():
+    print("=== Natron Monitor started ===")
     tweets = search_recent()
-    for t in tweets:
-        print("Found:", t["text"][:80])
-        reply_text = call_ai(t["text"])
-        if reply_text:
-            reply(t["id"], reply_text)
-            print("Replied")
+
+    if not tweets:
+        print("No new mentions found")
+        print("=== Finished ===")
+        return
+
+    print(f"Found {len(tweets)} matching tweet(s)")
+
+    for i, t in enumerate(tweets, 1):
+        text = t["text"]
+        tweet_id = t["id"]
+        print(f"\n[{i}/{len(tweets)}] Tweet: {text[:100]}...")
+
+        try:
+            reply_text = call_ai(text)
+            if reply_text:
+                status = reply(tweet_id, reply_text)
+                print(f"  -> Replied (status: {status})")
+            else:
+                print("  -> AI returned empty reply, skipping")
+        except Exception as e:
+            print(f"  -> Error: {e}")
+
+    print("\n=== Finished ===")
 
 if __name__ == "__main__":
     main()

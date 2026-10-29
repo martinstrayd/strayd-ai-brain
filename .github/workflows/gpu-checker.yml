@@ -1,0 +1,197 @@
+name: STRAYD GPU Availability Checker
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 8,12,16,20 * * *"  # 4x daily
+
+permissions:
+  contents: write
+
+env:
+  DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+  DAHL_API_URL: https://inference.dahl.global/v1/chat/completions
+  DAHL_MODEL: MiniMaxAI/MiniMax-M2.7
+
+jobs:
+  check-gpu-availability:
+    name: Check Free GPU Platforms
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run GPU Availability Check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          import datetime
+          import json
+          import os
+          import urllib.request
+          import time
+
+          API_URL = os.environ["DAHL_API_URL"]
+          API_KEY = os.environ["DAHL_API_KEY"]
+          MODEL = os.environ["DAHL_MODEL"]
+
+          timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+          platforms = {
+              "Google Colab": {
+                  "check_url": "https://colab.research.google.com",
+                  "status": "unknown",
+                  "notes": "Check manually - colab.research.google.com"
+              },
+              "Kaggle": {
+                  "check_url": "https://www.kaggle.com",
+                  "status": "unknown",
+                  "notes": "Check manually - kaggle.com/notebooks"
+              },
+              "Gradient by Paperspace": {
+                  "check_url": "https://gradient.paperspace.com",
+                  "status": "unknown",
+                  "notes": "Check manually - gradient.paperspace.com/notebooks"
+              },
+              "Hailuo AI (MiniMax)": {
+                  "check_url": "https://hailuoai.video",
+                  "status": "unknown",
+                  "notes": "Free daily credits - hailuoai.video"
+              },
+              "Luma Dream Machine": {
+                  "check_url": "https://lumalabs.ai/dream-machine",
+                  "status": "unknown",
+                  "notes": "30 free/month - lumalabs.ai"
+              },
+              "PixVerse": {
+                  "check_url": "https://pixverse.ai",
+                  "status": "unknown",
+                  "notes": "Daily free credits - pixverse.ai"
+              },
+              "Kling AI": {
+                  "check_url": "https://klingai.com",
+                  "status": "unknown",
+                  "notes": "Daily free credits - klingai.com"
+              },
+              "Jimeng (ByteDance)": {
+                  "check_url": "https://jimeng.jianying.com",
+                  "status": "unknown",
+                  "notes": "Generous free tier - jimeng.jianying.com"
+              }
+          }
+
+          print("=== STRAYD GPU AVAILABILITY CHECK ===")
+          print(f"Time: {timestamp}\n")
+
+          # Check HTTP availability of each platform
+          for name, info in platforms.items():
+              try:
+                  req = urllib.request.Request(
+                      info["check_url"],
+                      headers={"User-Agent": "Mozilla/5.0"}
+                  )
+                  response = urllib.request.urlopen(req, timeout=5)
+                  info["status"] = "ONLINE"
+                  print(f"  [ONLINE]  {name}")
+              except Exception as e:
+                  info["status"] = "UNAVAILABLE"
+                  print(f"  [DOWN]    {name} - {str(e)[:50]}")
+
+          print("\n=== PLATFORM STATUS SUMMARY ===")
+          for name, info in platforms.items():
+              print(f"{info['status']:12} | {name}")
+              print(f"               {info['notes']}")
+
+          # Generate DAHL report
+          report_prompt = f"""Generate a friendly STRAYD GPU availability report for {timestamp}.
+
+          Platforms checked: {', '.join(platforms.keys())}
+
+          Status summary:
+          {json.dumps(platforms, indent=2)}
+
+          Write a short actionable report:
+          - Which platforms are online now
+          - What to check first
+          - Priority order for getting free GPU
+          - Keep it under 200 words
+          - Tone: helpful, direct, no fluff
+          """
+
+          try:
+              payload = {
+                  "model": MODEL,
+                  "messages": [
+                      {"role": "system", "content": "You are the STRAYD AI assistant. Return only the report text."},
+                      {"role": "user", "content": report_prompt}
+                  ],
+                  "temperature": 0.5,
+                  "max_tokens": 500,
+              }
+
+              request_data = json.dumps(payload).encode("utf-8")
+              request = urllib.request.Request(
+                  API_URL,
+                  data=request_data,
+                  headers={
+                      "Authorization": f"Bearer {API_KEY}",
+                      "Content-Type": "application/json",
+                  },
+                  method="POST",
+              )
+
+              print("\n=== DAHL REPORT ===")
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  data = json.loads(response.read().decode("utf-8"))
+                  report = data["choices"][0]["message"]["content"]
+                  print(report)
+
+              # Save report
+              report_file = f"gpu-status/gpu-check-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
+              os.makedirs("gpu-status", exist_ok=True)
+
+              with open(report_file, "w") as f:
+                  f.write(f"# STRAYD GPU Availability Report\n")
+                  f.write(f"**Generated:** {timestamp}\n\n")
+                  f.write("## Platform Status\n\n")
+                  for name, info in platforms.items():
+                      status_icon = "✅" if info["status"] == "ONLINE" else "❌"
+                      f.write(f"{status_icon} **{name}**\n")
+                      f.write(f"   {info['notes']}\n\n")
+                  f.write("## DAHL Analysis\n\n")
+                  f.write(report)
+
+              print(f"\nReport saved: {report_file}")
+
+          except Exception as e:
+              print(f"DAHL report failed: {e}")
+              # Save basic status anyway
+              report_file = f"gpu-status/gpu-check-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
+              os.makedirs("gpu-status", exist_ok=True)
+              with open(report_file, "w") as f:
+                  f.write(f"# STRAYD GPU Availability Report\n")
+                  f.write(f"**Generated:** {timestamp}\n\n")
+                  for name, info in platforms.items():
+                      status_icon = "✅" if info["status"] == "ONLINE" else "❌"
+                      f.write(f"{status_icon} **{name}**: {info['notes']}\n")
+
+          print("\n=== GPU CHECK COMPLETE ===")
+          PY
+
+      - name: Commit report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gpu-status/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "GPU availability check - $(date +%Y%m%d-%H%M%S)"
+            git push
+          fi

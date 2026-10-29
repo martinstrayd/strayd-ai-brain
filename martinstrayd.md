@@ -368,9 +368,11 @@ Martin's catalogue spans multiple genres and moods rather than following a singl
 
 Martin's music should be presented as songwriting with stories and personality.
 
-Not merely background audio.
+Not merely background audio. 
 
-Its appeal lies in character, storytelling, mood and individuality.
+Its appeal lies in character, storytelling, mood and individuality. 
+FROM RADIO ROCK TO REMIX CULTURE.
+Martin Strayd’s existing online catalogue describes a multi-genre world spanning radio rock, reggae, blues, electronic music, soundtrack moods and dance-floor remixes. 
 
 ---
 

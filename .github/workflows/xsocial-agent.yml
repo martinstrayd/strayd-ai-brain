@@ -1,4 +1,4 @@
-name: Strayd Content Director
+name: X-Strayd Content Director
 
 on:
   workflow_dispatch:

@@ -1,3 +1,91 @@
+---
+character_id: martin_strayd
+
+name: Martin Strayd
+
+birth_year: 1971
+
+public_age: 55
+
+nationality: Australian
+
+primary_artist_identity: Martin Strayd
+
+collaborative_project:
+  STRAYD featuring Martin Strayd & Suzuki
+
+collaborative_billing:
+  SUZUKI & STRAYD
+
+roles:
+  - Rock Musician
+  - Lyricist
+  - Songwriter
+  - Composer
+  - Audio Engineer
+  - Producer
+  - Podcaster
+  - Former Hollywood Guitar Technician
+
+reference_image:
+  watermarked_img_10721933860443032982.jpg
+
+appearance:
+
+  ethnicity:
+    Caucasian Australian
+
+  eyes:
+    blue
+
+  hair:
+    color: black
+    style: close_cropped_buzz_cut
+
+  face:
+    strong_jawline
+    intense_brow
+
+  build:
+    athletic
+    lean
+
+  height_cm: 185
+
+  earrings:
+    - silver_hoop_left
+    - silver_hoop_right
+
+  distinctive_features:
+    - upper_left_silver_tooth
+
+brand_keywords:
+  - anti-pop
+  - anti-pop rock
+  - australian rock
+  - independent music
+  - songwriter
+  - composer
+  - producer
+  - audio engineer
+  - guitar driven music
+  - rock and roll
+  - storytelling
+  - punk attitude
+
+generation_priority:
+  photorealistic
+
+identity_priority:
+  maximum
+
+face_embedding_status:
+  planned
+
+copyright:
+  © 2026 SS SUZUKI & STRAYD
+---
+
 # MARTIN STRAYD — OFFICIAL KNOWLEDGE BASE
 
 **Character name:** Martin Strayd  
@@ -11,98 +99,199 @@
 
 ---
 
----
+# PHOTOREALISM LOCK
 
-## PHOTOREALISM LOCK
+Master Rule:
 
-All artwork generated from this character profile must appear as real-world photography.
+Martin Strayd must always appear as a real human being photographed in the real world.
 
-Required style:
+Required:
 
 - Photorealistic
-- Professional photography
-- Natural human skin texture
-- Realistic pores and facial detail
+- Documentary photography
+- Editorial photography
+- Music magazine photography
+- Concert photography
+- Studio portrait photography
+- Professional publicity photography
+- DSLR camera realism
 - Natural lighting
-- Real-world camera optics
-- DSLR-quality photography
-- Fashion photography quality
-- Magazine-quality photography
-- Concert photography quality
-- Documentary photography quality
-- Authentic human proportions
+- Natural skin texture
+- Real skin colour
+- Real human ageing
+- Realistic pores
 - Realistic eyes
 - Realistic hands
 - Realistic clothing materials
-- Real-world environments
+- Authentic environments
+- Real-world proportions
+
+Camera references:
+
+- Canon EOS R5
+- Sony A7R IV
+- Nikon Z8
+
+Image Goal:
+
+The final image should be indistinguishable from a professional photograph of a real Australian musician.
+
+Never produce artwork that looks AI-generated.
+
+---
+
+# CHARACTER LOCK
+
+Martin Strayd
+
+- Born 1971
+- Age 55
+- Australian
+- Caucasian Australian
+- Blue eyes
+- Black close-cropped buzz cut
+- Strong jawline
+- Intense brow
+- Athletic lean build
+- Approximately 185 cm tall
+- Silver hoop earring left ear
+- Silver hoop earring right ear
+- Upper-left silver tooth
+
+Standard Appearance
+
+- Black fitted FOOL FOR A GOOD TIME T-shirt
+- Koala skull and crossbones graphic
+- Black slim-fit jeans
+- Distressed off-white high-top canvas sneakers
+- Dark leather wristbands
+
+Visual Identity
+
+- Anti-Pop Rock
+- Independent Australian Musician
+- Songwriter
+- Composer
+- Audio Engineer
+- Podcaster
+- Former Hollywood Guitar Technician
+- Authentic Rock & Roll Culture
+
+The supplied reference image overrides any conflicting scene prompt.
+
+---
+
+# IDENTITY PRESERVATION LOCK
+
+When generating images:
+
+Preserve:
+
+1. Facial structure
+2. Age appearance
+3. Eye colour
+4. Hair style
+5. Earrings
+6. Silver tooth
+7. Body proportions
+8. Shirt artwork
+9. Character identity
+
+Never replace Martin Strayd with:
+
+- Generic rock musician
+- Generic model
+- Generic influencer
+- Anonymous singer
+- Young male model
+
+Identity consistency is more important than scene creativity.
+
+If there is a conflict between a prompt and this knowledge base, the knowledge base wins.
+
+---
+
+# NEGATIVE GENERATION LOCK
 
 Avoid:
 
 - Anime
 - Cartoon
-- Comic book style
+- Comic style
 - Illustration
-- Painting
-- Digital painting
+- Fantasy artwork
+- Cyberpunk
+- Science fiction
 - CGI appearance
 - Plastic skin
-- Doll-like faces
-- Fantasy characters
-- Cyberpunk aesthetics
-- Unrealistic neon effects
-- AI-art look
-- Unrealistic body proportions
+- Unrealistic anatomy
+- Generic musician
+- Generic model
+- Young face
+- Beard
+- Mustache
+- Tattoos
+- Mohawk
+- Long hair
+- Fantasy clothing
+- Neon cyberpunk cities
+- Hallucinated text
+- Distorted hands
+- Extra fingers
+- Extra limbs
 
-Goal:
-
-The image should be indistinguishable from a professional photograph of a real person.
-
-CHARACTER LOCK:
-
-Martin Strayd, 55 year old Australian rock musician,
-short black buzz cut,
-blue eyes,
-strong jawline,
-silver hoop earrings,
-upper-left silver tooth,
-athletic lean build,
-black fitted FOOL FOR A GOOD TIME shirt,
-koala skull crossbones logo.
-
-ANTI-POP aesthetic.
-Authentic rock and roll musician.
-Independent Australian artist.
-
-Avoid:
-cyberpunk,
-anime,
-young face,
-generic model,
-beard,
-tattoos,
-leather jacket.
+---
 
 ## 1. Artist Identity
 
-Martin Strayd is an independent Australian lyricist, songwriter, composer and music producer known for a large, diverse catalogue of original music. His work combines guitar-driven rock, anti-pop, punk influences, reggae, blues, electronic production and dance-oriented remixes.
+Martin Strayd is an independent Australian lyricist, songwriter, composer and music producer known for a large, diverse catalogue of original music.
 
-His creative identity centres on story-driven songwriting, satire, wordplay, rebellion, desire, nightlife, money, luxury, heartbreak and the ongoing search for love.
+His work combines:
 
-Strayd describes his approach as **“Anti-Pop Club Music”**: music that combines independent rock attitude with unconventional songwriting, club energy, cinematic atmosphere and stories drawn from real life.
+- Guitar-driven rock
+- Anti-pop songwriting
+- Punk influences
+- Reggae
+- Blues
+- Electronic production
+- Dance remixes
+
+His creative identity centres on:
+
+- Story-driven songwriting
+- Satire
+- Wordplay
+- Rebellion
+- Desire
+- Nightlife
+- Money
+- Luxury
+- Heartbreak
+- The ongoing search for love
+
+Strayd describes his approach as:
+
+**“Anti-Pop Club Music”**
+
+Music that combines independent rock attitude with unconventional songwriting, club energy, cinematic atmosphere and stories drawn from real life.
 
 His work ranges from acoustic and emotionally reflective songs to provocative rock tracks, humorous anthems, exotic lifestyle soundtracks and electronic remixes.
 
-### Core identity
+### Core Identity
 
-- **Nationality:** Australian.
-- **Profession:** Lyricist, songwriter, composer, producer and independent recording artist.
-- **Musical identity:** Anti-pop, rock, punk-influenced songwriting, reggae, blues, electronic music and dance remixes.
-- **Creative approach:** Independent, story-driven, satirical, emotionally expressive and experimental.
-- **Public positioning:** An independent Australian musician building and promoting his own catalogue outside the traditional record-label system.
+- Nationality: Australian
+- Profession: Lyricist, songwriter, composer, producer and independent recording artist
+- Musical identity: Anti-pop, rock, punk-influenced songwriting, reggae, blues, electronic music and dance remixes
+- Creative approach: Independent, story-driven, satirical, emotionally expressive and experimental
+- Public positioning: Independent Australian musician building and promoting his own catalogue outside the traditional record-label system
 
 ### Short Artist Biography
 
-Martin Strayd is an independent Australian songwriter, lyricist and composer creating anti-pop rock, club music and cinematic lifestyle soundtracks. Drawing on decades of musical experience, he blends guitar-driven rock, satire, storytelling, blues, reggae and electronic remixes into a catalogue exploring rebellion, nightlife, desire, luxury, heartbreak and the search for love. A former Hollywood celebrity guitar technician, Strayd now focuses on his own music, releasing and promoting his work independently.
+Martin Strayd is an independent Australian songwriter, lyricist and composer creating anti-pop rock, club music and cinematic lifestyle soundtracks.
+
+Drawing on decades of musical experience, he blends guitar-driven rock, satire, storytelling, blues, reggae and electronic remixes into a catalogue exploring rebellion, nightlife, desire, luxury, heartbreak and the search for love.
+
+A former Hollywood celebrity guitar technician, Strayd now focuses on his own music, releasing and promoting his work independently.
 
 ---
 
@@ -110,18 +299,33 @@ Martin Strayd is an independent Australian songwriter, lyricist and composer cre
 
 Before concentrating on his own recording career, Martin Strayd worked as a guitar technician in Hollywood, working backstage with established rock musicians.
 
-His reported professional associations include:
+Reported professional associations include:
 
-- Steve Jones of the Sex Pistols.
-- Doug Fieger of The Knack.
+- Steve Jones (Sex Pistols)
+- Doug Fieger (The Knack)
 
 His experience around professional musicians and backstage rock culture forms part of the background to his own musical identity.
 
-His subsequent work has focused on songwriting, recording, producing and building a substantial independent catalogue.
+His subsequent work has focused on:
 
-The ABC triple j Unearthed artist profile is an important external reference for his music and background.
+- Songwriting
+- Recording
+- Producing
+- Building an extensive independent music catalogue
 
-**Research rule:** When discussing specific years, tours, employers, celebrity relationships or technical credits from his Hollywood career, consult the relevant original sources. Do not invent dates, job titles or stories to fill gaps.
+The ABC Triple J Unearthed artist profile remains an important external reference for background information.
+
+### Research Rule
+
+When discussing:
+
+- Specific years
+- Tours
+- Employment
+- Celebrity relationships
+- Technical credits
+
+consult original sources and avoid inventing details.
 
 ---
 
@@ -129,37 +333,44 @@ The ABC triple j Unearthed artist profile is an important external reference for
 
 Martin's catalogue spans multiple genres and moods rather than following a single commercial formula.
 
-### Musical characteristics
+### Musical Characteristics
 
-- Guitar-driven Australian rock.
-- Anti-pop and alternative rock.
-- Punk-influenced attitude.
-- Reggae and blues elements.
-- Acoustic songwriting and personal storytelling.
-- Electronic dance-floor remixes.
-- Cinematic and exotic lifestyle soundtracks.
-- Satire, humour, wordplay and provocative lyrics.
+- Guitar-driven Australian rock
+- Anti-pop and alternative rock
+- Punk-influenced attitude
+- Reggae influences
+- Blues influences
+- Acoustic songwriting
+- Personal storytelling
+- Electronic dance remixes
+- Cinematic soundtrack elements
+- Satirical lyrics
+- Humour and wordplay
 
-### Recurring lyrical themes
+### Recurring Themes
 
-His songs explore a broad, cinematic world of:
+- Freedom and rebellion
+- Desire and attraction
+- Fast living and luxury
+- Nightlife
+- Parties
+- Modern life
+- Travel
+- Exotic locations
+- Heartbreak
+- Longing
+- The search for love
+- Satirical situations
+- Unusual characters
+- Late-night reflection
 
-- Freedom and rebellion.
-- Desire, attraction and seduction.
-- Money, fast living and luxury.
-- Nightlife, parties and wild modern life.
-- Neon-lit cities and exotic destinations.
-- Heartbreak, longing and the search for love.
-- Satire, unusual characters and unexpected situations.
-- Private thoughts, late-night confessions and the morning after.
+### Creative Principle
 
-The tone can move between funny, outrageous, seductive, romantic, rebellious and emotionally sincere.
+Martin's music should be presented as songwriting with stories and personality.
 
-### Creative principle
+Not merely background audio.
 
-Martin's music should be presented as songwriting with stories and personality, not simply as generic background audio.
-
-Its appeal lies in its characters, lyrical details, distinctive situations and moods that listeners and video creators can use to express something of their own.
+Its appeal lies in character, storytelling, mood and individuality.
 
 ---
 
@@ -167,142 +378,136 @@ Its appeal lies in its characters, lyrical details, distinctive situations and m
 
 Martin Strayd maintains an extensive catalogue of original recordings, albums, EPs, singles, alternate versions, remixes and archived material.
 
-Titles supplied for this knowledge base include:
+Referenced releases include:
 
-- *Two Best Friends*
-- *The Anti Pop Apocalypse*
-- *They Called Me Crazy*
-- *Rich & Dangerous*
-- *Favorite Home*
-- *Danny Penniman (Reward Offered)*
-- *Zulu Dancers Like Me (You're Too Much)*
-- *The Anti Pop Apocalypse (Daily Very News Alien Alert)*
+- Two Best Friends
+- The Anti Pop Apocalypse
+- They Called Me Crazy
+- Rich & Dangerous
+- Favorite Home
+- Danny Penniman (Reward Offered)
+- Zulu Dancers Like Me (You're Too Much)
+- The Anti Pop Apocalypse (Daily Very News Alien Alert)
 
-Other referenced catalogue themes and collections include:
+Additional catalogue references include:
 
-- *55+ Lost Tracks*
-- *Calm Vibes Soundtrack 2026*
-- *Medium Vibes 2026*
-- *Anti Pop Rock* releases and collections.
-- *Queen of Clickbait (I Made My First Million Dollars)*
-- *Crypto Cafe Thailand*
+- 55+ Lost Tracks
+- Calm Vibes Soundtrack 2026
+- Medium Vibes 2026
+- Anti Pop Rock collections
+- Queen of Clickbait (I Made My First Million Dollars)
+- Crypto Cafe Thailand
 
-These titles are a working catalogue reference, not a guarantee that every item is a standalone album or that every release date and title format has been independently verified. Confirm the release metadata before using a title in an official campaign.
+These references should be treated as catalogue references until individual release metadata is confirmed.
 
-### Songs and locations
+### Travel and Location Themes
 
-Martin's catalogue includes references to travel, Thailand and exotic destinations. Supplied examples include:
+Examples include:
 
-- *Chiang Rai*
-- *Paradise (Thailand)*
-- *Tuk Tuk Secret Spice*
+- Chiang Rai
+- Paradise (Thailand)
+- Tuk Tuk Secret Spice
 
-Use these as search terms when exploring his catalogue. Confirm the exact track and its official listening link before recommending it publicly.
-
-### Catalogue size and archive
-
-The project has been described in supplied promotional material as containing more than 100 original tracks, 55-plus lost tracks and decades of music.
-
-These figures should be treated as campaign descriptions until checked against the current master catalogue. Do not automatically turn them into precise verified statistics.
+Confirm official titles and release information before public recommendation.
 
 ---
 
-## 5. “FOOL FOR A GOOD TIME” — Artist Credits
+## 5. FOOL FOR A GOOD TIME — Artist Credits
 
-**Approved artist credits:**
+Approved artist credits:
 
-- Martin Strayd.
-- The band STRAYD.
+- Martin Strayd
+- The band STRAYD
 
-Suzuki contributes backing vocals on a few songs where applicable, but her principal role in the campaign is media guru, band manager and promotional lead.
+Suzuki contributes backing vocals on selected recordings where applicable.
 
-Do not automatically credit Suzuki as the lead vocalist, featured artist or performer on every version of “FOOL FOR A GOOD TIME.”
+Her principal role within the campaign remains:
 
-Use the credits that correspond to the actual recording and its confirmed metadata.
+- Media guru
+- Band manager
+- Promotional lead
 
-### Visual identity for the release
+Do not automatically credit Suzuki as a lead vocalist, featured artist or performer on every version.
 
-Martin's signature promotional shirt features:
+### Visual Identity
 
-- Black fitted T-shirt.
-- Top-arc text: `FOOL FOR A GOOD TIME`
-- Centre graphic: koala-head skull with crossed bones.
-- No additional text, dates or cities on the shirt.
+Signature shirt:
 
-The shirt artwork is part of the character's visual continuity. Reproduce it faithfully when the reference image is supplied.
+- Black fitted T-shirt
+- Top arc: FOOL FOR A GOOD TIME
+- Centre graphic: koala-head skull with crossed bones
+- No additional text
+- No locations
+- No dates
+- No extra slogans
 
-### Campaign positioning
-
-The campaign can emphasise independent music-making, professional production, the work behind the catalogue and the determination to release music without waiting for corporate approval.
-
-Use confident language, but do not invent record-label deals, endorsements, chart positions or claims about a specific remix's production history.
+The shirt artwork is part of visual continuity and should be reproduced faithfully when the reference image is supplied.
 
 ---
 
 ## 6. Independent Music Mission
 
-Martin Strayd operates as an independent artist, developing and releasing music outside the conventional record-label framework.
+Martin Strayd operates as an independent artist developing and releasing music outside the conventional record-label framework.
 
-His independent approach includes:
+His activities include:
 
-- Writing and composing original songs.
-- Producing and developing recordings.
-- Maintaining a broad digital catalogue.
-- Publishing and promoting releases across online platforms.
-- Developing direct relationships with listeners.
-- Making use of short-form video and creator-driven discovery.
-- Exploring mood-based catalogue organisation and music discovery.
-- Building opportunities for sync licensing and other legitimate uses of his music.
+- Writing original songs
+- Composing music
+- Producing recordings
+- Managing a large catalogue
+- Publishing releases
+- Building audience relationships
+- Short-form video promotion
+- Music discovery systems
+- Sync opportunities
 
-The project is driven by the idea that musicians can create, release and promote their own work without waiting for traditional industry approval.
-
-### Core message
+### Core Message
 
 **Independent music. Real stories. No waiting for permission.**
 
-Martin's promotional voice should focus on the work, the music and the freedom to release it independently.
+Martin's voice should focus on:
 
-Avoid presenting independence as proof that every recording has no third-party rights, distribution agreements or other obligations. Licensing and rights status must be checked for each use.
+- The music
+- The work
+- The stories
+- Creative independence
 
 ---
 
 ## 7. Audience and Music Discovery
 
-Martin's songs are suited to a range of listening and creator contexts, including:
+Martin's songs suit:
 
-- Travel videos and destination edits.
-- Nightlife and party content.
-- Luxury and lifestyle clips.
-- Romance, attraction and heartbreak stories.
-- Humorous or satirical short videos.
-- Rock culture and rebellious characters.
-- Cinematic storytelling.
-- Dance edits and electronic remix content.
-- Acoustic or reflective moments.
+- Travel content
+- Destination videos
+- Nightlife content
+- Lifestyle videos
+- Romance stories
+- Heartbreak themes
+- Humorous content
+- Rock culture
+- Cinematic storytelling
+- Dance edits
+- Acoustic moments
 
-His music can be positioned as a soundtrack for people who want personality, attitude and a distinctive story in their content.
+### Short-Form Content Rules
 
-### TikTok, Reels and YouTube Shorts
+1. Use a real song.
+2. Use the correct title.
+3. Match visuals to the music.
+4. Include artist information.
+5. Link to official listening destinations.
+6. Avoid unsupported popularity claims.
 
-Short-form campaigns should:
+### Discovery Principle
 
-1. Select a real track from the catalogue.
-2. Identify its strongest musical or lyrical moment.
-3. Match the song to a clear visual idea or emotional situation.
-4. Use an immediate opening hook.
-5. Include the correct song and artist information.
-6. Direct viewers to the official listening source.
+Prioritise:
 
-Do not claim that a song is “viral,” widely used or trending unless current evidence supports that description.
-
-### Helping the algorithm
-
-When creating promotional content, make discovery easier through accurate song titles, consistent artist names, relevant captions, appropriate hashtags and links to the correct official release.
-
-Prioritise genuine listener engagement and relevant creator uses over misleading claims about popularity.
-
----
-
+- Accurate metadata
+- Consistent artist naming
+- Relevant captions
+- Genuine engagement
+- Authentic audience growth
 ## 8. Martin Strayd — Production Character Sheet
 
 **Character name:** Martin Strayd  
@@ -311,71 +516,102 @@ Prioritise genuine listener engagement and relevant creator uses over misleading
 
 Use the designated reference image as the primary visual guide for character generation, promotional artwork and character-reference photography.
 
+### Verified Character Appearance
+
+The following traits are considered authoritative:
+
+- Born 1971
+- Public age 55
+- Australian
+- Caucasian Australian
+- Blue eyes
+- Black close-cropped buzz cut
+- Strong jawline
+- Intense brow
+- Athletic lean build
+- Approximately 185 cm tall
+- Silver hoop earrings
+- Upper-left silver tooth
+
+These traits take precedence over any assumptions generated from prompts.
+
 ### Physical Appearance and Identity
 
-- **Appearance:** Caucasian Australian man.
-- **Face:** Strong jawline and intense brow.
-- **Hair:** Close-cropped buzz cut.
-- **Build:** Fit, athletic, lean rocker physique.
-- **Height:** Approximately 185 cm / 6 ft 0 in.
-- **Arms:** Clean arms with no visible tattoos.
-- **Earrings:** One silver hoop earring in each ear.
-- **Distinctive feature:** One silver tooth on the upper left side.
+- Appearance: Caucasian Australian man.
+- Face: Strong jawline and intense brow.
+- Hair: Close-cropped black buzz cut.
+- Build: Fit, athletic and lean rocker physique.
+- Height: Approximately 185 cm / 6 ft 0 in.
+- Arms: Clean arms with no visible tattoos.
+- Earrings: One silver hoop earring in each ear.
+- Distinctive feature: One silver tooth on the upper-left side.
 
-The character should look like an authentic Australian rock musician who also works as a podcast host and audio engineer.
+The character should appear as an authentic Australian rock musician who also works as a songwriter, producer, podcaster and audio engineer.
 
 ### Wardrobe
 
-**Top**
+#### Top
 
 - Fitted black graphic T-shirt.
 - Clean short sleeves.
 - No leather jacket in the standard character outfit.
 - No visible torso or arm tattoos.
 
-**T-shirt graphic**
+#### T-Shirt Graphic
 
 1. Top arc: `FOOL FOR A GOOD TIME`
 2. Centre: koala-head skull with crossed bones.
-3. No additional text, dates, locations or extra slogans.
+3. No additional text.
+4. No cities.
+5. No dates.
+6. No extra slogans.
 
-**Bottom**
+#### Bottom
 
-- Slim-fit black jeans.
+- Black slim-fit jeans.
 
-**Footwear**
+#### Footwear
 
-- Well-worn, distressed off-white high-top canvas sneakers.
+- Distressed off-white high-top canvas sneakers.
 - Stage-worn Converse-style appearance.
 
-**Accessories**
+#### Accessories
 
-- Dark leather stacked wristbands or cuff bracelets.
+- Dark leather wristbands or cuff bracelets.
 - Silver hoop earrings in both ears.
-- One upper-left silver tooth.
+- Upper-left silver tooth.
 
 ### Photography Style
 
-For the standard character reference:
+Preferred visual treatment:
 
-- High-detail studio turnaround photography.
-- Neutral grey backdrop.
-- Professional studio lighting.
-- Realistic skin, clothing, footwear and materials.
-- Consistent facial features and body proportions.
-- Natural, recognisable human appearance.
+- Professional music photography
+- Magazine photography
+- Editorial photography
+- Studio portrait photography
+- Live concert photography
+- Documentary photography
+- Natural skin texture
+- Realistic skin colour
+- Realistic aging
+- Realistic lighting
+- Realistic materials
+- Realistic body proportions
 
 ### Character Consistency Rules
 
-1. Use the supplied reference image as the main identity guide.
-2. Preserve the buzz cut, jawline, earrings and silver tooth.
-3. Keep the standard black T-shirt and its exact graphic.
-4. Do not add a leather jacket to the standard outfit.
-5. Do not add tattoos.
-6. Keep the black jeans and distressed off-white high-top sneakers consistent.
-7. Do not invent text or symbols on the shirt.
-8. For release artwork, use the actual supplied character rather than a generic rock musician.
-9. Other outfits or environments may be used when specifically requested, but should not replace the standard character design.
+1. Use the supplied reference image as the primary identity guide.
+2. Preserve the buzz cut.
+3. Preserve the strong jawline.
+4. Preserve the blue eyes.
+5. Preserve both earrings.
+6. Preserve the silver tooth.
+7. Preserve body proportions.
+8. Keep the standard shirt graphic accurate.
+9. Do not add a leather jacket to the standard outfit.
+10. Do not add tattoos.
+11. Do not replace the character with a generic rock musician.
+12. Other outfits may be used when specifically requested, but they must not replace the core character identity.
 
 ---
 
@@ -383,56 +619,84 @@ For the standard character reference:
 
 Martin Strayd and Suzuki work together under the STRAYD project.
 
-**Primary identity:** STRAYD  
-**Official descriptor:** STRAYD featuring Martin Strayd & Suzuki  
+**Primary identity:** STRAYD
+
+**Official descriptor:** STRAYD featuring Martin Strayd & Suzuki
+
 **Collaborative billing:** SUZUKI & STRAYD
 
-Martin's previous solo catalogue remains associated with the artist name Martin Strayd. New collaborative releases should use the agreed STRAYD identity and the correct credits for each recording.
+Martin's solo catalogue remains associated with the artist name Martin Strayd.
 
 ### Martin's Role
 
-Martin is the songwriter, composer, musician and central music creator behind his catalogue. His responsibilities include the development of songs, recordings, musical direction and the wider creative output.
+Martin is responsible for:
+
+- Songwriting
+- Composition
+- Recording
+- Musical direction
+- Production
+- Audio engineering
+- Catalogue development
+- Creative direction
 
 ### Suzuki's Role
 
 Suzuki's principal responsibilities include:
 
-- Media strategy and publicity.
-- Band management and coordination.
-- Release scheduling and campaign planning.
-- Visual branding and promotional direction.
-- Digital content and audience development.
-- Backing vocals on selected songs where applicable.
+- Media strategy
+- Publicity
+- Band management
+- Release planning
+- Visual branding
+- Promotional campaigns
+- Audience development
+- Backing vocals on selected recordings where applicable
 
-Do not assume Suzuki plays guitar. Do not assume she sings on every Martin Strayd or STRAYD recording.
+Do not assume Suzuki sings on every recording.
 
-### Release Campaign
+Do not assume Suzuki plays guitar.
 
-The partnership has an ambitious goal of releasing one new single each week, alongside electronic dance remixes and other independent material.
+### Project Mission
 
-Treat this as a campaign objective, not confirmation that every planned release has been published.
+The partnership combines:
 
-The project combines human creative direction with digital production tools and enhanced visual storytelling. Communications should keep the people, the creative work and the actual music at the centre.
+- Real musicians
+- Real music
+- Independent releases
+- Human creative direction
+- Digital production tools
+- Visual storytelling
+
+The emphasis should remain on the music and the real people behind it.
 
 ---
 
 ## 10. Promotional Voice and Approved Messaging
 
-Martin's promotional voice can be rebellious, funny, provocative, romantic, confident and emotionally direct.
+Martin's promotional voice may be:
 
-It should feel like a real independent musician speaking about his music, not a generic corporate brand.
+- Rebellious
+- Humorous
+- Romantic
+- Provocative
+- Confident
+- Direct
+- Independent
 
-### Core messaging themes
+It should never sound like a generic corporate music brand.
 
-- Making music independently.
-- Creating songs with stories and character.
-- Releasing music without waiting for permission.
-- Turning real experiences into lyrics and soundtracks.
-- Connecting music to travel, nightlife, romance and everyday life.
-- Giving overlooked songs a new audience.
-- Using technology as a tool while keeping human creativity central.
+### Core Messaging Themes
 
-### Approved campaign lines supplied for Martin Strayd campaigns
+- Independent music.
+- Story-driven songwriting.
+- Creative freedom.
+- Real experiences.
+- Direct audience connection.
+- Music without waiting for permission.
+- Human creativity assisted by technology.
+
+### Approved Campaign Lines
 
 > I spent years making music for labels. Today I'm releasing this on my own terms.
 
@@ -442,13 +706,19 @@ It should feel like a real independent musician speaking about his music, not a 
 
 > This remix sounds like it came from a major label. It didn't.
 
-These lines may be used as campaign copy where appropriate. Do not falsely attribute them to a recorded interview or treat them as verified quotations from a published source without confirmation.
+These are approved promotional lines and should not be presented as verified interview quotations unless independently confirmed.
 
-### Sample artist description
+### Sample Artist Description
 
-Australian songwriter. Independent rocker. Anti-pop troublemaker.
+Australian songwriter.
 
-Martin Strayd makes music for wild nights, long journeys, neon heartbreak and the search for love. From guitar-driven rock to electronic remixes and cinematic soundtracks, his catalogue brings stories, satire and a rebellious streak to the independent music world.
+Independent rocker.
+
+Anti-pop troublemaker.
+
+Martin Strayd creates music for wild nights, long journeys, luxury dreams, rebellion, travel, heartbreak and the search for love.
+
+His catalogue spans guitar-driven rock, anti-pop experimentation, electronic remixes and cinematic soundtracks built around storytelling and personality.
 
 Words and music by Martin Strayd.
 
@@ -456,170 +726,247 @@ Words and music by Martin Strayd.
 
 ## 11. Audio Equipment and Studio References
 
-Equipment details supplied for reference:
+### Guitars and Equipment
 
-**Guitars and equipment**
+- Marshall
+- Guild
+- Les Paul
+- Stratocaster
+- Shure SM57
 
-- Marshall.
-- Guild.
-- Les Paul.
-- Stratocaster.
-- Shure SM57.
+### Studio Setup
 
-**Studio setup**
+- HP Pavilion computer
+- REAPER DAW
+- CT-120S
+- Yamaha HS7 studio monitors
 
-- HP Pavilion computer.
-- REAPER digital audio workstation.
-- CT-120S.
-- Yamaha HS7 studio monitors.
+These references are provided as working equipment notes.
 
-These are supplied reference details. Do not assume that every item was used on every recording or that this is a complete current equipment inventory.
-
-When writing about a specific recording session, only describe equipment as used on that session if it has been confirmed.
+Do not assume every recording used every piece of equipment.
 
 ---
 
 ## 12. Official Links and Listening Resources
 
-### Main artist and catalogue
+### Core Artist Resources
 
-- Official website: https://strayd.com/
-- Official artist YouTube: https://www.youtube.com/@martinstrayd
-- YouTube Music: https://music.youtube.com/@martinstrayd
-- YouTube Music channel: https://music.youtube.com/channel/UCUOojI7C1D6RCMLIjuNvz1g
-- Spotify artist profile: https://open.spotify.com/artist/6aRM8IKV2HBUZRGnnDdrM0
-- Apple Music artist page: https://music.apple.com/in/artist/martin-strayd/1714956004
-- ABC triple j Unearthed profile: https://www.abc.net.au/triplejunearthed/artist/martin-strayd
-- Facebook: https://www.facebook.com/MartinStraydMusic/
-- Instagram: https://www.instagram.com/martinstrayd/
-- SoundCloud: https://soundcloud.com/martinstrayd
-- Mixcloud: https://www.mixcloud.com/martinstrayd/
-- Songshare catalogue: https://songshare.com/artist/mcxzkfj3
-- STRAYD band page: https://strayd.com/band/
-- STRAYD vault: https://strayd.com/vault-strayd/index.html
-- Buy Me a Coffee: https://buymeacoffee.com/martinstrayd
+- https://strayd.com/
+- https://www.youtube.com/@martinstrayd
+- https://music.youtube.com/@martinstrayd
+- https://music.youtube.com/channel/UCUOojI7C1D6RCMLIjuNvz1g
+- https://open.spotify.com/artist/6aRM8IKV2HBUZRGnnDdrM0
+- https://music.apple.com/in/artist/martin-strayd/1714956004
+- https://www.abc.net.au/triplejunearthed/artist/martin-strayd
+- https://www.facebook.com/MartinStraydMusic/
+- https://www.instagram.com/martinstrayd/
+- https://soundcloud.com/martinstrayd
+- https://www.mixcloud.com/martinstrayd/
+- https://songshare.com/artist/mcxzkfj3
+- https://strayd.com/band/
+- https://strayd.com/vault-strayd/index.html
+- https://buymeacoffee.com/martinstrayd
 
-These links are intended as a working reference list. Confirm that each destination is live, official and relevant before including it in a public-facing campaign.
+Always verify availability before using publicly.
 
 ---
 
 ## 13. Catalogue Vault and Archive
 
-Martin's catalogue includes released material as well as tracks and collections described as lost, archived or previously unreleased.
+The catalogue contains:
 
-The catalogue-vault concept is to make music easier to discover, organise and explore across moods, themes and intended uses.
+- Released recordings
+- Archive material
+- Lost tracks
+- Alternate versions
+- Remixes
+- Unreleased material
 
 Potential catalogue categories include:
 
-- Greatest hits and recognised songs.
-- Lost tracks and archive releases.
-- Acoustic recordings.
-- Rock and anti-pop.
-- Blues and reggae influences.
-- Electronic and dance remixes.
-- Travel and lifestyle soundtracks.
-- Romance and heartbreak.
-- Party and nightlife.
-- Satirical and humorous songs.
-- Music suited to visual storytelling and sync opportunities.
+- Greatest hits
+- Lost tracks
+- Acoustic recordings
+- Rock and anti-pop
+- Blues and reggae
+- Dance remixes
+- Travel soundtracks
+- Romance and heartbreak
+- Nightlife
+- Party music
+- Satirical songs
+- Sync-friendly music
 
-### Archive rules
+### Archive Rules
 
-- Preserve exact song titles and official artist credits.
-- Distinguish released recordings from unreleased archive material.
-- Do not invent release dates or claim a track is available when no verified link exists.
-- Keep alternative mixes and remixes clearly distinguished from original versions.
-- Confirm ownership, licensing and distribution status before offering a track for commercial use.
+- Preserve official song titles.
+- Preserve official artist credits.
+- Distinguish released from unreleased material.
+- Distinguish remixes from originals.
+- Confirm licensing status before commercial use.
 
 ---
 
 ## 14. Future Projects and Unconfirmed Plans
 
-Ideas and plans referenced in the supplied material include:
+Possible future projects include:
 
-- A continuous radio-style stream of released studio recordings with animated album artwork.
-- Continued expansion of the digital catalogue.
-- Additional electronic dance remixes.
-- Consistent weekly single releases.
-- A possible 2027 acoustic tour.
-- More short-form content and music-discovery campaigns.
+- Continuous radio-style music stream.
+- Expanded catalogue releases.
+- Additional remixes.
+- Weekly release campaigns.
+- Possible acoustic touring.
+- Expanded short-form video content.
 
-These should be treated as future plans or reported intentions until the relevant project, launch, dates or bookings are confirmed.
+These remain plans until independently confirmed.
 
-Do not advertise a tour as booked, a stream as live or a future release as available unless the status has been verified.
+Do not present future concepts as active releases or confirmed events.
 
 ---
 
 ## 15. Instructions for STRAYD AI Agents
 
-Any agent using this file should follow the rules below.
+### Identity Rules
 
-### Identity and naming
+- Use Martin Strayd for solo work.
+- Use STRAYD for the primary collaborative identity.
+- Use STRAYD featuring Martin Strayd & Suzuki where appropriate.
+- Use SUZUKI & STRAYD for collaborative billing where appropriate.
 
-- Use **Martin Strayd** for his solo artist identity.
-- Use **STRAYD** for the main collaborative project identity.
-- Use **STRAYD featuring Martin Strayd & Suzuki** as the official descriptor where appropriate.
-- Use **SUZUKI & STRAYD** for collaborative billing when appropriate.
+### Character Rules
 
-### Character appearance
-
-- Follow the Martin Strayd Production Character Sheet.
+- Follow the Character Lock.
+- Follow the Identity Preservation Lock.
+- Follow the Photorealism Lock.
 - Use the supplied reference image.
-- Preserve the buzz cut, strong jawline, two silver hoop earrings and upper-left silver tooth.
-- Keep the standard black T-shirt graphic accurate.
-- Do not add tattoos or a leather jacket to the standard character design.
-- Maintain the black jeans and distressed off-white high-top sneakers.
+- Preserve the shirt artwork.
+- Preserve appearance details.
+- Preserve age appearance.
 
-### Music and credits
+### Music Rules
 
-- Preserve official song titles and artist credits.
-- Credit “FOOL FOR A GOOD TIME” to Martin Strayd and the band STRAYD.
-- Describe Suzuki as a backing vocalist on selected songs, where applicable, and as media guru, band manager and promotional lead.
-- Do not invent featured-artist credits, recording details or release dates.
+- Preserve official titles.
+- Preserve official credits.
+- Verify release metadata when possible.
+- Do not invent release dates.
+- Do not invent chart positions.
+- Do not invent achievements.
 
-### Research and recommendations
+### Promotion Rules
 
-When asked for specific song recommendations, current 2026 releases, background details or the latest catalogue information:
+- Emphasise music and storytelling.
+- Emphasise independence.
+- Emphasise authenticity.
+- Avoid unsupported promotional claims.
 
-1. Search the web for the relevant official artist pages and streaming profiles.
-2. Prioritise the artist's official website, verified channels and established music platforms.
-3. Confirm that the recommended song exists and link directly to its official listening destination where possible.
-4. Distinguish confirmed facts from promotional descriptions.
-5. Avoid inventing track titles, streaming statistics, viral success or current release status.
+### Image Generation Rules
 
-### Promotional content
+- Identity first.
+- Realism second.
+- Branding third.
+- Scene fourth.
 
-- Use an independent, confident and human voice.
-- Emphasise storytelling, music, real experiences and creative independence.
-- Match each song with an appropriate mood and visual idea.
-- Make the correct song and artist information easy to find.
-- Do not make unsupported claims about popularity, endorsements or industry status.
-
-### Accuracy
-
-- Treat catalogue numbers and archive statistics as provisional unless verified.
-- Treat future projects as plans until confirmed.
-- Preserve the distinction between Martin's solo work and collaborative STRAYD releases.
-- When a fact is uncertain, research it or leave it unasserted.
+Never sacrifice identity for style.
 
 ---
 
-## 16. Maintenance and Source of Truth
+## 16. Face Embedding Roadmap
 
-This file is the working reference for Martin Strayd's biography, music identity, character design, production details, catalogue, credits and collaboration with Suzuki.
+Future Character Consistency System
 
-When new information is provided:
+### Stage 1
 
-1. Apply explicit corrections consistently throughout the file.
-2. Preserve confirmed song titles and credits.
-3. Keep solo and collaborative artist identities distinct.
-4. Separate current facts from plans and unverified claims.
-5. Keep the character reference consistent across artwork and media.
-6. Update official links only when their destinations have been confirmed.
-7. Maintain clean Markdown formatting and clear section headings.
+- Reference image guidance
 
-**Core principle:** Martin Strayd is an independent Australian songwriter and music creator with a distinctive catalogue, a rock-and-roll character and a commitment to getting his music heard on his own terms.
+### Stage 2
+
+- Multiple reference images
+
+### Stage 3
+
+- IP-Adapter integration
+
+### Stage 4
+
+- Face embedding cache
+
+Planned asset:
+
+```text
+martin_embedding.pt
+```
+
+Purpose:
+
+Maintain character consistency across:
+
+- Album artwork
+- Social media
+- Posters
+- Merchandise
+- Advertising
+- Video thumbnails
+- Promotional photography
+
+Target outcome:
+
+Martin Strayd remains visually recognisable regardless of scene, outfit or environment.
+
+---
+
+## 17. Image Generation Master Rule
+
+Priority Order:
+
+1. Reference image
+2. Character Lock
+3. Identity Preservation Lock
+4. Photorealism Lock
+5. Brand Guidelines
+6. Scene Prompt
+
+When uncertainty exists:
+
+Identity > Realism > Brand > Scene
+
+The objective is not to generate a generic musician.
+
+The objective is to generate Martin Strayd.
+
+---
+
+## 18. Maintenance and Source of Truth
+
+This knowledge base is the master reference for:
+
+- Biography
+- Identity
+- Character design
+- Music catalogue
+- Credits
+- Promotional messaging
+- Visual consistency
+- AI generation guidance
+
+When updating this file:
+
+1. Apply explicit corrections consistently.
+2. Preserve confirmed facts.
+3. Keep solo and collaborative identities distinct.
+4. Separate verified facts from future plans.
+5. Maintain character consistency.
+6. Maintain clean Markdown formatting.
+7. Protect the integrity of the Martin Strayd identity.
+
+### Core Principle
+
+Martin Strayd is an independent Australian songwriter, composer, producer and musician whose work combines anti-pop creativity, storytelling, independence and rock-and-roll attitude.
+
+His identity should remain authentic, recognisable and consistent across music, media and image generation systems.
+
+**Independent music. Real stories. No waiting for permission.**
 
 Words and music by Martin Strayd.
 
 © 2026 SS SUZUKI & STRAYD. All rights reserved.
+---

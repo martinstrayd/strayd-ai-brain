@@ -11,6 +11,52 @@
 
 ---
 
+---
+
+## PHOTOREALISM LOCK
+
+All artwork generated from this character profile must appear as real-world photography.
+
+Required style:
+
+- Photorealistic
+- Professional photography
+- Natural human skin texture
+- Realistic pores and facial detail
+- Natural lighting
+- Real-world camera optics
+- DSLR-quality photography
+- Fashion photography quality
+- Magazine-quality photography
+- Concert photography quality
+- Documentary photography quality
+- Authentic human proportions
+- Realistic eyes
+- Realistic hands
+- Realistic clothing materials
+- Real-world environments
+
+Avoid:
+
+- Anime
+- Cartoon
+- Comic book style
+- Illustration
+- Painting
+- Digital painting
+- CGI appearance
+- Plastic skin
+- Doll-like faces
+- Fantasy characters
+- Cyberpunk aesthetics
+- Unrealistic neon effects
+- AI-art look
+- Unrealistic body proportions
+
+Goal:
+
+The image should be indistinguishable from a professional photograph of a real person.
+
 CHARACTER LOCK:
 
 Martin Strayd, 55 year old Australian rock musician,

@@ -1,12 +1,3 @@
-<img width="974" height="2268" alt="image" src="https://github.com/user-attachments/assets/f6471bf5-4edd-4577-9f49-fd4d20b85172" /># SUZUKI MUSIC — OFFICIAL KNOWLEDGE BASE
-
-**Project:** STRAYD featuring Martin Strayd & Suzuki  
-**Collaborative billing:** SUZUKI & STRAYD  
-**Purpose:** Official reference for artist biographies, character consistency, music credits, promotional content, social media, press materials and AI agents.
-
-© 2026 SS SUZUKI & STRAYD. All rights reserved.
-
----
 ---
 character_id: suzuki_music
 
@@ -18,6 +9,12 @@ nationality:
   - Japanese
   - Thai
 
+primary_identity:
+  STRAYD featuring Martin Strayd & Suzuki
+
+collaborative_billing:
+  SUZUKI & STRAYD
+
 roles:
   - Media Guru
   - Band Manager
@@ -28,21 +25,23 @@ roles:
   - Occasional Backing Vocalist
 
 education:
-  - Law Studies
+  - Studied Law
 
 career_background:
-  - Japanese Rock Reporter
+  - Rock Music Reporter
   - Entertainment Journalist
   - Music Media Professional
+  - Artist Promotion
+  - Music Publicity
+  - Creative Branding
 
 reference_image:
-
 
 appearance:
 
   ethnicity:
-        Thai
-        Japanese
+    - Thai
+    - Japanese
 
   eyes:
     dark_brown
@@ -51,139 +50,242 @@ appearance:
     athletic
     slender
 
+  height_cm: 162
+
   hair:
-    hot_pink_dreadlocks
+    color: hot_pink
+    style: long_dreadlocks
 
   hairstyle:
     half_up
-    long_dreadlocks
 
-height_cm: 162
+  distinctive_features:
+    - silver_beads_in_dreadlocks
+    - silver_rings_in_dreadlocks
 
 brand_keywords:
-  - rock and roll
-  - music media
-  - independent music
-  - band management
-  - publicity
-  - podcasting
   - anti-pop
+  - rock and roll
+  - independent music
+  - music media
   - artist development
-  - independent releases
+  - publicity
+  - branding
+  - live music
+  - podcasting
+  - audience development
+  - creative direction
 
-negative_prompts:
-  - anime
-  - cartoon
-  - fantasy
-  - cyberpunk
-  - generic model
-  - blonde hair
-  - short hair
-  - plastic skin
+generation_priority:
+  photorealistic
 
-photography_style:
-  - photorealistic
-  - lifestyle photography
-  - concert photography
-  - magazine photography
-  - professional portraiture
+identity_priority:
+  maximum
+
+face_embedding_status:
+  planned
+
+copyright:
+  © 2026 SS SUZUKI & STRAYD
+---
+
+# SUZUKI MUSIC — OFFICIAL KNOWLEDGE BASE
+
+**Character name:** Suzuki  
+**Role:** Media Guru / Band Manager / Creative Director / Publicist / Podcaster / Occasional Backing Vocalist  
+**Primary identity:** STRAYD featuring Martin Strayd & Suzuki  
+**Collaborative billing:** SUZUKI & STRAYD  
+**Baseline character reference:** `watermarked_img_3956977524795121884.jpg`
+
+© 2026 SS SUZUKI & STRAYD. All rights reserved.
 
 ---
 
-Suzuki, 36 year old Thai-Japanese media personality,
-former rock music reporter,
-law graduate,
-band manager,
-podcaster,
-creative director,
-backing vocalist.
+# PHOTOREALISM LOCK
 
-Japanese and Asian facial features.
-Dark expressive eyes.
-Youthful appearance.
-Fit and athletic build.
+Master Rule:
 
-Hot pink dreadlocks.
-Silver beads and rings in dreadlocks.
-Recognisable facial structure.
-Confident smile.
+Suzuki must always appear as a real human being photographed in the real world.
 
-Black FOOL FOR A GOOD TIME shirt.
-Plaid skirt.
-Combat boots.
-Dark leather wristbands.
-
-Authentic human appearance.
-Real-world photography.
-Photorealistic skin tones.
-
-Independent music culture.
-Rock and roll attitude.
-Media professional.
-STRAYD creative partner.
-
-Avoid:
-
-anime,
-cartoon,
-comic style,
-fantasy art,
-generic influencer,
-generic fashion model,
-generic singer,
-cyberpunk,
-plastic skin,
-extra limbs,
-incorrect hair color,
-blonde hair,
-short hair,
-male appearance.
----
-
-## PHOTOREALISM LOCK
-
-All artwork generated from this character profile must appear as real-world photography.
-
-Required style:
+Required:
 
 - Photorealistic
-- Professional photography
-- Natural human skin texture
-- Realistic pores and facial detail
+- Documentary photography
+- Editorial photography
+- Music magazine photography
+- Concert photography
+- Studio portrait photography
+- Professional publicity photography
+- DSLR camera realism
 - Natural lighting
-- Real-world camera optics
-- DSLR-quality photography
-- Fashion photography quality
-- Magazine-quality photography
-- Concert photography quality
-- Documentary photography quality
-- Authentic human proportions
+- Natural skin texture
+- Real skin colour
+- Realistic pores
 - Realistic eyes
 - Realistic hands
-- Realistic clothing materials
-- Real-world environments
+- Authentic environments
+- Real-world proportions
+
+Camera references:
+
+- Canon EOS R5
+- Sony A7R IV
+- Nikon Z8
+
+Image Goal:
+
+The final image should be indistinguishable from a professional photograph of a real media personality working in the music industry.
+
+Never produce artwork that looks AI-generated.
+
+---
+
+# CHARACTER LOCK
+
+Suzuki
+
+- Public age 36
+- Thai-Japanese
+- Media professional
+- Former rock music reporter
+- Entertainment journalist
+- Band manager
+- Creative director
+- Publicist
+- Podcaster
+- STRAYD creative partner
+
+Background
+
+- Studied law before moving into media and entertainment.
+- Developed an interest in rock music culture and journalism.
+- Worked as a rock music reporter and interviewer.
+- Covered musicians, music culture and entertainment stories.
+- Interviewed Martin Strayd regarding his music catalogue and career.
+- Became involved in social media promotion and audience development.
+- Expanded into artist management, publicity, branding and release coordination.
+- Became an integral part of the STRAYD project.
+
+Appearance
+
+- Thai-Japanese features
+- Dark expressive eyes
+- Youthful appearance
+- Athletic slender build
+- Approximately 162 cm tall
+- Hot-pink dreadlocks
+- Silver beads and rings in dreadlocks
+- Confident smile
+
+Standard Appearance
+
+- Black FOOL FOR A GOOD TIME shirt
+- AUSTRALIAN
+- Koala skull and crossed bones
+- ROCK ROLL
+- Plaid skirt
+- Combat boots
+- Dark leather wristbands
+
+Visual Identity
+
+- Independent music culture
+- Rock and roll attitude
+- Media intelligence
+- Creative leadership
+- Promotional strategy
+- Human-first storytelling
+- Anti-Pop culture
+
+The supplied reference image overrides any conflicting scene prompt.
+
+---
+
+# IDENTITY PRESERVATION LOCK
+
+When generating images:
+
+Preserve:
+
+1. Facial structure
+2. Age appearance
+3. Ethnic features
+4. Eye colour
+5. Hair colour
+6. Hair style
+7. Dreadlocks
+8. Shirt artwork
+9. Character identity
+
+Never replace Suzuki with:
+
+- Generic influencer
+- Generic social media personality
+- Generic model
+- Generic singer
+- Generic fashion model
+- Generic celebrity
+
+Identity consistency is more important than scene creativity.
+
+If a conflict exists between a prompt and this knowledge base, the knowledge base wins.
+
+---
+
+# NEGATIVE GENERATION LOCK
 
 Avoid:
 
 - Anime
 - Cartoon
-- Comic book style
+- Comic style
 - Illustration
-- Painting
-- Digital painting
+- Fantasy artwork
+- Cyberpunk
+- Science fiction
 - CGI appearance
 - Plastic skin
-- Doll-like faces
-- Fantasy characters
-- Cyberpunk aesthetics
+- Doll-like appearance
+- Generic influencer
+- Generic model
+- Blonde hair
+- Short hair
+- Male appearance
+- Unrealistic anatomy
+- Extra fingers
+- Extra limbs
+- Hallucinated text
 - Unrealistic neon effects
-- AI-art look
-- Unrealistic body proportions
 
-Goal:
+---
 
-The image should be indistinguishable from a professional photograph of a real person.
+# STRAYD VISUAL REALISM RULE
 
+STRAYD artwork represents real people in a real music project.
+
+Preferred styles:
+
+- Music magazine photography
+- Concert photography
+- Documentary photography
+- Publicity photography
+- Behind-the-scenes photography
+- Travel photography
+- Studio portraits
+
+Avoid:
+
+- Fantasy
+- Anime
+- Cartoon
+- Comic art
+- Cyberpunk
+- Science fiction
+- Superhero aesthetics
+
+All characters should appear as authentic human beings photographed in the real world.
+
+---
 
 ## 1. Core Artist Identity
 
@@ -193,403 +295,622 @@ The image should be indistinguishable from a professional photograph of a real p
 
 **Official descriptor:** STRAYD featuring Martin Strayd & Suzuki.
 
-The name STRAYD remains the central brand across the website, music catalogue, press kit, streaming profiles, artwork and social media. Martin Strayd and Suzuki should receive clear visibility as the creative people behind the project.
+The STRAYD name remains the central brand across:
+
+- Music releases
+- Websites
+- Social platforms
+- Press material
+- Promotional campaigns
+- Digital media
+
+Martin Strayd and Suzuki should remain clearly visible as the people behind the project.
 
 ### SUZUKI & STRAYD
 
-SUZUKI & STRAYD is the collaborative billing used for appropriate releases, promotional campaigns and duo-focused artwork.
+SUZUKI & STRAYD is used where collaborative billing is appropriate.
 
-The project combines human creative direction, independent music-making, digital production, visual storytelling and a commitment to releasing music without waiting for traditional industry approval.
+The project combines:
+
+- Human creativity
+- Independent music
+- Digital production
+- Visual storytelling
+- Artist development
+- Direct audience engagement
 
 ### Suzuki's Role
 
-Suzuki is a media personality, media guru, band manager, creative partner and occasional backing vocalist.
+Suzuki serves as:
+
+- Media strategist
+- Publicist
+- Band manager
+- Creative partner
+- Promotional lead
+- Occasional backing vocalist
 
 Her responsibilities include:
 
-- Media strategy, publicity and communications.
-- Band management and coordination.
-- Booking, show logistics and release planning.
-- Visual branding and promotional direction.
-- Social media, audience development and digital campaigns.
-- Helping Martin Strayd and STRAYD get their music heard.
-- Performing backing vocals on selected songs where appropriate.
+- Publicity
+- Branding
+- Artist promotion
+- Release coordination
+- Digital campaigns
+- Audience development
+- Social media strategy
+- Music promotion
 
-Suzuki is **not the lead artist on every STRAYD release**, and she should not automatically be credited as a vocalist on songs where she did not perform.
+She is not automatically credited as a vocalist on every release.
+
+---
+
+## 2. Public Biography
+
+Suzuki is a Thai-Japanese media professional whose path into music began through journalism, entertainment reporting and artist interviews.
+
+After studying law, she moved into media and rock music journalism, developing a passion for music culture and artist storytelling.
+
+Her professional association with Martin Strayd began through coverage of independent music and eventually developed into a collaborative partnership.
+
+Over time she expanded her role beyond journalism into:
+
+- Artist management
+- Release planning
+- Public relations
+- Creative branding
+- Audience development
+- Promotional strategy
+
+Today she serves as media guru, band manager, creative partner and promotional lead for STRAYD.
 
 ---
 
-## 2. Suzuki's Public Biography
+## 3. Personality and Public Image
 
-### Public Age and Appearance
+Suzuki's public image combines:
 
-Suzuki's preferred public age is **36**.
+- Rock-and-roll attitude
+- Strong work ethic
+- Media intelligence
+- Independent thinking
+- Creative energy
+- Promotional instinct
 
-Her youthful appearance often leads people to assume she is in her late twenties. Her Japanese and Asian features, youthful-looking skin, vegan lifestyle and daily dancing to STRAYD songs are part of the story she presents around her energetic, youthful image.
+She is both:
 
-Promotional writing may describe Suzuki as youthful-looking, energetic, fit and active. Avoid presenting assumptions about her appearance as medical or scientific facts.
+- A recognisable public-facing personality
+- An active behind-the-scenes contributor
 
-### Personality and Lifestyle
-
-Suzuki's public persona combines:
-
-- Rock-and-roll attitude.
-- Media intelligence and promotional instinct.
-- A strong work ethic.
-- A vegan lifestyle.
-- Daily dancing to the music.
-- A youthful, energetic presence.
-- Independent thinking and a refusal to wait for corporate approval.
-
-She is both a visual character and a working member of the music project. Her public identity should reflect the work behind the scenes as well as her appearance and performance personality.
-
-### Suggested Short Bio
-
-Suzuki is the media guru, band manager and creative force helping STRAYD reach a new audience. With a background in media and entertainment, a vegan lifestyle and an energetic rock-and-roll persona, she combines publicity, visual branding, management and occasional backing vocals. Alongside Martin Strayd, she is helping build an independent music project focused on real creative work, consistent releases and music made on their own terms.
+The emphasis should remain on the real work she contributes to the project rather than presenting her solely as a model or visual character.
 
 ---
-## Suzuki Career Timeline
 
-Suzuki studied law before moving into media and entertainment.
+## 4. Suzuki Career Timeline
 
-She later became a rock music reporter and interviewer covering musicians and music culture.
+### Early Stage
 
-Her media work eventually led to an interview with Martin Strayd regarding his independent music catalogue and career as a former Hollywood guitar technician.
+- Studied law.
+- Developed an interest in media and music culture.
 
-Following the interview she became increasingly involved in promotion, publicity, release planning, social media development and audience engagement.
+### Media Career
 
-Her role expanded into management, creative direction, visual branding and campaign coordination.
+- Entered media and entertainment.
+- Worked as a rock music reporter.
+- Interviewed musicians and industry figures.
+- Covered music culture and entertainment topics.
 
-Today Suzuki serves as media guru, creative partner, band manager and promotional lead for STRAYD.
+### STRAYD Connection
 
-She also contributes lead and backing vocals on selected recordings.
+- Interviewed Martin Strayd regarding his independent music catalogue.
+- Became involved in publicity and social media support.
 
-## 3. Suzuki Character Bible
+### Expansion Into Management
 
-**Reference image:** `watermarked_img_3956977524795121884.jpg`
+- Artist branding
+- Release planning
+- Booking support
+- Audience development
+- Publicity
+- Promotional campaigns
 
-Use the designated reference image as the primary visual guide whenever Suzuki's character is generated, illustrated or adapted for promotional artwork.
+### Current Role
 
-### Character Identity
+Suzuki serves as:
 
-- Name: Suzuki.
-- Character archetype: 1990s rock personality, podcaster, supermodel-inspired media host and stage performer.
-- Overall appearance: photorealistic, youthful-looking, athletic and confident.
-- Facial features: East Asian/Japanese appearance, high cheekbones, dark expressive eyes, natural-looking lips and nose.
-- Approximate height: 162 cm / 5 ft 4 in.
-- Hair: vivid hot-pink dreadlocks with visible braid structures and silver beads or rings.
-- Hairstyle: half-up arrangement, with the remaining dreadlocks extending past the shoulders toward the chest.
+- Media guru
+- Band manager
+- Creative partner
+- Promotional lead
 
-### Signature Outfit
+She may also contribute lead and backing vocals on selected recordings.
 
-**Shirt**
+## 5. Suzuki Character Bible
 
-- Fitted black T-shirt.
+**Character name:** Suzuki  
+**Role / archetype:** Media Guru / Band Manager / Creative Director / Publicist / Podcaster / Occasional Backing Vocalist  
+**Baseline reference image:** `watermarked_img_3956977524795121884.jpg`
+
+Use the designated reference image as the primary visual guide for character generation, promotional artwork and character-reference photography.
+
+### Verified Character Appearance
+
+The following traits are considered authoritative:
+
+- Public age: 36
+- Thai-Japanese
+- Dark brown eyes
+- Athletic slender build
+- Approximately 162 cm tall
+- Hot-pink dreadlocks
+- Silver beads and rings in dreadlocks
+- Youthful appearance
+- Confident smile
+
+These traits take precedence over prompt assumptions.
+
+### Physical Appearance and Identity
+
+- Appearance: Thai-Japanese woman.
+- Face: Recognisable Thai-Japanese features.
+- Eyes: Dark brown and expressive.
+- Hair: Hot-pink dreadlocks.
+- Hairstyle: Half-up arrangement with long dreadlocks extending beyond the shoulders.
+- Build: Athletic and slender.
+- Height: Approximately 162 cm / 5 ft 4 in.
+- Distinctive feature: Silver beads and rings woven throughout the dreadlocks.
+
+The character should appear as an authentic media professional working within the music industry, not as a fictional fantasy character.
+
+### Wardrobe
+
+#### Top
+
+- Black fitted T-shirt.
 - Clean neckline.
-- No vest.
 - No choker.
-- No added neckwear.
+- No vest.
+- No neckwear.
 
-The shirt graphic must follow the established design:
+#### T-Shirt Graphic
 
-- Top arc: `FOOL FOR A GOOD TIME`
-- Middle arc: `AUSTRALIAN`
-- Centre: koala head with crossed bones.
-- Bottom text: `ROCK ROLL`
+Top arc:
 
-Do not add dates, locations, an EST line, extra slogans or unrelated text.
+`FOOL FOR A GOOD TIME`
 
-**Other clothing and accessories**
+Middle arc:
+
+`AUSTRALIAN`
+
+Centre:
+
+Koala skull with crossed bones.
+
+Bottom:
+
+`ROCK ROLL`
+
+Do not add:
+
+- Dates
+- Locations
+- EST lines
+- Additional slogans
+- Alternative logos
+
+#### Bottom
 
 - Dark plaid/tartan pleated mini skirt.
-- Black leather belt.
-- Heavy black leather lace-up combat boots.
-- Stacked dark leather wristbands.
-- Bare neck, without a collar, choker or necklace.
 
-### Visual Style
+#### Footwear
+
+- Black lace-up combat boots.
+
+#### Accessories
+
+- Dark leather wristbands.
+- Silver hair rings.
+- Silver hair beads.
+
+### Photography Style
 
 Preferred visual treatment:
 
-- Photorealistic rather than obviously artificial.
-- High detail and realistic materials.
-- Strong studio or dramatic concert lighting, depending on the project.
-- A neutral light-grey background for character-reference images.
-- A high-end 1990s grunge-rock performer aesthetic combined with a modern podcast-host and supermodel-inspired presentation.
+- Concert photography
+- Music magazine photography
+- Documentary photography
+- Editorial portrait photography
+- Publicity photography
+- Lifestyle photography
+- Natural skin texture
+- Real-world lighting
+- Real-world locations
+- Realistic materials
 
 ### Character Consistency Rules
 
-1. Preserve Suzuki's recognisable facial features and hot-pink dreadlocks.
-2. Keep the established outfit and shirt artwork consistent unless a different outfit is explicitly requested.
-3. Do not invent logos or change the wording on the shirt.
-4. Do not add accessories that conflict with the established character design.
-5. For release artwork, prioritise the actual supplied Suzuki and Martin Strayd character references rather than generic substitutes.
-6. Keep Suzuki recognisable across square artwork, vertical Reels and TikTok covers, and wide YouTube graphics.
+1. Preserve facial structure.
+2. Preserve Thai-Japanese features.
+3. Preserve dark eyes.
+4. Preserve hot-pink dreadlocks.
+5. Preserve silver beads and rings.
+6. Preserve the shirt artwork.
+7. Do not invent alternative logos.
+8. Do not replace the character with a generic influencer.
+9. Do not replace the character with a generic fashion model.
+10. Maintain recognisability across all content formats.
 
 ---
 
-## 4. Suzuki's Backstory and Career
+## 6. Martin Strayd and Suzuki Partnership
 
-Suzuki has a media background and Thai-Japanese roots. Her professional relationship with Martin Strayd began through an interview about his independent music catalogue and his history working as a guitar technician for Hollywood celebrity musicians.
+Martin Strayd and Suzuki bring different but complementary skills to the STRAYD project.
 
-The relationship developed beyond the original media work. Suzuki became involved in management, show logistics, booking, independent releases and the broader promotion of Martin's music.
+### Martin Strayd's Contribution
 
-Over time, she became a creative partner, band manager and occasional backing vocalist. Her main contribution remains the work of building the project, coordinating releases, developing the visual identity and helping the music reach listeners.
+Martin's responsibilities focus on:
 
-### Important Biographical Distinction
+- Songwriting
+- Composition
+- Recording
+- Production
+- Audio engineering
+- Musical direction
+- Creative development
 
-Suzuki should be presented as a media and management professional who also participates in music where appropriate. Do not reduce her role to simply being a singer, model or character.
+### Suzuki's Contribution
 
-Details about particular publications, named clients, individual entertainment-industry relationships and specific career achievements should only be used in official biographies when confirmed.
+Suzuki's responsibilities focus on:
+
+- Publicity
+- Media strategy
+- Branding
+- Artist development
+- Release coordination
+- Promotion
+- Audience growth
+- Campaign management
+
+She may contribute backing vocals on selected recordings where appropriate.
+
+### Shared Mission
+
+Together they are building an independent music project that prioritises:
+
+- Real music
+- Real people
+- Real experiences
+- Consistent releases
+- Direct listener relationships
+- Creative freedom
+
+Technology should support creativity, not replace it.
+
+### Core Message
+
+**Real music. Real people. Real lives. No waiting for permission.**
 
 ---
 
-## 5. The Martin Strayd and Suzuki Partnership
+## 7. Music Credits and Release Accuracy
 
-Martin Strayd and Suzuki bring different but complementary skills to STRAYD.
+### FOOL FOR A GOOD TIME
 
-**Martin Strayd's side of the partnership** centres on music, songwriting, recording, the independent catalogue and the creative work behind the releases.
-
-**Suzuki's side of the partnership** centres on media, management, visual branding, publicity, campaign coordination and helping the music find its audience. She also contributes backing vocals on selected songs.
-
-Together, they are building a music project that prioritises independent decision-making, consistent releases and direct engagement with listeners.
-
-The project should communicate that the music is the result of creative work by real people, with technology and digital tools serving the creative process rather than replacing the people behind it.
-
-### The Independent Mission
-
-There is no time to sit back and wait for corporate gatekeepers to give permission.
-
-The work is to create, release, promote and hustle the music so it can reach the people who want to hear it.
-
-The project voice should be confident, energetic and independent. It should focus on the music, the work and the people behind it rather than relying on empty claims of industry approval.
-
-**Core message:** Real music. Real people. Real lives. Independent releases. No waiting for permission.
-
----
-
-## 6. Music Credits and Release Accuracy
-
-### “FOOL FOR A GOOD TIME”
-
-**Approved artist credits:**
+Approved artist credits:
 
 - Martin Strayd
 - The band STRAYD
 
-Suzuki contributes backing vocals on a few songs, where applicable. Her principal role in this campaign is media guru, band manager and promotional lead.
+Suzuki's primary role within this campaign remains:
 
-Do not automatically list Suzuki as a primary artist or featured artist for “FOOL FOR A GOOD TIME.” Do not imply that she performs lead vocals or backing vocals on every version.
+- Media guru
+- Band manager
+- Promotional lead
 
-Use the approved credits above unless the specific recording's official metadata provides a more detailed, confirmed credit.
+Do not automatically credit Suzuki as:
+
+- Lead vocalist
+- Featured artist
+- Performer
+
+unless supported by confirmed release metadata.
 
 ### Promotional Positioning
 
-“FOOL FOR A GOOD TIME” is presented as a Martin Strayd and STRAYD release, supported by Suzuki's media, management and promotional work.
+The campaign should emphasise:
 
-The campaign should emphasise independent music-making and the effort required to get music released and heard outside traditional industry systems.
+- Independent music
+- Artist development
+- Release consistency
+- Human creativity
+- Direct listener engagement
 
-Approved promotional lines for relevant Martin Strayd campaigns include:
+Avoid unsupported claims regarding:
 
-> I spent years making music for labels. Today I'm releasing this on my own terms.
-
-> I worked around major-label artists. This is what happens when I release music completely independently.
-
-> Most artists wait for permission. I released this anyway.
-
-> This remix sounds like it came from a major label. It didn't.
-
-Use these as campaign copy where appropriate. Do not imply that every line is a verified quotation from a particular interview unless that context has been confirmed.
+- Chart positions
+- Awards
+- Endorsements
+- Industry affiliations
+- Commercial success
 
 ---
 
-## 7. Documentary Project
+## 8. Documentary Project
 
-A documentary about Suzuki's transition from media and management work into a more visible role in the music project is planned for release at **the end of 2027**.
-
-The story can explore the journey from interviewing and managing a musician to becoming a central creative partner in an independent music project.
+A documentary project exploring Suzuki's journey into STRAYD is planned for future development.
 
 Potential themes include:
 
-- The transition from media work into music.
-- The realities of independent artist management.
-- The work behind releases, promotion and visual branding.
-- The relationship between Martin Strayd and Suzuki.
-- The challenge of reaching audiences without traditional label support.
-- The combination of creative direction, technology and human effort.
+- Music journalism
+- Artist management
+- Independent music promotion
+- Creative partnerships
+- Publicity and branding
+- Audience development
+- Human creativity and technology
 
-**Status:** Planned; intended release at the end of 2027.
+Status:
 
-Do not describe the documentary as already released, available to watch or completed. Do not invent a title, distributor, streaming platform, premiere date or confirmed production details unless those are subsequently supplied.
+Planned concept.
 
----
-
-## 8. Media, Management and Creative Experience
-
-Suzuki's project responsibilities may include publicity, entertainment and lifestyle media, independent music promotion, booking, show logistics, release coordination, sync-licensing support, visual branding and digital audience development.
-
-Descriptions of her previous work in regional music publications, digital street-culture zines, lifestyle blogs or entertainment reporting should be supported by confirmed examples before being used as specific credentials.
-
-The same rule applies to claims about named artists, major industry clients, publications, awards or professional relationships.
-
-### Brand and Symbol
-
-The koala-and-crossbones emblem is part of the established visual identity associated with Suzuki's rock character and the `FOOL FOR A GOOD TIME` shirt design.
-
-Use the approved artwork or supplied reference when available. Do not invent alternative logos or add an unsolicited logo to release graphics.
+Do not present the documentary as released, scheduled or publicly available unless confirmed.
 
 ---
 
-## 9. Music Releases and Promotional Style
+## 9. Media, Management and Creative Experience
 
-### General Campaign Priorities
+Suzuki's professional experience may include:
 
-STRAYD and Suzuki's campaigns should focus on:
+- Rock journalism
+- Entertainment reporting
+- Artist publicity
+- Social media development
+- Music promotion
+- Branding
+- Release planning
+- Campaign strategy
+- Audience development
 
-- New songs and remixes.
-- Consistent independent releases.
-- Strong, recognisable artist branding.
-- Eye-catching but realistic promotional imagery.
-- Short-form video concepts and daily audience engagement.
-- Direct links to the music.
-- The people and creative work behind each release.
+Specific industry achievements should only be referenced when independently confirmed.
 
-The wider campaign ambition includes a new single each week, alongside electronic dance remixes. Treat this as a campaign goal, not proof that every planned release has already been delivered.
+### Brand Symbol
+
+The koala-and-crossbones design remains part of the established STRAYD visual identity.
+
+Use approved artwork whenever available.
+
+Do not invent replacement logos.
+
+---
+
+## 10. Promotional Style and Content Strategy
+
+Campaign priorities include:
+
+- New music releases
+- Independent promotion
+- Artist branding
+- Audience engagement
+- Daily content creation
+- Short-form video
+- Discoverability
 
 ### Visual Requirements
 
-Where requested, create separate versions for:
+Content formats:
 
-- Square artwork for music and social posts.
-- Vertical TikTok and Instagram Reels covers.
-- Wide YouTube artwork.
+- Square artwork
+- Instagram posts
+- Facebook posts
+- TikTok covers
+- Reels covers
+- YouTube banners
+- YouTube thumbnails
 
-Use bold, heavy typography for release titles. Avoid thin or decorative fonts when the request specifies bold type. Keep the composition impactful and legible at small sizes.
+Typography should be:
 
-Use the actual character references supplied for Suzuki and Martin Strayd. Do not insert additional logos, unrelated text or generic replacement characters without instruction.
+- Bold
+- Readable
+- Impactful
 
-### Daily Dancing and Engagement
+Avoid decorative unreadable fonts.
 
-Suzuki's daily dancing to STRAYD songs is part of her energetic public image and provides a natural promotional format for the music.
+### Daily Dancing Content
 
-Possible content includes:
+Suzuki's energetic personality supports:
 
-- Short daily dance clips using the project's songs.
-- Behind-the-scenes moments from the release schedule.
-- Reels and TikTok videos built around song hooks.
-- Direct invitations to listen, share or follow the music.
-- The realities of balancing media, management and music promotion.
+- Dance clips
+- Music highlights
+- Behind-the-scenes content
+- Lifestyle content
+- Audience engagement
 
-Content should feel energetic and human rather than like generic corporate advertising.
-
----
-
-## 10. Future Digital Radio Project
-
-A future project involves a continuous radio-style stream of released studio recordings accompanied by animated album artwork.
-
-The intended concept is a persistent listening experience built around the existing music catalogue.
-
-**Status:** Future project; not yet confirmed as launched.
-
-Before public launch, the project will require planning for recording and composition rights, distribution permissions, platform requirements, metadata, track sequencing and any necessary licensing. Do not claim that a continuous stream is already operating until its launch is confirmed.
+Content should feel authentic rather than corporate.
 
 ---
 
 ## 11. Official Links and Resources
 
-- STRAYD official page: https://strayd.com/official/
-- STRAYD band page: https://strayd.com/band/
-- Buy Me a Coffee: https://buymeacoffee.com/martinstrayd
-- HOW TO ROCK — Google Classroom: https://classroom.google.com/c/ODk1NzE0NzY2NjA5
+### STRAYD Resources
 
-The Google Classroom link should be checked for appropriate public access before being included in public-facing posts.
+- https://strayd.com/official/
+- https://strayd.com/band/
+- https://buymeacoffee.com/martinstrayd
 
-Additional official streaming, social media, press-kit and music links should be added as they are confirmed.
+### Education Resource
+
+- HOW TO ROCK Google Classroom
+
+Links should be verified before public use.
 
 ---
 
 ## 12. Privacy and Biographical Accuracy
 
-Use Suzuki's preferred public age of **36** in biography and promotional material where her age is relevant.
+Use Suzuki's preferred public age of:
 
-Her youthful appearance may be described as a characteristic of her public image. Avoid presenting appearance-related claims as medical facts.
+**36**
 
-Keep a clear distinction between:
+Maintain clear distinctions between:
 
-- Confirmed biographical information.
-- Approved public-facing descriptions.
-- Planned projects.
-- Unverified career claims.
-- Creative concepts and future ambitions.
+- Confirmed facts
+- Public descriptions
+- Promotional content
+- Future plans
+- Unverified claims
 
-Never invent personal history, credentials, music credits, release dates, awards or professional affiliations.
+Do not invent:
 
-When the correct information is uncertain, leave it out or request confirmation rather than filling the gap with a guess.
+- Credentials
+- Awards
+- Partnerships
+- Music credits
+- Personal history
+
+When uncertain, omit or verify.
 
 ---
 
 ## 13. Instructions for STRAYD AI Agents
 
-Any AI agent using this knowledge base must follow these rules.
-
-### Artist Identity
+### Identity Rules
 
 - Use STRAYD as the primary artist identity.
-- Use “STRAYD featuring Martin Strayd & Suzuki” as the official descriptor where appropriate.
-- Use “SUZUKI & STRAYD” for collaborative billing when appropriate.
-- Keep Martin Strayd and Suzuki's roles distinct and accurate.
+- Use STRAYD featuring Martin Strayd & Suzuki where appropriate.
+- Use SUZUKI & STRAYD when collaborative billing is required.
 
-### Credits
+### Character Rules
 
-- “FOOL FOR A GOOD TIME” is credited to Martin Strayd and the band STRAYD.
-- Suzuki contributes backing vocals on a few songs, where applicable.
-- Suzuki's main role is media guru, band manager and promotional lead.
-- Never invent a featured-artist credit or claim that Suzuki performed on a specific recording without confirmation.
+- Follow Character Lock.
+- Follow Identity Preservation Lock.
+- Follow Photorealism Lock.
+- Use the supplied reference image.
+- Maintain recognisable facial features.
+- Maintain dreadlocks and shirt design.
 
-### Character and Artwork
+### Music Rules
 
-- Follow the Suzuki Character Bible and supplied reference image.
-- Keep the pink dreadlocks, signature outfit and shirt artwork consistent.
-- Use bold, heavy fonts for requested promotional artwork.
-- Do not add unrequested logos or extra text.
+- Preserve official credits.
+- Preserve official song titles.
+- Verify release details whenever possible.
+- Do not invent performers or contributors.
 
-### Public Voice
+### Promotion Rules
 
-- Be confident, energetic, direct and independent.
-- Celebrate real creative work, real people and music made from real life.
-- Emphasise consistent releases, independent decision-making and the effort behind the music.
-- Avoid fake controversy, invented achievements and unsupported claims of industry endorsement.
+- Emphasise authentic music culture.
+- Emphasise independent artist development.
+- Emphasise human creativity.
+- Avoid unsupported marketing claims.
 
-### Documentary
+### Image Generation Rules
 
-- State that the documentary is planned for the end of 2027.
-- Do not describe it as released or available before confirmation.
+Priority order:
 
-### Content and Promotion
+1. Reference image
+2. Character Lock
+3. Identity Preservation Lock
+4. Photorealism Lock
+5. Brand Guidelines
+6. Scene Prompt
 
-- Use daily dancing as a natural content opportunity when relevant.
-- Prioritise real music links and clear calls to action.
-- Adapt content for TikTok, Instagram, Facebook, YouTube and other relevant platforms.
-- Keep promotional content faithful to the specific song, artist credits and supplied artwork.
+Identity takes priority over creative interpretation.
 
 ---
 
-## 14. Maintenance and Source of Truth
+## 14. Face Embedding Roadmap
 
-This file is the working knowledge base for Suzuki's identity, biography, character design, role in STRAYD, approved credits and related projects.
+Future Character Consistency System
 
-When new information is supplied:
+### Stage 1
 
-1. Preserve existing confirmed facts unless the user explicitly corrects them.
-2. Apply explicit corrections throughout the document so contradictory details do not remain.
-3. Keep artist credits specific to each recording.
-4. Separate current facts from future plans.
-5. Flag details that require confirmation.
-6. Maintain consistent Markdown formatting and clear headings.
+- Reference image guidance
 
-**Core principle:** Suzuki is not simply a character in the STRAYD story. She is a working media professional, band manager, creative partner and occasional backing vocalist helping Martin Strayd and STRAYD push independent music forward.
+### Stage 2
 
-Real music. Real people. Real lives. No waiting for permission.
+- Multi-image reference library
+
+### Stage 3
+
+- IP-Adapter integration
+
+### Stage 4
+
+- Face embedding cache
+
+Planned asset:
+
+```text
+suzuki_embedding.pt
+```
+
+Purpose:
+
+Maintain consistency across:
+
+- Album artwork
+- Posters
+- Merchandise
+- Social media
+- Promotional photography
+- Video thumbnails
+
+Target outcome:
+
+Suzuki remains visually recognisable across all future content regardless of scene or environment.
+
+---
+
+## 15. Image Generation Master Rule
+
+Priority Order:
+
+1. Reference image
+2. Character Lock
+3. Identity Preservation Lock
+4. Photorealism Lock
+5. Brand Rules
+6. Scene Prompt
+
+When uncertainty exists:
+
+Identity > Realism > Brand > Scene
+
+The objective is not to generate a generic influencer.
+
+The objective is to generate Suzuki.
+
+---
+
+## 16. Maintenance and Source of Truth
+
+This file serves as the master reference for:
+
+- Identity
+- Biography
+- Appearance
+- Branding
+- Media activity
+- Promotional messaging
+- Character consistency
+- AI generation guidance
+
+When updating this document:
+
+1. Preserve confirmed facts.
+2. Apply corrections consistently.
+3. Distinguish facts from plans.
+4. Preserve artist-credit accuracy.
+5. Maintain visual consistency.
+6. Maintain formatting consistency.
+7. Protect character identity.
+
+### Core Principle
+
+Suzuki is a music-media professional, creative partner, band manager and promotional strategist whose work helps drive the STRAYD project forward.
+
+She should be represented as a real person working within a real music project, not as a fictional character or generic influencer.
+
+**Real music. Real people. Real lives. No waiting for permission.**
 
 © 2026 SS SUZUKI & STRAYD. All rights reserved.
+---

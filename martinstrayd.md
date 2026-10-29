@@ -11,6 +11,31 @@
 
 ---
 
+CHARACTER LOCK:
+
+Martin Strayd, 55 year old Australian rock musician,
+short black buzz cut,
+blue eyes,
+strong jawline,
+silver hoop earrings,
+upper-left silver tooth,
+athletic lean build,
+black fitted FOOL FOR A GOOD TIME shirt,
+koala skull crossbones logo.
+
+ANTI-POP aesthetic.
+Authentic rock and roll musician.
+Independent Australian artist.
+
+Avoid:
+cyberpunk,
+anime,
+young face,
+generic model,
+beard,
+tattoos,
+leather jacket.
+
 ## 1. Artist Identity
 
 Martin Strayd is an independent Australian lyricist, songwriter, composer and music producer known for a large, diverse catalogue of original music. His work combines guitar-driven rock, anti-pop, punk influences, reggae, blues, electronic production and dance-oriented remixes.

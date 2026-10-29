@@ -12,10 +12,13 @@ DAHL_KEY = os.environ.get("DAHL_API_KEY", "")
 DAHL_MODEL = os.environ.get("DAHL_MODEL", "")
 TEST = os.environ.get("TEST", "true").lower() == "true"
 
+BASE = "https://api.twitter.com"
+
 print("=== X REPLY AGENT ===")
 print(f"Test: {TEST}")
 
-def get(url, params=None):
+def get(endpoint, params=None):
+    url = BASE + endpoint
     if params:
         url += "?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={"Authorization": "Bearer " + BEARER})
@@ -26,7 +29,8 @@ def get(url, params=None):
         print("Error: " + str(e))
         return None
 
-def post(url, data):
+def post(endpoint, data):
+    url = BASE + endpoint
     req = urllib.request.Request(url, data=json.dumps(data).encode(),
         headers={"Authorization": "Bearer " + BEARER, "Content-Type": "application/json"},
         method="POST")

@@ -1,0 +1,89 @@
+name: StrayD Video Shorts - Colab Trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Video prompt (copy from social-posts/daily/ file)"
+        required: true
+        default: "A rock musician playing guitar on stage, dramatic lighting"
+      filename_prefix:
+        description: "Output filename prefix"
+        required: false
+        default: "strayd_video"
+
+permissions:
+  contents: write
+
+env:
+  COLAB_WEBHOOK_URL: ${{ secrets.COLAB_WEBHOOK_URL }}
+
+jobs:
+  trigger-colab-video:
+    name: Trigger Colab Video Generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trigger Colab notebook
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PROMPT="${{ github.event.inputs.prompt }}"
+          PREFIX="${{ github.event.inputs.filename_prefix }}"
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+          echo "=== STRAYD VIDEO SHORT TRIGGER ==="
+          echo "Prompt: $PROMPT"
+          echo "Prefix: $PREFIX"
+          echo "Timestamp: $TIMESTAMP"
+          echo ""
+
+          # Save trigger request
+          cat > colab-trigger.json <<EOF
+          {
+            "prompt": "$PROMPT",
+            "filename_prefix": "$PREFIX",
+            "timestamp": "$TIMESTAMP",
+            "num_frames": 25,
+            "fps": 8
+          }
+          EOF
+
+          echo "Trigger payload saved: colab-trigger.json"
+          echo ""
+          echo "=== NEXT STEP ==="
+          echo "1. Copy the prompt below:"
+          echo ""
+          echo "$PROMPT"
+          echo ""
+          echo "2. Go to your Colab notebook"
+          echo "3. Paste the prompt into Cell 2"
+          echo "4. Run Cell 2"
+          echo "5. Video will be saved to Google Drive: STRAYD_Video_Hub/"
+          echo ""
+          echo "Or set COLAB_WEBHOOK_URL secret to auto-trigger via webhook."
+
+          # If webhook URL is configured, send trigger
+          if [ -n "${COLAB_WEBHOOK_URL:-}" ]; then
+            echo ""
+            echo "Sending webhook to Colab..."
+            curl -s -X POST "${COLAB_WEBHOOK_URL}" \
+              -H "Content-Type: application/json" \
+              -d @"colab-trigger.json" \
+              || echo "Webhook call failed or not configured"
+          fi
+
+      - name: Commit trigger file
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add colab-trigger.json 2>/dev/null || true
+          git commit -m "Video trigger: ${{ github.event.inputs.filename_prefix }}" 2>/dev/null || echo "Nothing to commit"
+          git push 2>/dev/null || echo "Push skipped"

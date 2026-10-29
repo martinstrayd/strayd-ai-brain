@@ -1,4 +1,4 @@
-name: STRAYD Content Director
+name: STRAYD Social Media Content Director
 
 on:
   workflow_dispatch:

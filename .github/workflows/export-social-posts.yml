@@ -1,5 +1,5 @@
 
-name: Export DAILY and WEEKLY Social Posts
+name: DAILY WEEKLY Social Posts
 
 on:
   workflow_dispatch:

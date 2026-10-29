@@ -11,6 +11,8 @@ AI_ENDPOINT = "https://inference.dahl.global/v1/chat/completions"
 MODEL = "MiniMaxAI/MiniMax-M2.7"
 KEYWORDS = '"Natron theory" OR geopolymer OR "artificial stone"'
 
+LOG_DIR = "logs"
+
 def search_recent():
     url = "https://api.x.com/2/tweets/search/recent"
     params = {
@@ -43,33 +45,47 @@ def reply(tweet_id, text):
     r = requests.post(url, headers=headers, json=payload)
     return r.status_code
 
+def write_log(entries):
+    os.makedirs(LOG_DIR, exist_ok=True)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    filepath = os.path.join(LOG_DIR, f"natron-{today}.md")
+
+    with open(filepath, "a", encoding="utf-8") as f:
+        f.write(f"## Run at {datetime.now(timezone.utc).isoformat()}\n\n")
+        if not entries:
+            f.write("No new mentions found.\n\n")
+        else:
+            for e in entries:
+                f.write(f"**Tweet:** {e['text']}\n\n")
+                f.write(f"**Reply:** {e['reply']}\n\n")
+                f.write("---\n\n")
+    print(f"Log written to {filepath}")
+
 def main():
     print("=== Natron Monitor started ===")
     tweets = search_recent()
+    log_entries = []
 
     if not tweets:
         print("No new mentions found")
-        print("=== Finished ===")
-        return
+    else:
+        print(f"Found {len(tweets)} matching tweet(s)")
+        for t in tweets:
+            text = t["text"]
+            tweet_id = t["id"]
+            print(f"Processing: {text[:80]}...")
 
-    print(f"Found {len(tweets)} matching tweet(s)")
+            try:
+                reply_text = call_ai(text)
+                if reply_text:
+                    status = reply(tweet_id, reply_text)
+                    log_entries.append({"text": text, "reply": reply_text})
+                    print(f"  -> Replied (status: {status})")
+            except Exception as e:
+                print(f"  -> Error: {e}")
 
-    for i, t in enumerate(tweets, 1):
-        text = t["text"]
-        tweet_id = t["id"]
-        print(f"\n[{i}/{len(tweets)}] Tweet: {text[:100]}...")
-
-        try:
-            reply_text = call_ai(text)
-            if reply_text:
-                status = reply(tweet_id, reply_text)
-                print(f"  -> Replied (status: {status})")
-            else:
-                print("  -> AI returned empty reply, skipping")
-        except Exception as e:
-            print(f"  -> Error: {e}")
-
-    print("\n=== Finished ===")
+    write_log(log_entries)
+    print("=== Finished ===")
 
 if __name__ == "__main__":
     main()

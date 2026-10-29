@@ -1,5 +1,5 @@
 
-name: Strayd Content Director
+name: YStrayd Content Director
 
 on:
   workflow_dispatch:

@@ -17,11 +17,7 @@
             padding: 20px 40px;
             border-bottom: 2px solid #e94560;
         }
-        .header h1 {
-            color: #e94560;
-            font-size: 28px;
-            letter-spacing: 4px;
-        }
+        .header h1 { color: #e94560; font-size: 28px; letter-spacing: 4px; }
         .header p { color: #888; margin-top: 5px; }
         .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
         .grid {
@@ -38,13 +34,7 @@
             transition: transform 0.2s;
         }
         .card:hover { transform: translateY(-3px); border-color: #e94560; }
-        .card h2 {
-            color: #e94560;
-            font-size: 16px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        .card h2 { color: #e94560; font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
         .status { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
         .dot { width: 12px; height: 12px; border-radius: 50%; }
         .green { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
@@ -62,21 +52,7 @@
             transition: background 0.2s;
         }
         .btn:hover { background: #ff6b6b; }
-        .log {
-            background: #0d0d0d;
-            border: 1px solid #333;
-            border-radius: 5px;
-            padding: 15px;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-        .log div { padding: 3px 0; border-bottom: 1px solid #222; }
-        .gpu-card {
-            background: linear-gradient(135deg, #1a1a2e, #0f3460);
-            border: 1px solid #e94560;
-        }
+        .gpu-card { background: linear-gradient(135deg, #1a1a2e, #0f3460); border: 1px solid #e94560; }
         .prompt-section {
             background: #1a1a2e;
             border: 1px solid #333;
@@ -115,6 +91,7 @@
             border-top: 1px solid #222;
             margin-top: 40px;
         }
+        .section-title { color: #e94560; margin: 30px 0 10px 0; font-size: 14px; letter-spacing: 3px; }
     </style>
 </head>
 <body>
@@ -124,8 +101,7 @@
     </div>
 
     <div class="container">
-        <!-- GPU Status -->
-        <h2 style="color:#e94560; margin: 20px 0 10px 0; font-size: 14px; letter-spacing: 3px;">GPU AVAILABILITY</h2>
+        <h2 class="section-title">GPU AVAILABILITY</h2>
         <div class="grid">
             <div class="card gpu-card">
                 <h2>Google Colab</h2>
@@ -157,8 +133,7 @@
             </div>
         </div>
 
-        <!-- Agent Status -->
-        <h2 style="color:#e94560; margin: 30px 0 10px 0; font-size: 14px; letter-spacing: 3px;">AGENT STATUS</h2>
+        <h2 class="section-title">AGENT STATUS</h2>
         <div class="grid">
             <div class="card">
                 <h2>Social Content Agent</h2>
@@ -190,8 +165,7 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <h2 style="color:#e94560; margin: 30px 0 10px 0; font-size: 14px; letter-spacing: 3px;">QUICK ACTIONS</h2>
+        <h2 class="section-title">QUICK ACTIONS</h2>
         <div class="grid">
             <div class="card">
                 <h2>Run Social Agent Now</h2>
@@ -215,7 +189,6 @@
             </div>
         </div>
 
-        <!-- Prompt Input -->
         <div class="prompt-section">
             <h2 style="color:#e94560; font-size: 16px; margin-bottom: 15px; letter-spacing: 2px;">ASK STRAYD AI</h2>
             <textarea id="promptInput" placeholder="Enter your question or prompt here...">What should I work on today for STRAYD?</textarea>
@@ -225,7 +198,7 @@
     </div>
 
     <div class="footer">
-        STRAYD AI Command Center | World Tour 2027<br>
+        STRAYD AI Command Center | Martin Strayd + Suzuki | World Tour 2027<br>
         Powered by GitHub Actions + DAHL AI | All agents running on free infrastructure
     </div>
 
@@ -234,10 +207,7 @@
             const prompt = document.getElementById('promptInput').value;
             const response = document.getElementById('response');
             response.innerHTML = 'Sending to DAHL...';
-
-            // This calls your GitHub webhook or you can connect directly
-            // For now it shows the prompt to copy
-            response.innerHTML = `<strong>Prompt ready:</strong><br>${prompt.substring(0, 100)}...<br><br>Connect a webhook to enable direct DAHL calls.`;
+            response.innerHTML = '<strong>Prompt ready:</strong><br>' + prompt.substring(0, 100) + '...<br><br>Connect a webhook to enable direct DAHL calls.';
         }
     </script>
 </body>

@@ -63,30 +63,26 @@ jobs:
             social-manager-prompt.md \
             > knowledge.txt
 
-          cat > prompt.txt <<'EOF'
-You are STRAYD Social Media Content Director.
-
-Use ONLY the supplied knowledge.
-
-Never invent facts.
-
-Generate a complete Monday-Sunday content calendar.
-
-Each day MUST contain:
-
-## Monday
-### X
-### Facebook
-### YouTube Community
-### TikTok
-### Instagram
-### Image Prompt
-### Short Video Idea
-
-Repeat for Tuesday through Sunday.
-
-Return MARKDOWN ONLY.
-EOF
+printf '%s\n' \
+'You are STRAYD Social Media Content Director.' \
+'' \
+'Use ONLY the supplied knowledge.' \
+'' \
+'Never invent facts.' \
+'' \
+'Generate a complete Monday-Sunday content calendar.' \
+'' \
+'Each day MUST contain:' \
+'' \
+'## Monday' \
+'### X' \
+'### Facebook' \
+'### YouTube Community' \
+'### TikTok' \
+'### Instagram' \
+'### Image Prompt' \
+'### Short Video Idea' \
+> prompt.txt
 
           KNOWLEDGE=$(cat knowledge.txt)
 

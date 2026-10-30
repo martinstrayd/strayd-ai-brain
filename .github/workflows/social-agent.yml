@@ -16,11 +16,10 @@ env:
   DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
   DAHL_API_URL: https://inference.dahl.global/v1/chat/completions
   DAHL_MODEL: MiniMaxAI/MiniMax-M2.7
-  PYTHONUNBUFFERED: "1"
 
 jobs:
   generate-social-content:
-    name: Generate STRAYD Weekly Social Content
+    name: Generate and Validate STRAYD Social Content
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -51,340 +50,31 @@ jobs:
           mkdir -p social-posts/weekly
           mkdir -p social-posts/daily
 
-      - name: Generate content from DAHL
+      - name: Generate weekly calendar
         shell: bash
         run: |
           set -euo pipefail
 
-          python3 <<'PY'
-          import os
-          import re
-          import json
-          import datetime
-          import urllib.request
-          import urllib.error
-          from pathlib import Path
-
-          API_KEY = os.environ["DAHL_API_KEY"]
-          API_URL = os.environ["DAHL_API_URL"]
-          MODEL = os.environ["DAHL_MODEL"]
-
-          def load_knowledge():
-              files = [
-                  "martinstrayd.md",
-                  "suzukimusic.md",
-                  "songarchive.md",
-                  "brand-profile.md",
-                  "social-manager-prompt.md",
-              ]
-
-              sections = []
-
-              for filename in files:
-                  content = Path(filename).read_text(
-                      encoding="utf-8"
-                  ).strip()
-
-                  sections.append(
-                      f"\n\n===== {filename} =====\n{content}"
-                  )
-
-              return "\n".join(sections)
-
-          knowledge = load_knowledge()
-
-          today = datetime.datetime.utcnow().date()
-          monday = today - datetime.timedelta(days=today.weekday())
-
-          prompt = f"""
-You are STRAYD Social Media Content Director.
-
-Use ONLY the supplied STRAYD knowledge.
-
-Never invent facts.
-
-Generate a complete 7-day weekly content calendar.
-
-For Monday through Sunday include:
-
-## Day Name
-
-### X
-### Facebook
-### YouTube Community
-### TikTok
-### Instagram
-### Image Prompt
-### Short Video Idea
-
-Create meaningful publishable content based ONLY on the supplied knowledge.
-
-KNOWLEDGE:
-
-{knowledge}
-"""
-
-          payload = {
-              "model": MODEL,
-              "messages": [
-                  {
-                      "role": "system",
-                      "content": (
-                          "Create publishable social media content "
-                          "using only supplied knowledge."
-                      )
-                  },
-                  {
-                      "role": "user",
-                      "content": prompt
-                  }
-              ],
-              "temperature": 0.7,
-              "max_tokens": 8000
-          }
-
-          request = urllib.request.Request(
-              API_URL,
-              data=json.dumps(payload).encode("utf-8"),
-              headers={
-                  "Authorization": f"Bearer {API_KEY}",
-                  "Content-Type": "application/json",
-                  "Accept": "application/json"
-              },
-              method="POST"
-          )
-
-          try:
-              with urllib.request.urlopen(
-                  request,
-                  timeout=300
-              ) as response:
-
-                  raw = response.read().decode("utf-8")
-
-          except urllib.error.HTTPError as e:
-              body = e.read().decode(
-                  "utf-8",
-                  errors="replace"
-              )
-              raise SystemExit(
-                  f"DAHL HTTP {e.code}\n{body}"
-              )
-
-          Path("debug-response.json").write_text(
-              raw,
-              encoding="utf-8"
-          )
-
-          data = json.loads(raw)
-
-          content = (
-              data["choices"][0]
-              ["message"]
-              ["content"]
-          )
-
-          Path("debug-response.md").write_text(
-              content,
-              encoding="utf-8"
-          )
-
-          weekly_file = (
-              Path("social-posts/weekly") /
-              f"{monday.isoformat()}-calendar.md"
-          )
-
-          weekly_file.write_text(
-              content,
-              encoding="utf-8"
-          )
-
-          days = [
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday",
-              "Saturday",
-              "Sunday"
-          ]
-
-          for day in days:
-
-              match = re.search(
-                  rf"(?s)##\s+{day}\b(.*?)(?=\n##\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b|\Z)",
-                  content
-              )
-
-              if match:
-                  day_content = (
-                      f"## {day}\n" +
-                      match.group(1).strip() +
-                      "\n"
-                  )
-              else:
-                  day_content = (
-                      f"# {day}\n\n"
-                      "Day section not detected by parser.\n\n"
-                      "See weekly calendar.\n"
-                  )
-
-              output = (
-                  Path("social-posts/daily") /
-                  f"{day.lower()}.md"
-              )
-
-              output.write_text(
-                  day_content,
-                  encoding="utf-8"
-              )
-
-          print("SUCCESS")
-          PY
-
-      - name: Upload debug artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: strayd-social-debug-${{ github.run_number }}
-          path: |
-            debug-response.json
-            debug-response.md
-          if-no-files-found: ignore
-
-      - name: Commit content
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add social-posts/
-          git add debug-response.md
-          git add debug-response.json
-
-          if git diff --cached --quiet; then
-            echo "No changes."
-            exit 0
-          fi
-
-          git commit -m "Generate STRAYD weekly social content"
-
-          git push
-IMPORTANT: Copy the RAW text only. Do not copy from a rendered page that converts < to &lt; or URLs into HTML links.
-
-name: STRAYD Social Media Content Director
-
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * 1"
-
-permissions:
-  contents: write
-
-concurrency:
-  group: strayd-social-agent-${{ github.ref }}
-  cancel-in-progress: false
-
-env:
-  DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-  DAHL_API_URL: https://inference.dahl.global/v1/chat/completions
-  DAHL_MODEL: MiniMaxAI/MiniMax-M2.7
-  PYTHONUNBUFFERED: "1"
-
-jobs:
-  generate-social-content:
-    name: Generate STRAYD Weekly Social Content
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Verify knowledge files
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          for file in \
-            brand-profile.md \
+          cat \
             martinstrayd.md \
             suzukimusic.md \
             songarchive.md \
-            social-manager-prompt.md
-          do
-            if [ ! -s "$file" ]; then
-              echo "::error::Required knowledge file missing or empty: $file"
-              exit 1
-            fi
+            brand-profile.md \
+            social-manager-prompt.md \
+            > knowledge.txt
 
-            echo "Verified knowledge file: $file"
-          done
-
-          mkdir -p social-posts/weekly
-          mkdir -p social-posts/daily
-
-      - name: Generate content from DAHL
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          python3 <<'PY'
-          import os
-          import re
-          import json
-          import datetime
-          import urllib.request
-          import urllib.error
-          from pathlib import Path
-
-          API_KEY = os.environ["DAHL_API_KEY"]
-          API_URL = os.environ["DAHL_API_URL"]
-          MODEL = os.environ["DAHL_MODEL"]
-
-          def load_knowledge():
-              files = [
-                  "martinstrayd.md",
-                  "suzukimusic.md",
-                  "songarchive.md",
-                  "brand-profile.md",
-                  "social-manager-prompt.md",
-              ]
-
-              sections = []
-
-              for filename in files:
-                  content = Path(filename).read_text(
-                      encoding="utf-8"
-                  ).strip()
-
-                  sections.append(
-                      f"\n\n===== {filename} =====\n{content}"
-                  )
-
-              return "\n".join(sections)
-
-          knowledge = load_knowledge()
-
-          today = datetime.datetime.utcnow().date()
-          monday = today - datetime.timedelta(days=today.weekday())
-
-          prompt = f"""
+          cat > prompt.txt <<'EOF'
 You are STRAYD Social Media Content Director.
 
-Use ONLY the supplied STRAYD knowledge.
+Use ONLY the supplied knowledge.
 
 Never invent facts.
 
-Generate a complete 7-day weekly content calendar.
+Generate a complete Monday-Sunday content calendar.
 
-For Monday through Sunday include:
+Each day MUST contain:
 
-## Day Name
-
+## Monday
 ### X
 ### Facebook
 ### YouTube Community
@@ -393,142 +83,173 @@ For Monday through Sunday include:
 ### Image Prompt
 ### Short Video Idea
 
-Create meaningful publishable content based ONLY on the supplied knowledge.
+Repeat for Tuesday through Sunday.
 
-KNOWLEDGE:
+Return MARKDOWN ONLY.
+EOF
 
-{knowledge}
-"""
+          KNOWLEDGE=$(cat knowledge.txt)
 
-          payload = {
-              "model": MODEL,
-              "messages": [
-                  {
-                      "role": "system",
-                      "content": (
-                          "Create publishable social media content "
-                          "using only supplied knowledge."
-                      )
-                  },
-                  {
-                      "role": "user",
-                      "content": prompt
-                  }
+          jq -n \
+            --arg model "$DAHL_MODEL" \
+            --arg prompt "$(cat prompt.txt)
+
+SUPPLIED KNOWLEDGE:
+
+$KNOWLEDGE" \
+            '{
+              model: $model,
+              messages: [
+                {
+                  role: "system",
+                  content: "Use only supplied STRAYD knowledge."
+                },
+                {
+                  role: "user",
+                  content: $prompt
+                }
               ],
-              "temperature": 0.7,
-              "max_tokens": 8000
-          }
+              temperature: 0.7,
+              max_tokens: 8000
+            }' \
+            > request.json
 
-          request = urllib.request.Request(
-              API_URL,
-              data=json.dumps(payload).encode("utf-8"),
-              headers={
-                  "Authorization": f"Bearer {API_KEY}",
-                  "Content-Type": "application/json",
-                  "Accept": "application/json"
-              },
-              method="POST"
+          SUCCESS=0
+
+          for attempt in 1 2 3 4 5 6
+          do
+
+            echo "Attempt $attempt"
+
+            HTTP_CODE=$(
+              curl \
+                -sS \
+                -w "%{http_code}" \
+                -o response.json \
+                -X POST \
+                "$DAHL_API_URL" \
+                -H "Authorization: Bearer $DAHL_API_KEY" \
+                -H "Content-Type: application/json" \
+                --data @request.json
+            )
+
+            echo "HTTP: $HTTP_CODE"
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              SUCCESS=1
+              break
+            fi
+
+            cat response.json || true
+
+            sleep 15
+
+          done
+
+          if [ "$SUCCESS" != "1" ]; then
+            echo "::error::DAHL request failed"
+            exit 1
+          fi
+
+          jq -r '.choices[0].message.content' \
+            response.json \
+            > debug-response.md
+
+          WEEK=$(date +%F)
+
+          cp \
+            debug-response.md \
+            social-posts/weekly/${WEEK}-calendar.md
+
+      - name: Validate generated calendar
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          FILE=$(ls social-posts/weekly/*.md | head -1)
+
+          for DAY in \
+            Monday \
+            Tuesday \
+            Wednesday \
+            Thursday \
+            Friday \
+            Saturday \
+            Sunday
+          do
+
+            if ! grep -q "^## ${DAY}" "$FILE"; then
+              echo "::error::Missing day heading: $DAY"
+              exit 1
+            fi
+
+          done
+
+          echo "Validation passed"
+
+      - name: Split daily files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          FILE=$(ls social-posts/weekly/*.md | head -1)
+
+          DAYS=(
+            Monday
+            Tuesday
+            Wednesday
+            Thursday
+            Friday
+            Saturday
+            Sunday
           )
 
-          try:
-              with urllib.request.urlopen(
-                  request,
-                  timeout=300
-              ) as response:
+          for i in "${!DAYS[@]}"
+          do
 
-                  raw = response.read().decode("utf-8")
+            DAY="${DAYS[$i]}"
+            LOWER=$(echo "$DAY" | tr '[:upper:]' '[:lower:]')
 
-          except urllib.error.HTTPError as e:
-              body = e.read().decode(
-                  "utf-8",
-                  errors="replace"
-              )
-              raise SystemExit(
-                  f"DAHL HTTP {e.code}\n{body}"
-              )
+            START=$(grep -n "^## ${DAY}" "$FILE" | cut -d: -f1 | head -1)
 
-          Path("debug-response.json").write_text(
-              raw,
-              encoding="utf-8"
-          )
+            if [ -z "$START" ]; then
+              continue
+            fi
 
-          data = json.loads(raw)
+            if [ "$i" -lt 6 ]; then
 
-          content = (
-              data["choices"][0]
-              ["message"]
-              ["content"]
-          )
+              NEXT="${DAYS[$((i+1))]}"
 
-          Path("debug-response.md").write_text(
-              content,
-              encoding="utf-8"
-          )
+              END=$(grep -n "^## ${NEXT}" "$FILE" | cut -d: -f1 | head -1)
 
-          weekly_file = (
-              Path("social-posts/weekly") /
-              f"{monday.isoformat()}-calendar.md"
-          )
+              if [ -n "$END" ]; then
+                END=$((END-1))
+              fi
 
-          weekly_file.write_text(
-              content,
-              encoding="utf-8"
-          )
+              sed -n "${START},${END}p" "$FILE" \
+                > "social-posts/daily/${LOWER}.md"
 
-          days = [
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday",
-              "Saturday",
-              "Sunday"
-          ]
+            else
 
-          for day in days:
+              tail -n +"$START" "$FILE" \
+                > "social-posts/daily/${LOWER}.md"
 
-              match = re.search(
-                  rf"(?s)##\s+{day}\b(.*?)(?=\n##\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b|\Z)",
-                  content
-              )
+            fi
 
-              if match:
-                  day_content = (
-                      f"## {day}\n" +
-                      match.group(1).strip() +
-                      "\n"
-                  )
-              else:
-                  day_content = (
-                      f"# {day}\n\n"
-                      "Day section not detected by parser.\n\n"
-                      "See weekly calendar.\n"
-                  )
+          done
 
-              output = (
-                  Path("social-posts/daily") /
-                  f"{day.lower()}.md"
-              )
-
-              output.write_text(
-                  day_content,
-                  encoding="utf-8"
-              )
-
-          print("SUCCESS")
-          PY
-
-      - name: Upload debug artifacts
+      - name: Upload debug files
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: strayd-social-debug-${{ github.run_number }}
           path: |
-            debug-response.json
+            response.json
+            request.json
             debug-response.md
           if-no-files-found: ignore
 
-      - name: Commit content
+      - name: Commit generated content
         shell: bash
         run: |
           set -euo pipefail
@@ -538,7 +259,6 @@ KNOWLEDGE:
 
           git add social-posts/
           git add debug-response.md
-          git add debug-response.json
 
           if git diff --cached --quiet; then
             echo "No changes."
@@ -548,6 +268,3 @@ KNOWLEDGE:
           git commit -m "Generate STRAYD weekly social content"
 
           git push
-
-
-This version keeps all five knowledge files, creates social-posts/weekly and social-posts/daily, saves the raw DAHL response, and will show up in Actions as STRAYD Social Media Content Director if saved as a valid .github/workflows/social-agent.yml file.

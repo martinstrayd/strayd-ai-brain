@@ -512,11 +512,13 @@ jobs:
               if re.search(r"^\s*```", markdown, re.MULTILINE):
                   fail("Output must be Markdown, not a fenced code block.")
 
-              day_pattern = re.compile(
-                  r"^##\s+(Monday|Tuesday|Wednesday|Thursday|Friday|"
-                  r"Saturday|Sunday)\s+[—\u2014\-]\s+(\d{4}-\d{2}-\d{2})\s*$",
-                  re.MULTILINE,
-              )
+          day_pattern = re.compile(
+    r"^##\s*"
+    r"(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)"
+    r"\s*[-–—]\s*"
+    r"(\d{4}-\d{2}-\d{2})\s*$",
+    re.MULTILINE,
+)
 
               matches = list(day_pattern.finditer(markdown))
 
@@ -632,15 +634,65 @@ jobs:
               log(f"Created {target}")
               return target
 
-          def main():
-              week_dates = current_week()
-              knowledge = read_knowledge()
-              prompt = build_prompt(knowledge, week_dates)
+        def main():
+    week_dates = current_week()
+    knowledge = read_knowledge()
+    prompt = build_prompt(knowledge, week_dates)
 
-              log(f"Generating content for week beginning {week_dates[0]}.")
-              markdown = call_dahl(prompt)
+    log(f"Generating content for week beginning {week_dates[0]}.")
+    markdown = call_dahl(prompt)
 
-              daily_sections = parse_and_validate(markdown, week_dates)
+    # Save raw AI response for debugging
+    Path("debug-response.md").write_text(
+        markdown,
+        encoding="utf-8"
+    )
+
+    log("")
+    log("===== MODEL RESPONSE START =====")
+    log(markdown[:5000])
+    log("===== MODEL RESPONSE END =====")
+    log("")
+
+    # Remove accidental markdown code fences
+    markdown = markdown.strip()
+
+    markdown = re.sub(
+        r"^```(?:markdown|md)?\s*",
+        "",
+        markdown,
+ *      flags=re.IGNORECASE,
+    )
+
+*   markdown = re*sub(
+        r"\s*```$",
+        "",
+        markdown,
+    )
+
+    # Normalize dashes
+    markdown = markdown.replace("—", "-")
+    markdown = markdown.replace("–", "-")
+
+    # Convert accidental heading levels
+    markdown = re.sub(
+        r"^#\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)",
+        r"## \1",
+        markdown,
+        flags=re.MULTILINE,
+    )
+
+    markdown = re.sub(
+        r"^###\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)",
+        r"## \1",
+        markdown,
+        flags=re.MULTILINE,
+    )
+
+    daily_sections = parse_and_validate(
+        markdown,
+        week_dates
+    )
 
               weekly_path = Path(
                   "social-posts/weekly/"
@@ -705,7 +757,13 @@ jobs:
           if __name__ == "__main__":
               main()
           PY
-
+      - name: Upload debug response
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dahl-debug-${{ github.run_number }}
+          path: debug-response.md
+          if-no-files-found: ignore
       - name: Commit generated social content
         shell: bash
         run: |

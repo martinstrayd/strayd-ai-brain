@@ -28,17 +28,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      # 1. Cache apt packages / TeX Live files
+      # 1. Cache ONLY TeX Live (avoids permission denied errors on apt cache)
       - name: Cache LaTeX and Pandoc dependencies
         id: cache-latex
         uses: actions/cache@v4
         with:
           path: |
-            /var/cache/apt/archives
             /usr/share/texlive
-          key: ${{ runner.os }}-texlive-pandoc-${{ hashFiles('scripts/build-social-posts-exports.py') }}
+          key: ${{ runner.os }}-texlive-${{ hashFiles('scripts/build-social-posts-exports.py') }}
           restore-keys: |
-            ${{ runner.os }}-texlive-pandoc-
+            ${{ runner.os }}-texlive-
 
       # 2. Install PDF tools only if cache misses
       - name: Install PDF tools

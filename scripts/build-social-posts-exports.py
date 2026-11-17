@@ -25,25 +25,16 @@ def get_markdown_files(folder):
     for p in folder.rglob("*"):
         if p.is_file() and p.suffix.lower() == ".md":
             filename_date = p.name[:10]
+            # Keep ONLY today and future dates (the week ahead)
             if filename_date >= today_str:
                 files.append(p)
 
-    # Fallback: If no future/today files exist yet, gracefully grab available archive files
-    if not files:
-        print(f"Warning: No future/today files found in {folder}. Falling back to available archive files.")
-        files = sorted(
-            [p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() == ".md"],
-            reverse=True
-        )
-    else:
-        # Sort chronologically so today comes first, followed by the rest of the week ahead
-        files = sorted(files)
+    # Sort chronologically so today comes first, followed by the rest of the week ahead
+    files = sorted(files)
 
     if not files:
-        raise FileNotFoundError(
-            f"No Markdown files found at all in {folder}"
-        )
-
+        print(f"Notice: No markdown files found for today ({today_str}) or upcoming dates in {folder} yet.")
+        
     return files
 
 
@@ -119,10 +110,11 @@ def export_folder(folder, label):
     print(f"Created {markdown_file.name}")
 
     # Readable PDF generated from the combined Markdown
-    create_pdf(
-        markdown_file,
-        OUT / f"{label}.pdf"
-    )
+    if files:
+        create_pdf(
+            markdown_file,
+            OUT / f"{label}.pdf"
+        )
 
     return files
 

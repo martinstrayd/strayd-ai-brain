@@ -28,7 +28,21 @@ jobs:
         with:
           python-version: "3.12"
 
+      # 1. Cache apt packages / TeX Live files
+      - name: Cache LaTeX and Pandoc dependencies
+        id: cache-latex
+        uses: actions/cache@v4
+        with:
+          path: |
+            /var/cache/apt/archives
+            /usr/share/texlive
+          key: ${{ runner.os }}-texlive-pandoc-${{ hashFiles('scripts/build-social-posts-exports.py') }}
+          restore-keys: |
+            ${{ runner.os }}-texlive-pandoc-
+
+      # 2. Install PDF tools only if cache misses
       - name: Install PDF tools
+        if: steps.cache-latex.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended texlive-plain-generic fonts-dejavu-core

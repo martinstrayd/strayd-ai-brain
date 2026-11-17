@@ -1,4 +1,4 @@
-# WEEKLY Social Posts (Newest First)
+# WEEKLY Social Posts (Week Ahead starting 2026-11-17)
 
 
 

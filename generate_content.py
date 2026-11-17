@@ -7,7 +7,7 @@ import json
 # Configuration
 API_KEY = os.environ.get("DAHL_API_KEY") # We keep the secret name so you don't have to change GitHub secrets
 API_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama-3.1-70b-versatile"
+MODEL = "llama-3.1-8b-instant"
 
 ROOT = Path.cwd()
 SOCIAL = ROOT / "social-posts"

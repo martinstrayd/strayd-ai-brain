@@ -23,12 +23,11 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install --upgrade pip
-          pip install google-genai
+          pip install -r requirements.txt
 
       - name: Run Strayd Director Script
         env:
-          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
         run: |
           python strayd_director.py
 

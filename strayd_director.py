@@ -4,11 +4,10 @@ import random
 from pathlib import Path
 from datetime import date, timedelta
 from google import genai
-from google.genai.errors import ServerError
 
-# Use GEMINI_API_KEY
-API_KEY = os.environ.get("GEMINI_API_KEY")
-MODEL = "gemini-2.5-flash" # or gemini-3.8-flash based on your setup
+# Read the Gemini API key from the environment variable passed by GitHub Actions
+API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+MODEL = "gemini-2.5-flash"
 
 ROOT = Path.cwd()
 SOCIAL = ROOT / "social-posts"
@@ -57,6 +56,9 @@ Each day MUST contain headings exactly like this:
 SUPPLIED KNOWLEDGE:
 {knowledge}
 """
+
+    if not API_KEY:
+        raise EnvironmentError("No API key found in GEMINI_API_KEY environment variable!")
 
     client = genai.Client(api_key=API_KEY)
     
@@ -110,9 +112,6 @@ def split_daily_files(weekly_file_path, week_start_date):
         print(f"Saved daily file: {daily_file.name}")
 
 def main():
-    if not API_KEY:
-        raise EnvironmentError("No API key found in GEMINI_API_KEY environment variable!")
-        
     knowledge = load_knowledge()
     content = generate_calendar(knowledge)
     

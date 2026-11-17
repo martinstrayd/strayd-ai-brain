@@ -1,4 +1,3 @@
-
 name: DAILY WEEKLY Social Export
 
 on:
@@ -13,7 +12,7 @@ on:
       - "scripts/build-social-posts-exports.py"
 
 permissions:
-  contents: read
+  contents: write  # <-- CHANGED from 'read' to 'write' so it can push back to repo
 
 jobs:
   export:
@@ -36,6 +35,14 @@ jobs:
 
       - name: Build DAILY and WEEKLY exports
         run: python scripts/build-social-posts-exports.py
+
+      # NEW: Commit and push the generated exports back to the repository
+      - name: Commit and push exports
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add exports/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update social post exports [skip ci]" && git push)
 
       - name: Upload downloadable files
         uses: actions/upload-artifact@v4

@@ -5,7 +5,7 @@ from google import genai
 
 # Configuration for Gemini
 API_KEY = os.environ.get("DAHL_API_KEY") # Holds your Gemini key from GitHub secrets
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-3.8-flash"
 
 ROOT = Path.cwd()
 SOCIAL = ROOT / "social-posts"

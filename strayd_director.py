@@ -3,11 +3,12 @@ import time
 import random
 from pathlib import Path
 from datetime import date, timedelta
-from openai import OpenAI
+from google import genai
+from google.genai.errors import ServerError
 
-# Read the Groq API key from the secret you just set
-API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("GROQ_API_KEY")
-MODEL = "llama-3.3-70b-versatile"
+# Use GEMINI_API_KEY
+API_KEY = os.environ.get("GEMINI_API_KEY")
+MODEL = "gemini-2.5-flash" # or gemini-3.8-flash based on your setup
 
 ROOT = Path.cwd()
 SOCIAL = ROOT / "social-posts"
@@ -57,22 +58,18 @@ SUPPLIED KNOWLEDGE:
 {knowledge}
 """
 
-    client = OpenAI(
-        base_url="https://api.groq.com/openai/v1",
-        api_key=API_KEY
-    )
+    client = genai.Client(api_key=API_KEY)
     
     max_attempts = 5
     for attempt in range(1, max_attempts + 1):
         try:
-            print(f"Generating calendar with Groq ({MODEL}) (Attempt {attempt}/{max_attempts})...")
-            response = client.chat.completions.create(
+            print(f"Generating calendar with Google Gemini ({MODEL}) (Attempt {attempt}/{max_attempts})...")
+            response = client.models.generate_content(
                 model=MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7
+                contents=prompt,
             )
-            print("Successfully generated content!")
-            return response.choices[0].message.content
+            print("Successfully generated content with Gemini!")
+            return response.text
         except Exception as e:
             if attempt == max_attempts:
                 raise
@@ -114,7 +111,7 @@ def split_daily_files(weekly_file_path, week_start_date):
 
 def main():
     if not API_KEY:
-        raise EnvironmentError("No API key found in AI_API_KEY environment variable!")
+        raise EnvironmentError("No API key found in GEMINI_API_KEY environment variable!")
         
     knowledge = load_knowledge()
     content = generate_calendar(knowledge)

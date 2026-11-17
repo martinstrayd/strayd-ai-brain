@@ -24,18 +24,24 @@ def get_markdown_files(folder):
     files = []
     for p in folder.rglob("*"):
         if p.is_file() and p.suffix.lower() == ".md":
-            # Extract date from filename (assuming format starts with YYYY-MM-DD)
             filename_date = p.name[:10]
-            # Keep ONLY today and future dates (the week ahead)
             if filename_date >= today_str:
                 files.append(p)
 
-    # Sort chronologically so today comes first, followed by the rest of the week ahead
-    files = sorted(files)
+    # Fallback: If no future/today files exist yet, gracefully grab available archive files
+    if not files:
+        print(f"Warning: No future/today files found in {folder}. Falling back to available archive files.")
+        files = sorted(
+            [p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() == ".md"],
+            reverse=True
+        )
+    else:
+        # Sort chronologically so today comes first, followed by the rest of the week ahead
+        files = sorted(files)
 
     if not files:
         raise FileNotFoundError(
-            f"No Markdown files found for today or upcoming dates in {folder}"
+            f"No Markdown files found at all in {folder}"
         )
 
     return files

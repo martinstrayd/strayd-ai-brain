@@ -3,11 +3,11 @@ import time
 import random
 from pathlib import Path
 from datetime import date, timedelta
-from google import genai
-from google.genai.errors import ServerError
+from openai import OpenAI
 
-API_KEY = os.environ.get("DAHL_API_KEY") or os.environ.get("GEMINI_API_KEY")
-MODEL = "gemini-3.8-flash"
+# Read the Groq API key from the secret you just set
+API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("GROQ_API_KEY")
+MODEL = "llama-3.3-70b-versatile"
 
 ROOT = Path.cwd()
 SOCIAL = ROOT / "social-posts"
@@ -57,23 +57,27 @@ SUPPLIED KNOWLEDGE:
 {knowledge}
 """
 
-    client = genai.Client(api_key=API_KEY)
+    client = OpenAI(
+        base_url="https://api.groq.com/openai/v1",
+        api_key=API_KEY
+    )
     
     max_attempts = 5
     for attempt in range(1, max_attempts + 1):
         try:
-            print(f"Generating calendar with {MODEL} (Attempt {attempt}/{max_attempts})...")
-            response = client.models.generate_content(
+            print(f"Generating calendar with Groq ({MODEL}) (Attempt {attempt}/{max_attempts})...")
+            response = client.chat.completions.create(
                 model=MODEL,
-                contents=prompt,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7
             )
             print("Successfully generated content!")
-            return response.text
-        except ServerError as e:
+            return response.choices[0].message.content
+        except Exception as e:
             if attempt == max_attempts:
                 raise
             sleep_time = (2 ** attempt) * 3 + random.uniform(1, 3)
-            print(f"Server busy, retrying in {sleep_time:.1f}s...")
+            print(f"Error encountered, retrying in {sleep_time:.1f}s: {e}")
             time.sleep(sleep_time)
 
 def split_daily_files(weekly_file_path, week_start_date):
@@ -110,7 +114,7 @@ def split_daily_files(weekly_file_path, week_start_date):
 
 def main():
     if not API_KEY:
-        raise EnvironmentError("No API key found in environment variables!")
+        raise EnvironmentError("No API key found in AI_API_KEY environment variable!")
         
     knowledge = load_knowledge()
     content = generate_calendar(knowledge)

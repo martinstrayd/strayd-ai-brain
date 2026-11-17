@@ -2,6 +2,8 @@ name: DAILY WEEKLY Social Export
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'  # Runs automatically every Monday at 06:00 UTC
   push:
     branches:
       - main
@@ -28,7 +30,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      # 1. Cache ONLY TeX Live (avoids permission denied errors on apt cache)
       - name: Cache LaTeX and Pandoc dependencies
         id: cache-latex
         uses: actions/cache@v4
@@ -39,7 +40,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-texlive-
 
-      # 2. Install PDF tools only if cache misses
       - name: Install PDF tools
         if: steps.cache-latex.outputs.cache-hit != 'true'
         run: |

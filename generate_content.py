@@ -1,7 +1,7 @@
 import os
 import time
 from pathlib import Path
-from datetime import date
+from datetime import date, timedelta
 from google import genai
 from google.genai.errors import ServerError
 
@@ -40,7 +40,7 @@ def generate_calendar(knowledge):
 Use ONLY the supplied knowledge. Never invent facts.
 Generate a complete Monday-Sunday content calendar.
 
-Each day MUST contain:
+Each day MUST contain headings exactly like this:
 ## Monday
 ### X
 ### Facebook
@@ -50,13 +50,14 @@ Each day MUST contain:
 ### Image Prompt
 ### Short Video Idea
 
+(Repeat for Tuesday through Sunday)
+
 SUPPLIED KNOWLEDGE:
 {knowledge}
 """
 
     client = genai.Client(api_key=API_KEY)
     
-    # Retry loop to handle 503 high-demand spikes automatically
     max_attempts = 5
     for attempt in range(1, max_attempts + 1):
         try:
@@ -72,6 +73,42 @@ SUPPLIED KNOWLEDGE:
             print(f"Server busy (503), waiting 15 seconds before retry...")
             time.sleep(15)
 
+def split_daily_files(weekly_file_path, week_start_date):
+    content = weekly_file_path.read_text(encoding="utf-8")
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    
+    lines = content.splitlines()
+    
+    # Simple split helper based on day headings
+    for i, day in enumerate(days):
+        lower = day.lower()
+        pdate = week_start_date + timedelta(days=i)
+        
+        start_idx = -1
+        end_idx = len(lines)
+        
+        # Find start of day
+        for idx, line in enumerate(lines):
+            if line.startswith(f"## {day}"):
+                start_idx = idx
+                break
+                
+        if start_idx == -1:
+            continue
+            
+        # Find start of next day to determine end
+        if i < 6:
+            next_day = days[i+1]
+            for idx in range(start_idx + 1, len(lines)):
+                if lines[idx].startswith(f"## {next_day}"):
+                    end_idx = idx
+                    break
+        
+        day_content = "\n".join(lines[start_idx:end_idx])
+        daily_file = DAILY / f"{pdate}-{lower}.md"
+        daily_file.write_text(day_content, encoding="utf-8")
+        print(f"Created daily file: {daily_file.name}")
+
 def main():
     if not API_KEY:
         raise EnvironmentError("API key environment variable is missing!")
@@ -79,10 +116,13 @@ def main():
     knowledge = load_knowledge()
     content = generate_calendar(knowledge)
     
-    week_str = date.today().isoformat()
-    weekly_file = WEEKLY / f"{week_str}-calendar.md"
+    today = date.today()
+    weekly_file = WEEKLY / f"{today}-calendar.md"
     weekly_file.write_text(content, encoding="utf-8")
     print(f"Created weekly calendar: {weekly_file.name}")
+    
+    # Automatically split into daily files
+    split_daily_files(weekly_file, today)
 
 if __name__ == "__main__":
     main()

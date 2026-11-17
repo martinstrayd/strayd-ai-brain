@@ -3,7 +3,7 @@ name: DAILY WEEKLY Social Export
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 6 * * 1'  # Runs automatically every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
   push:
     branches:
       - main
@@ -30,18 +30,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Cache LaTeX and Pandoc dependencies
-        id: cache-latex
+      - name: Cache TeX Live Fonts
         uses: actions/cache@v4
         with:
-          path: |
-            /usr/share/texlive
+          path: /usr/share/texlive
           key: ${{ runner.os }}-texlive-${{ hashFiles('scripts/build-social-posts-exports.py') }}
           restore-keys: |
             ${{ runner.os }}-texlive-
 
-      - name: Install PDF tools
-        if: steps.cache-latex.outputs.cache-hit != 'true'
+      - name: Install PDF tools and Pandoc
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended texlive-plain-generic fonts-dejavu-core

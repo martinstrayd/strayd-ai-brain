@@ -7,7 +7,7 @@ from google import genai
 from google.genai.errors import ServerError
 
 API_KEY = os.environ.get("DAHL_API_KEY") or os.environ.get("GEMINI_API_KEY")
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-3.8-flash"
 
 ROOT = Path.cwd()
 SOCIAL = ROOT / "social-posts"

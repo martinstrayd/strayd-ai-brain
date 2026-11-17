@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import subprocess
 import zipfile
@@ -19,9 +18,10 @@ def get_markdown_files(folder):
             f"Required folder does not exist: {folder}"
         )
 
+    # Sort files newest-first (reverse alphabetical order by filename date)
     files = sorted(
-        p for p in folder.rglob("*")
-        if p.is_file() and p.suffix.lower() == ".md"
+        (p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() == ".md"),
+        reverse=True
     )
 
     if not files:
@@ -36,7 +36,7 @@ def create_zip(folder, output_file):
     with zipfile.ZipFile(
         output_file, "w", zipfile.ZIP_DEFLATED
     ) as archive:
-        for file in sorted(folder.rglob("*")):
+        for file in sorted(folder.rglob("*"), reverse=True):
             if file.is_file():
                 archive.write(
                     file,
@@ -47,7 +47,7 @@ def create_zip(folder, output_file):
 
 
 def combine_markdown(files, folder, title):
-    sections = [f"# {title} Social Posts\n"]
+    sections = [f"# {title} Social Posts (Newest First)\n"]
 
     for file in files:
         relative_name = file.relative_to(folder)
@@ -88,10 +88,10 @@ def create_pdf(markdown_file, pdf_file):
 def export_folder(folder, label):
     files = get_markdown_files(folder)
 
-    # ZIP containing the original individual Markdown files.
+    # ZIP containing all individual Markdown files for this category
     create_zip(folder, OUT / f"{label}.zip")
 
-    # Combined Markdown document.
+    # Combined Markdown document (newest first)
     combined = combine_markdown(files, folder, label)
     markdown_file = OUT / f"{label}.md"
 
@@ -102,7 +102,7 @@ def export_folder(folder, label):
 
     print(f"Created {markdown_file.name}")
 
-    # Readable PDF generated from the combined Markdown.
+    # Readable PDF generated from the combined Markdown
     create_pdf(
         markdown_file,
         OUT / f"{label}.pdf"
@@ -115,22 +115,20 @@ def main():
     daily_files = export_folder(DAILY, "DAILY")
     weekly_files = export_folder(WEEKLY, "WEEKLY")
 
-    # One ZIP containing both original folder structures.
-    all_markdown = OUT / "ALL_MARKDOWN.zip"
-
+    # Full Archive ZIP containing all historical files
+    archive_zip = OUT / "FULL_ARCHIVE.zip"
     with zipfile.ZipFile(
-        all_markdown, "w", zipfile.ZIP_DEFLATED
+        archive_zip, "w", zipfile.ZIP_DEFLATED
     ) as archive:
-
         for folder in (DAILY, WEEKLY):
-            for file in sorted(folder.rglob("*")):
+            for file in sorted(folder.rglob("*"), reverse=True):
                 if file.is_file():
                     archive.write(
                         file,
                         file.relative_to(SOCIAL)
                     )
 
-    print(f"Created {all_markdown.name}")
+    print(f"Created {archive_zip.name}")
     print("\nAll exports completed successfully.")
 
     for file in sorted(OUT.iterdir()):

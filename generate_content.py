@@ -70,6 +70,8 @@ SUPPLIED KNOWLEDGE:
     req = urllib.request.Request(API_URL, data=req_data, method="POST")
     req.add_header("Authorization", f"Bearer {API_KEY}")
     req.add_header("Content-Type", "application/json")
+    # Crucial to bypass Cloudflare 403 / error 1010 blocks on GitHub Actions runners:
+    req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
     print(f"Sending request to Groq using model {MODEL}...")
     try:

@@ -7,7 +7,7 @@ import json
 # Configuration
 API_KEY = os.environ.get("DAHL_API_KEY") # We keep the secret name so you don't have to change GitHub secrets
 API_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama-3.3-70b-versatile"
+MODEL = "llama-3.1-70b-versatile"
 
 ROOT = Path.cwd()
 SOCIAL = ROOT / "social-posts"
@@ -74,7 +74,7 @@ SUPPLIED KNOWLEDGE:
     response = requests.post(API_URL, headers=headers, data=json.dumps(payload))
     
     if response.status_code != 200:
-        raise RuntimeError(f"Groq API failed with status {response.status_code}: {response.text}")
+        raise RuntimeError(f"Groq API failed with fucking status {response.status_code}: {response.text}")
         
     data = response.json()
     return data["choices"][0]["message"]["content"]

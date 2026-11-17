@@ -1,11 +1,12 @@
 import os
+import json
 from pathlib import Path
 from datetime import date
-import requests
-import json
+import urllib.request
+import urllib.error
 
-# Configuration
-API_KEY = os.environ.get("DAHL_API_KEY") # We keep the secret name so you don't have to change GitHub secrets
+# Configuration for Groq
+API_KEY = os.environ.get("DAHL_API_KEY")
 API_URL = "https://api.groq.com/openai/v1/chat/completions"
 MODEL = "llama-3.1-8b-instant"
 
@@ -42,7 +43,7 @@ Use ONLY the supplied knowledge. Never invent facts.
 Generate a complete Monday-Sunday content calendar.
 
 Each day MUST contain:
-## Monday (or Tuesday, etc.)
+## Monday
 ### X
 ### Facebook
 ### YouTube Community
@@ -62,26 +63,27 @@ SUPPLIED KNOWLEDGE:
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
-        "max_tokens": 8000
+        "max_tokens": 4000
     }
 
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
+    req_data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(API_URL, data=req_data, method="POST")
+    req.add_header("Authorization", f"Bearer {API_KEY}")
+    req.add_header("Content-Type", "application/json")
 
     print(f"Sending request to Groq using model {MODEL}...")
-    response = requests.post(API_URL, headers=headers, data=json.dumps(payload))
-    
-    if response.status_code != 200:
-        raise RuntimeError(f"Groq API failed with fucking status {response.status_code}: {response.text}")
-        
-    data = response.json()
-    return data["choices"][0]["message"]["content"]
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_body = response.read().decode("utf-8")
+            data = json.loads(res_body)
+            return data["choices"][0]["message"]["content"]
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        raise RuntimeError(f"Groq API failed with status {e.code}: {error_body}")
 
 def main():
     if not API_KEY:
-        raise EnvironmentError("API key environment variable is missing!")
+        raise EnvironmentError("DAHL_API_KEY environment variable is missing!")
         
     knowledge = load_knowledge()
     content = generate_calendar(knowledge)

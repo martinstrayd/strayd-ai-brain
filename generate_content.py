@@ -1,10 +1,11 @@
 import os
+import time
 from pathlib import Path
 from datetime import date
 from google import genai
+from google.genai.errors import ServerError
 
-# Configuration for Gemini
-API_KEY = os.environ.get("DAHL_API_KEY") # Holds your Gemini key from GitHub secrets
+API_KEY = os.environ.get("DAHL_API_KEY")
 MODEL = "gemini-3.8-flash"
 
 ROOT = Path.cwd()
@@ -55,13 +56,21 @@ SUPPLIED KNOWLEDGE:
 
     client = genai.Client(api_key=API_KEY)
     
-    print(f"Sending request to Gemini using model {MODEL}...")
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt,
-    )
-    
-    return response.text
+    # Retry loop to handle 503 high-demand spikes automatically
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
+        try:
+            print(f"Sending request to Gemini using model {MODEL} (Attempt {attempt}/{max_attempts})...")
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=prompt,
+            )
+            return response.text
+        except ServerError as e:
+            if attempt == max_attempts:
+                raise
+            print(f"Server busy (503), waiting 15 seconds before retry...")
+            time.sleep(15)
 
 def main():
     if not API_KEY:

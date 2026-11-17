@@ -8,260 +8,36 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: strayd-social-agent-${{ github.ref }}
-  cancel-in-progress: false
-
-env:
-  DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
-  DAHL_API_URL: https://api.groq.com/openai/v1/chat/completions
-  DAHL_MODEL: llama-3.3-70b-versatile
-
 jobs:
-  generate-social-content:
-    name: Generate and Validate STRAYD Social Content
+  generate-content:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify knowledge files
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          for file in \
-            brand-profile.md \
-            martinstrayd.md \
-            suzukimusic.md \
-            songarchive.md \
-            social-manager-prompt.md
-          do
-            if [ ! -s "$file" ]; then
-              echo "::error::Required knowledge file missing or empty: $file"
-              exit 1
-            fi
-
-            echo "Verified knowledge file: $file"
-          done
-
-          mkdir -p social-posts/weekly
-          mkdir -p social-posts/daily
-
-      - name: Generate weekly calendar
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          cat \
-            martinstrayd.md \
-            suzukimusic.md \
-            songarchive.md \
-            brand-profile.md \
-            social-manager-prompt.md \
-            > knowledge.txt
-
-          printf '%s\n' \
-            'You are STRAYD Social Media Content Director.' \
-            '' \
-            'Use ONLY the supplied knowledge.' \
-            '' \
-            'Never invent facts.' \
-            '' \
-            'Generate a complete Monday-Sunday content calendar.' \
-            '' \
-            'Each day MUST contain:' \
-            '' \
-            '## Monday' \
-            '### X' \
-            '### Facebook' \
-            '### YouTube Community' \
-            '### TikTok' \
-            '### Instagram' \
-            '### Image Prompt' \
-            '### Short Video Idea' \
-            > prompt.txt
-
-          KNOWLEDGE=$(cat knowledge.txt)
-
-          jq -n \
-            --arg model "$DAHL_MODEL" \
-            --arg prompt "$(cat prompt.txt)
-
-SUPPLIED KNOWLEDGE:
-
-$KNOWLEDGE" \
-            '{
-              model: $model,
-              messages: [
-                {
-                  role: "system",
-                  content: "Use only supplied STRAYD knowledge."
-                },
-                {
-                  role: "user",
-                  content: $prompt
-                }
-              ],
-              temperature: 0.7,
-              max_tokens: 8000
-            }' \
-            > request.json
-
-          SUCCESS=0
-
-          for attempt in 1 2 3 4 5 6
-          do
-
-            echo "Attempt $attempt"
-
-            HTTP_CODE=$(
-              curl \
-                -sS \
-                -w "%{http_code}" \
-                -o response.json \
-                -X POST \
-                "$DAHL_API_URL" \
-                -H "Authorization: Bearer $DAHL_API_KEY" \
-                -H "Content-Type: application/json" \
-                --data @request.json
-            )
-
-            echo "HTTP: $HTTP_CODE"
-
-            if [ "$HTTP_CODE" = "200" ]; then
-              SUCCESS=1
-              break
-            fi
-
-            cat response.json || true
-
-            sleep 15
-
-          done
-
-          if [ "$SUCCESS" != "1" ]; then
-            echo "::error::API request failed"
-            exit 1
-          fi
-
-          jq -r '.choices[0].message.content' \
-            response.json \
-            > debug-response.md
-
-          WEEK=$(date +%F)
-
-          cp \
-            debug-response.md \
-            social-posts/weekly/${WEEK}-calendar.md
-
-      - name: Validate generated calendar
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          FILE=$(ls social-posts/weekly/*.md | head -1)
-
-          for DAY in \
-            Monday \
-            Tuesday \
-            Wednesday \
-            Thursday \
-            Friday \
-            Saturday \
-            Sunday
-          do
-
-            if ! grep -q "^## ${DAY}" "$FILE"; then
-              echo "::error::Missing day heading: $DAY"
-              exit 1
-            fi
-
-          done
-
-          echo "Validation passed"
-
-      - name: Split daily files
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          FILE=$(ls social-posts/weekly/*.md | head -1)
-
-          DAYS=(
-            Monday
-            Tuesday
-            Wednesday
-            Thursday
-            Friday
-            Saturday
-            Sunday
-          )
-
-          for i in "${!DAYS[@]}"
-          do
-
-            DAY="${DAYS[$i]}"
-            LOWER=$(echo "$DAY" | tr '[:upper:]' '[:lower:]')
-            PDATE=$(date -d "${WEEK} +${i} days" +%F)
-
-            START=$(grep -n "^## ${DAY}" "$FILE" | cut -d: -f1 | head -1)
-
-            if [ -z "$START" ]; then
-              continue
-            fi
-
-            if [ "$i" -lt 6 ]; then
-
-              NEXT="${DAYS[$((i+1))]}"
-
-              END=$(grep -n "^## ${NEXT}" "$FILE" | cut -d: -f1 | head -1)
-
-              if [ -n "$END" ]; then
-                END=$((END-1))
-              fi
-
-              sed -n "${START},${END}p" "$FILE" \
-                > "social-posts/daily/${PDATE}-${LOWER}.md"
-
-            else
-
-              tail -n +"$START" "$FILE" \
-                > "social-posts/daily/${PDATE}-${LOWER}.md"
-
-            fi
-
-          done
-
-      - name: Upload debug files
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          name: strayd-social-debug-${{ github.run_number }}
-          path: |
-            response.json
-            request.json
-            debug-response.md
-          if-no-files-found: ignore
+          python-version: '3.10'
 
-      - name: Commit generated content
-        shell: bash
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Groq Content Generator
+        env:
+          DAHL_API_KEY: ${{ secrets.DAHL_API_KEY }}
+        run: python generate_content.py
+
+      - name: Commit and push generated content
         run: |
-          set -euo pipefail
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git add social-posts/
-          git add debug-response.md
-
+          
           if git diff --cached --quiet; then
-            echo "No changes."
+            echo "No changes to commit."
             exit 0
           fi
-
-          git commit -m "Generate STRAYD weekly social content"
-
+          
+          git commit -m "Generate STRAYD weekly social content via Groq"
           git push

@@ -1,14 +1,11 @@
 import os
-import json
 from pathlib import Path
 from datetime import date
-import urllib.request
-import urllib.error
+from google import genai
 
-# Configuration for Groq
-API_KEY = os.environ.get("DAHL_API_KEY")
-API_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama-3.1-8b-instant"
+# Configuration for Gemini
+API_KEY = os.environ.get("DAHL_API_KEY") # Holds your Gemini key from GitHub secrets
+MODEL = "gemini-2.5-flash"
 
 ROOT = Path.cwd()
 SOCIAL = ROOT / "social-posts"
@@ -56,36 +53,19 @@ SUPPLIED KNOWLEDGE:
 {knowledge}
 """
 
-    payload = {
-        "model": MODEL,
-        "messages": [
-            {"role": "system", "content": "Use only supplied STRAYD knowledge."},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 4000
-    }
-
-    req_data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(API_URL, data=req_data, method="POST")
-    req.add_header("Authorization", f"Bearer {API_KEY}")
-    req.add_header("Content-Type", "application/json")
-    # Crucial to bypass Cloudflare 403 / error 1010 blocks on GitHub Actions runners:
-    req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-
-    print(f"Sending request to Groq using model {MODEL}...")
-    try:
-        with urllib.request.urlopen(req) as response:
-            res_body = response.read().decode("utf-8")
-            data = json.loads(res_body)
-            return data["choices"][0]["message"]["content"]
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode("utf-8")
-        raise RuntimeError(f"Groq API failed with status {e.code}: {error_body}")
+    client = genai.Client(api_key=API_KEY)
+    
+    print(f"Sending request to Gemini using model {MODEL}...")
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=prompt,
+    )
+    
+    return response.text
 
 def main():
     if not API_KEY:
-        raise EnvironmentError("DAHL_API_KEY environment variable is missing!")
+        raise EnvironmentError("API key environment variable is missing!")
         
     knowledge = load_knowledge()
     content = generate_calendar(knowledge)

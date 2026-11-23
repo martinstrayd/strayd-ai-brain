@@ -1,2 +1,2 @@
-# DAILY Social Posts (Week Ahead starting 2026-11-17)
+# DAILY Social Posts (Week Ahead starting 2026-11-23)
 
